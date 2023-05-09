@@ -1,0 +1,62 @@
+.form {
+  margin-right: 16px;
+  padding-bottom: 8px;
+  display: flex;
+  justify-content: start;
+  align-items: center;
+  border-bottom: 1px solid var(--sn-launcher-separator) !important;
+}
+
+.input {
+  box-shadow: none !important;
+  border: none;
+  outline: none !important;
+  caret-color: var(--sn-launcher-brand);
+
+  width: 100%;
+  padding: 8px;
+  font-size: 2em;
+  color: var(--sn-launcher-text-primary) !important;
+  background-color: transparent !important;
+}
+
+input::placeholder {
+  color: var(--sn-launcher-text-info) !important;
+}
+
+input:focus,
+input:active {
+  outline: none;
+}
+
+.mode {
+  background-color: var(--sn-launcher-surface-content);
+  color: var(--sn-launcher-text-secondary);
+  border-radius: 4px;
+  font-size: 1.75em;
+  padding: 4px 8px;
+  white-space: nowrap;
+}
+
+.loadingCircle {
+  border: 2px solid var(--sn-launcher-surface-info);
+  border-top-color: var(--sn-launcher-brand);
+  border-radius: 50%;
+  position: absolute;
+  right: 16px;
+  top: 26px;
+  width: 16px;
+  height: 16px;
+  border-width: 1.5px;
+  animation: loadingCircle 1s linear infinite;
+  transform-origin: center;
+}
+
+@keyframes loadingCircle {
+  0% {
+    transform: rotate(0);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}

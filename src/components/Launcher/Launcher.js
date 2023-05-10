@@ -1,128 +1,82 @@
 import React from 'react';
-import { RemoveScroll } from 'react-remove-scroll';
-import FocusLock from 'react-focus-lock';
-
-import Filter from '../Filter/Filter';
-import MenuList from '../MenuList';
-import Footer from '../Footer';
-import useKeyDown from '../../hooks/useKeyDown';
+import styled from 'styled-components';
+import * as Dialog from '@radix-ui/react-dialog';
 import useChromeMessage from '../../hooks/useChromeMessage';
-import filterMenu from '../../utils/filterMenu';
-import getMenu from '../../utils/api';
-import commands, { modeActionMapping, goto, gotoTab } from '../../configs/commands';
+import useLauncherStore from '../../store/launcherStore';
+import Palette from '../Palette/Palette';
 
-import * as styles from './Launcher.module.css';
+const Wrapper = styled.div`
+  color-scheme: light;
+  all: initial;
+  -webkit-text-size-adjust: none;
+
+  position: fixed;
+  inset: 0;
+  display: grid;
+  place-content: center;
+
+  z-index: var(--sn-launcher-layer-important);
+  font-family: var(--sn-launcher-font-sans);
+
+  & *,
+  & ::after,
+  & ::before {
+    box-sizing: border-box;
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    scroll-behavior: smooth;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    color-scheme: dark;
+  }
+`;
+
+const Backdrop = styled.div`
+  background-color: var(--sn-launcher-surface-backdrop);
+  position: fixed;
+  inset: 0;
+  animation: overlayShow 150ms cubic-bezier(0.16, 1, 0.3, 1);
+
+  @keyframes overlayShow {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+`;
 
 function Launcher() {
-  const [menu, setMenu] = React.useState([]);
-  const [isShown, setIsShown] = React.useState(false);
-  const [isLoading, setIsLoading] = React.useState(false);
-  const [filter, setFilter] = React.useState('');
-  const [selected, setSelected] = React.useState(0);
-  const [commandMode, setCommandMode] = React.useState('');
+  const [container, setContainer] = React.useState(null);
 
-  function filterMenuItems() {
-    const commandPattern = filter.match(/^\/\s*(.*)/);
-    if (commandPattern) {
-      return filterMenu(commands, commandPattern[1]);
-    } else {
-      return filterMenu(menu, filter);
-    }
-  }
-
-  function handleFilterChange(value) {
-    setFilter(value);
-    setSelected(0);
-  }
+  const isShown = useLauncherStore((state) => state.isShown);
+  const reset = useLauncherStore((state) => state.reset);
+  const token = useLauncherStore((state) => state.token);
 
   function toggleLauncher() {
-    setIsShown(!isShown);
+    reset(!isShown);
   }
 
-  function dismissLauncher() {
-    setIsShown(false);
-    setCommandMode('');
-    setFilter('');
-  }
+  // Toggle plugin content modal when snl-toggle-launcher message been sent
+  useChromeMessage('snl-toggle-launcher', toggleLauncher);
 
-  function updateCommandMode(mode) {
-    setCommandMode(mode);
-    setFilter('');
-  }
-
-  function handleAction(event) {
-    if (!isShown) return;
-
-    event.preventDefault();
-
-    const {
-      item: { target, mode: nextCommandMode, action },
-    } = filteredMenuItems[selected];
-
-    if ([/(.+)\.do$/, /(.+)\.list$/].some((pattern) => pattern.test(filter))) {
-      dismissLauncher();
-      goto(filter);
-    } else if (commandMode) {
-      dismissLauncher();
-      modeActionMapping[commandMode]?.(filter);
-    } else if (target) {
-      dismissLauncher();
-      gotoTab(target);
-    } else if (nextCommandMode) {
-      updateCommandMode(nextCommandMode);
-    } else if (action) {
-      setIsLoading(true);
-      action().finally(() => {
-        setIsLoading(false);
-        setFilter('');
-      });
-    }
-  }
-
-  // Toggle plugin content modal when toggle-launcher message been sent
-  useChromeMessage('toggle-launcher', toggleLauncher);
-
-  // Dismiss plugin content when Escape key been pressed
-  useKeyDown('Escape', dismissLauncher);
-  useKeyDown('Enter', handleAction);
-
-  React.useEffect(() => {
-    async function updateMenu() {
-      const menuData = await getMenu();
-      setMenu(menuData || []);
-    }
-
-    updateMenu();
-  }, []);
-
-  const filteredMenuItems = filterMenuItems();
-
-  if (!isShown) return null;
+  if (!isShown || !token) return null;
 
   return (
-    <FocusLock returnFocus={true}>
-      <RemoveScroll>
-        <div className={styles.wrapper}>
-          <div className={styles.backdrop} onClick={dismissLauncher}></div>
-          <div className={styles.launcher}>
-            <Filter
-              filter={filter}
-              handleFilterChange={handleFilterChange}
-              commandMode={commandMode}
-              setCommandMode={setCommandMode}
-              isLoading={isLoading}
-            />
-            <MenuList
-              menuList={filteredMenuItems}
-              selected={selected}
-              setSelected={setSelected}
-              commandMode={commandMode}
-            />
-            <Footer />
-          </div>
-        </div>
-      </RemoveScroll>
-    </FocusLock>
+    <>
+      <Wrapper ref={setContainer} />
+      <Dialog.Root open={isShown} modal={false}>
+        <Dialog.Portal container={container}>
+          <Backdrop onClick={toggleLauncher} />
+          <Dialog.Content asChild={true} onPointerDownOutside={(event) => event.preventDefault()}>
+            <Palette />
+          </Dialog.Content>
+        </Dialog.Portal>
+      </Dialog.Root>
+    </>
   );
 }
 

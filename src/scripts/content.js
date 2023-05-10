@@ -1,6 +1,7 @@
 import React, { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import Launcher from '../components/Launcher';
+import ShadowRoot from '../components/ShadowRoot';
 
 // Inject root for extension
 const snLauncherHost = document.createElement('div');
@@ -11,6 +12,8 @@ snLauncherHost.setAttribute('sn-launcher-root', '');
 const root = createRoot(snLauncherHost);
 root.render(
   <StrictMode>
-    <Launcher />
+    <ShadowRoot>
+      <Launcher />
+    </ShadowRoot>
   </StrictMode>,
 );

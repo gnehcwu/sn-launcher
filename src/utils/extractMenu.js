@@ -3,15 +3,31 @@ export default function extractMenu(menuItems = []) {
 
   function traverse(obj, parentLabel) {
     const { label, route, subItems } = obj;
-    const fullLabel = parentLabel ? `${parentLabel} / ${label}` : label;
-    if (route?.params?.target) {
-      results.push({ key: crypto.randomUUID(), target: route?.params?.target, label, parentLabel });
+    let fullLabel = parentLabel ? `${parentLabel} / ${label}` : label;
+    fullLabel = fullLabel.replace('(', '( ').replace(')', ' )');
+
+    const target = route?.params?.target || route?.url;
+    if (target) {
+      results.push({
+        key: crypto.randomUUID(),
+        target,
+        label,
+        parentLabel,
+        fullLabel,
+      });
     }
 
     // For external links
     if (route?.external) {
       const { url } = route.external;
-      results.push({ key: crypto.randomUUID(), target: url, label, parentLabel });
+      const externalFullLabel = fullLabel.replace(' ➚', '');
+      results.push({
+        key: crypto.randomUUID(),
+        target: url,
+        label,
+        parentLabel,
+        fullLabel: externalFullLabel,
+      });
     }
 
     if (subItems) {

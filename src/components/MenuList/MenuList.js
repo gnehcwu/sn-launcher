@@ -1,77 +1,95 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import MenuItem from '../MenuItem/MenuItem';
-import useKeyDown from '../../hooks/useKeyDown';
-import * as styles from './MenuList.module.css';
+import styled from 'styled-components';
+import MenuItem from '../MenuItem';
+import useLauncherStore from '../../store/launcherStore';
 
 MenuList.propTypes = {
   menuList: PropTypes.arrayOf(
     PropTypes.shape({
-      item: PropTypes.shape({
-        key: PropTypes.string,
-        target: PropTypes.string,
-      }),
+      key: PropTypes.string,
     }),
   ),
-  selected: PropTypes.number,
-  setSelected: PropTypes.func,
-  commandMode: PropTypes.string,
+  handleClick: PropTypes.func,
 };
 
-function MenuList({ menuList, selected, setSelected, commandMode }) {
+const MenuListContainer = styled.div`
+  overflow-y: auto;
+
+  list-style: none;
+  margin: 0;
+  padding: 8px 10px;
+
+  display: grid;
+  row-gap: 4px;
+  grid-auto-rows: max-content;
+  scroll-padding-block: 8px; /* prevent menu item from cutting edge */
+`;
+
+const Fallback = styled.p`
+  color: var(--sn-launcher-text-secondary);
+  font-size: 2em;
+  font-weight: 600px;
+  display: grid;
+  place-content: center;
+`;
+
+function MenuList({ menuList, handleClick }) {
+  const isLoading = useLauncherStore((state) => state.isLoading);
+  const selected = useLauncherStore((state) => state.selected);
+  const updateSelected = useLauncherStore((state) => state.updateSelected);
+  const filter = useLauncherStore((state) => state.filter);
+  const commandMode = useLauncherStore((state) => state.commandMode);
   const menuListRef = React.useRef(null);
 
   const scrollMenuIntoView = React.useCallback((menuItem) => {
-    if (!menuListRef.current) return;
+    if (!menuListRef.current || !menuItem) return;
 
     const { offsetTop: elementOffsetTop, clientHeight: elementClientHeight } = menuItem;
     const { scrollTop: listScrollTop, clientHeight: listClientHeight } = menuListRef.current;
     const needToScroll =
-      elementOffsetTop > listScrollTop + listClientHeight ||
+      elementOffsetTop + elementClientHeight > listScrollTop + listClientHeight ||
       elementOffsetTop - elementClientHeight < listScrollTop;
 
     if (needToScroll) {
-      menuItem.scrollIntoView();
+      menuItem.scrollIntoView({ block: 'nearest' });
     }
   }, []);
 
-  const handleNavigation = (event) => {
-    const isArrowDown = event.key === 'ArrowDown';
-    let nextIndex = isArrowDown ? selected + 1 : selected - 1;
-    if (nextIndex >= menuList.length) {
-      nextIndex = 0;
-    } else if (nextIndex < 0) {
-      nextIndex = menuList.length - 1;
-    }
-
-    setSelected(nextIndex);
-  };
-
   React.useEffect(() => {
-    if (!menuListRef.current) return;
+    if (!menuList || menuList.length <= 0) return;
 
     const allMenuElements = menuListRef.current.querySelectorAll('li');
-    const selectedMenuElement = allMenuElements[selected];
+    let selectedMenuElement = allMenuElements[selected];
     scrollMenuIntoView(selectedMenuElement);
   }, [menuList, selected, scrollMenuIntoView]);
 
-  useKeyDown('ArrowDown', handleNavigation);
-  useKeyDown('ArrowUp', handleNavigation);
-
-  if (!menuList || menuList.length <= 0) {
-    return <p className={styles.empty}>🔍 No results</p>;
+  if (isLoading) {
+    return <Fallback>🍜 Loading...</Fallback>;
   }
 
-  if (commandMode) {
-    return <p className={styles.empty}>🔍 Enter to search</p>;
+  if (commandMode && commandMode !== 'switch_app') {
+    return <Fallback>🔍 Enter to search</Fallback>;
+  }
+
+  if (filter && menuList?.length <= 0) {
+    return <Fallback>🧐 No results</Fallback>;
   }
 
   return (
-    <ul className={styles.menuList} ref={menuListRef} role="group">
+    <MenuListContainer ref={menuListRef} role="group">
       {menuList.map((menuItem, index) => {
-        return <MenuItem key={menuItem.item.key} menu={menuItem} active={index === selected} />;
+        return (
+          <MenuItem
+            key={menuItem.key}
+            menu={menuItem}
+            active={index === selected}
+            handleSelect={() => updateSelected(index)}
+            handleClick={handleClick}
+          />
+        );
       })}
-    </ul>
+    </MenuListContainer>
   );
 }
 

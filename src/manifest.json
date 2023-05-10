@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
-  "name": "SN Launcher",
-  "version": "0.0.1",
-  "description": "Browser extension to boost developers on ServiceNow platform",
+  "name": "SN Launcher - ServiceNow utility tool",
+  "version": "1.1.0",
+  "description": "ServiceNow utility tool, search and navigate with a command palette.(personal project, not affiliated to ServiceNow)",
   "icons": {
     "16": "./assets/icon.png",
     "32": "./assets/icon.png",
@@ -16,7 +16,6 @@
   "content_scripts": [
     {
       "matches": ["<all_urls>"],
-      "run_at": "document_end",
       "js": ["scripts/content.js"]
     }
   ],
@@ -29,14 +28,13 @@
     }
   },
   "commands": {
-    "toggle-launcher": {
+    "snl-toggle-launcher": {
       "suggested_key": {
         "default": "Ctrl+Shift+L",
         "mac": "Command+Shift+L"
       },
-      "description": "Open launcher menu"
+      "description": "Open launcher"
     }
   },
-  "permissions": ["tabs", "activeTab", "storage"],
-  "host_permissions": ["*://*/*"]
+  "permissions": ["tabs", "activeTab", "storage"]
 }

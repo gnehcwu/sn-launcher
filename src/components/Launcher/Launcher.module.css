@@ -99,6 +99,12 @@
   font-family: var(--sn-launcher-font-sans) !important;
 }
 
+@media (prefers-color-scheme: dark) {
+  .wrapper {
+    color-scheme: dark;
+  }
+}
+
 .backdrop {
   position: absolute;
   inset: 0;
@@ -110,7 +116,6 @@
   position: relative;
   background-color: var(--sn-launcher-surface-primary);
   border-radius: 8px;
-  padding: 16px 0px 0 16px;
   box-shadow: var(--sn-launcher-shadow-strength);
   animation-duration: 125ms;
   width: min(789px, 100vw);

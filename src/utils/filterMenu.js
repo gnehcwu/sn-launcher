@@ -8,7 +8,6 @@ const filterOptions = {
   includeMatches: true,
   findAllMatches: false,
   minMatchCharLength: MIN_MATCH_LENGTH,
-  threshold: 0.65,
   keys: [
     'parentLabel',
     {
@@ -24,7 +23,7 @@ export default function filterMenu(menuItems, pattern) {
   if (!pattern || pattern.length < MIN_MATCH_LENGTH) {
     const newMenuItems = menuItems
       .slice(0, DEFAULT_RECORDS_SHOWN)
-      .map(({ key, label, parentLabel, target, action, mode }) => {
+      .map(({ key, label, parentLabel, target, action, mode, description }) => {
         return {
           item: {
             key,
@@ -33,6 +32,7 @@ export default function filterMenu(menuItems, pattern) {
             target,
             action,
             mode,
+            description,
           },
         };
       });

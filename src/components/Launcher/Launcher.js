@@ -6,96 +6,41 @@ import Filter from '../Filter/Filter';
 import MenuList from '../MenuList';
 import Footer from '../Footer';
 import useKeyDown from '../../hooks/useKeyDown';
+import useCustomEvent from '../../hooks/useCustomEvent';
 import useChromeMessage from '../../hooks/useChromeMessage';
-import filterMenu from '../../utils/filterMenu';
-import getMenu from '../../utils/api';
-import commands, { modeActionMapping, goto, gotoTab } from '../../configs/commands';
-
+import useLauncherStore from '../../store/launcherStore';
 import * as styles from './Launcher.module.css';
 
 function Launcher() {
-  const [menu, setMenu] = React.useState([]);
   const [isShown, setIsShown] = React.useState(false);
-  const [isLoading, setIsLoading] = React.useState(false);
-  const [filter, setFilter] = React.useState('');
-  const [selected, setSelected] = React.useState(0);
-  const [commandMode, setCommandMode] = React.useState('');
-
-  function filterMenuItems() {
-    const commandPattern = filter.match(/^\/\s*(.*)/);
-    if (commandPattern) {
-      return filterMenu(commands, commandPattern[1]);
-    } else {
-      return filterMenu(menu, filter);
-    }
-  }
-
-  function handleFilterChange(value) {
-    setFilter(value);
-    setSelected(0);
-  }
+  const filterRef = React.useRef(null);
+  const reset = useLauncherStore((state) => state.reset);
 
   function toggleLauncher() {
     setIsShown(!isShown);
   }
 
-  function dismissLauncher() {
+  const dismissLauncher = React.useCallback(() => {
     setIsShown(false);
-    setCommandMode('');
-    setFilter('');
-  }
+    reset();
+  }, [reset]);
 
-  function updateCommandMode(mode) {
-    setCommandMode(mode);
-    setFilter('');
-  }
-
-  function handleAction(event) {
-    if (!isShown) return;
-
+  const handleCustomEvent = React.useCallback((event) => {
     event.preventDefault();
 
-    const {
-      item: { target, mode: nextCommandMode, action },
-    } = filteredMenuItems[selected];
-
-    if ([/(.+)\.do$/, /(.+)\.list$/].some((pattern) => pattern.test(filter))) {
-      dismissLauncher();
-      goto(filter);
-    } else if (commandMode) {
-      dismissLauncher();
-      modeActionMapping[commandMode]?.(filter);
-    } else if (target) {
-      dismissLauncher();
-      gotoTab(target);
-    } else if (nextCommandMode) {
-      updateCommandMode(nextCommandMode);
-    } else if (action) {
-      setIsLoading(true);
-      action().finally(() => {
-        setIsLoading(false);
-        setFilter('');
-      });
-    }
-  }
+    // Bridge direct click with filter submit event
+    filterRef.current?.dispatchEvent(
+      new KeyboardEvent('keydown', { key: 'Enter', cancelable: true, bubbles: true }),
+    );
+  }, []);
 
   // Toggle plugin content modal when toggle-launcher message been sent
   useChromeMessage('toggle-launcher', toggleLauncher);
 
   // Dismiss plugin content when Escape key been pressed
   useKeyDown('Escape', dismissLauncher);
-  useKeyDown('Enter', handleAction);
 
-  React.useEffect(() => {
-    async function updateMenu() {
-      const menuData = await getMenu();
-      setMenu(menuData || []);
-    }
-
-    updateMenu();
-  }, []);
-
-  const filteredMenuItems = filterMenuItems();
+  useCustomEvent('click-menu-item', handleCustomEvent);
 
   if (!isShown) return null;
 
@@ -105,19 +50,8 @@ function Launcher() {
         <div className={styles.wrapper}>
           <div className={styles.backdrop} onClick={dismissLauncher}></div>
           <div className={styles.launcher}>
-            <Filter
-              filter={filter}
-              handleFilterChange={handleFilterChange}
-              commandMode={commandMode}
-              setCommandMode={setCommandMode}
-              isLoading={isLoading}
-            />
-            <MenuList
-              menuList={filteredMenuItems}
-              selected={selected}
-              setSelected={setSelected}
-              commandMode={commandMode}
-            />
+            <Filter ref={filterRef} dismissLauncher={dismissLauncher} />
+            <MenuList />
             <Footer />
           </div>
         </div>

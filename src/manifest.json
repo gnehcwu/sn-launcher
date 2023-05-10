@@ -2,7 +2,7 @@
   "manifest_version": 3,
   "name": "SN Launcher",
   "version": "0.0.1",
-  "description": "Browser extension to boost developers on ServiceNow platform",
+  "description": "Search & navigate ServiceNow menu, document, next experience components with a simple command palette interface. (personal project, not affiliated to ServiceNow)",
   "icons": {
     "16": "./assets/icon.png",
     "32": "./assets/icon.png",

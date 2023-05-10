@@ -67,20 +67,32 @@ export const modeActionMapping = {
 };
 
 const commands = [
-  { key: crypto.randomUUID(), label: 'Clear cache', action: clearCache },
-  { key: crypto.randomUUID(), label: 'Refresh menu', action: refresh },
+  {
+    key: crypto.randomUUID(),
+    label: 'Clear cache',
+    action: clearCache,
+    description: 'clear client cache',
+  },
+  {
+    key: crypto.randomUUID(),
+    label: 'Refresh menu',
+    action: refresh,
+    description: 'refresh all menu items',
+  },
   // { key: crypto.randomUUID(), label: 'Go to', action: goto },
   {
     key: crypto.randomUUID(),
     label: 'Search document',
     action: searchDoc,
     mode: 'Search document',
+    description: 'search against Servicenow documentation',
   },
   {
     key: crypto.randomUUID(),
     label: 'Search component',
     action: searchComponent,
     mode: 'Search component',
+    description: 'search next experience components',
   },
 ];
 

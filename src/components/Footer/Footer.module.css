@@ -1,6 +1,5 @@
 .footerContainer {
-  padding: 16px 8px;
-  margin-right: 16px;
+  padding: 16px;
   border-top: 1px solid var(--sn-launcher-separator);
   color: var(--sn-launcher-text-secondary);
 

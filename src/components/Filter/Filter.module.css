@@ -1,6 +1,4 @@
 .form {
-  margin-right: 16px;
-  padding-bottom: 8px;
   display: flex;
   justify-content: start;
   align-items: center;
@@ -14,7 +12,8 @@
   caret-color: var(--sn-launcher-brand);
 
   width: 100%;
-  padding: 8px;
+  margin: 16px !important;
+  padding: 8px !important;
   font-size: 2em;
   color: var(--sn-launcher-text-primary) !important;
   background-color: transparent !important;
@@ -34,29 +33,13 @@ input:active {
   color: var(--sn-launcher-text-secondary);
   border-radius: 4px;
   font-size: 1.75em;
-  padding: 4px 8px;
+  margin-left: 16px;
+  padding: 8px;
   white-space: nowrap;
 }
 
-.loadingCircle {
-  border: 2px solid var(--sn-launcher-surface-info);
-  border-top-color: var(--sn-launcher-brand);
-  border-radius: 50%;
+.loading {
   position: absolute;
   right: 16px;
   top: 26px;
-  width: 16px;
-  height: 16px;
-  border-width: 1.5px;
-  animation: loadingCircle 1s linear infinite;
-  transform-origin: center;
-}
-
-@keyframes loadingCircle {
-  0% {
-    transform: rotate(0);
-  }
-  100% {
-    transform: rotate(360deg);
-  }
 }

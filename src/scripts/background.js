@@ -21,12 +21,26 @@ async function notifyContent(action) {
 
 // Listener for clicking on extension icon
 chrome.action.onClicked.addListener(function () {
-  notifyContent('toggle-launcher');
+  notifyContent('snl-toggle-launcher');
 });
 
 // Listener for registered command
 chrome.commands.onCommand.addListener((command) => {
-  if (command === 'toggle-launcher') {
-    notifyContent('toggle-launcher');
+  if (command === 'snl-toggle-launcher') {
+    notifyContent('snl-toggle-launcher');
   }
+});
+
+// Open new tab
+chrome.runtime.onMessage.addListener((request, _, sendResponse) => {
+  const { action, url } = request || {};
+
+  if (action === 'snl-open-tab-form-launcher') {
+    chrome.tabs.create({ url, active: true }).then(({ openerTabId }) => {
+      sendResponse({ openerTabId });
+    });
+  }
+
+  // Keep connection alive util sendResponse been called
+  return true;
 });

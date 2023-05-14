@@ -1,6 +1,8 @@
-const key = 'SN-LAUNCH-MENU';
+const prefix = window?.location?.hostname || '';
+const menuKey = `${prefix}-SN-LAUNCH-MENU`;
+const applicationKey = `${prefix}-SN-LAUNCH-APPLICATION`;
 
-export function getStoredMenu() {
+function getStoredData(key) {
   return new Promise((resolve) => {
     chrome.storage.local.get(key, (res) => {
       resolve(JSON.parse(res[key] ?? null));
@@ -8,17 +10,34 @@ export function getStoredMenu() {
   });
 }
 
-export function setStoredMenu(menu) {
-  const data = { [key]: JSON.stringify(menu) };
+function setStoreData(key, data) {
+  const stringifiedData = { [key]: JSON.stringify(data) };
   return new Promise((resolve) => {
-    chrome.storage.local.set(data, () => {
+    chrome.storage.local.set(stringifiedData, () => {
       resolve();
     });
   });
 }
 
-export function removeStoredMenu() {
-  return chrome.storage.local.remove([key]);
+export async function getStoredMenu() {
+  return await getStoredData(menuKey);
 }
 
-removeStoredMenu();
+export async function setStoredMenu(menu) {
+  return await setStoreData(menuKey, menu);
+}
+
+export async function getStoredApplications() {
+  return await getStoredData(applicationKey);
+}
+
+export async function setStoredApplication(applications) {
+  return await setStoreData(applicationKey, applications);
+}
+
+async function clearStore() {
+  await setStoreData(menuKey, []);
+  await setStoreData(applicationKey, []);
+}
+
+// clearStore();

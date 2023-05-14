@@ -1,10 +1,10 @@
 {
   "name": "sn-launcher",
-  "version": "0.0.1",
-  "description": "Browser extension to boost developers on ServiceNow platform",
+  "version": "1.0.1",
+  "description": "Search and navigate Servicenow menus, documentation, components with a simple command palette interface.",
   "scripts": {
     "start": "parcel watch src/manifest.json --host localhost",
-    "build": "parcel build src/manifest.json",
+    "build": "parcel build src/manifest.json --no-source-maps",
     "new-component": "new-component"
   },
   "keywords": [
@@ -12,17 +12,19 @@
     "extension"
   ],
   "author": "Cheng Wu",
-  "license": "ISC",
+  "license": "MIT",
   "dependencies": {
     "fuse.js": "^6.6.2",
+    "prop-types": "^15.8.1",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-focus-lock": "^2.9.4",
-    "react-remove-scroll": "^2.5.5",
+    "styled-components": "^5.3.10",
     "zustand": "^4.3.8"
   },
   "devDependencies": {
     "@parcel/config-webextension": "^2.8.3",
+    "@parcel/transformer-inline-string": "^2.8.3",
     "@types/chrome": "0.0.224",
     "eslint": "^8.36.0",
     "eslint-config-prettier": "^8.8.0",
@@ -33,7 +35,6 @@
     "new-component": "^5.0.2",
     "parcel": "^2.8.3",
     "prettier": "^2.8.6",
-    "process": "^0.11.10",
-    "prop-types": "^15.8.1"
+    "process": "^0.11.10"
   }
 }

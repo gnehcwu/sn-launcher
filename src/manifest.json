@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
   "name": "SN Launcher",
-  "version": "0.0.1",
-  "description": "Search & navigate ServiceNow menu, document, next experience components with a simple command palette interface. (personal project, not affiliated to ServiceNow)",
+  "version": "1.0.1",
+  "description": "Search and navigate menu, documentation, components with a simple command palette.(personal project, not affiliated to ServiceNow)",
   "icons": {
     "16": "./assets/icon.png",
     "32": "./assets/icon.png",
@@ -16,7 +16,6 @@
   "content_scripts": [
     {
       "matches": ["<all_urls>"],
-      "run_at": "document_end",
       "js": ["scripts/content.js"]
     }
   ],
@@ -29,14 +28,13 @@
     }
   },
   "commands": {
-    "toggle-launcher": {
+    "snl-toggle-launcher": {
       "suggested_key": {
         "default": "Ctrl+Shift+L",
         "mac": "Command+Shift+L"
       },
-      "description": "Open launcher menu"
+      "description": "Open launcher"
     }
   },
-  "permissions": ["tabs", "activeTab", "storage"],
-  "host_permissions": ["*://*/*"]
+  "permissions": ["tabs", "activeTab", "storage"]
 }

@@ -1,9 +1,14 @@
 import { create } from 'zustand';
+import getToken from '../utils/getToken';
+
+const token = getToken();
 
 const initialState = {
   filter: '',
-  selectedMenu: null,
   commandMode: '',
+  token,
+  selected: 0,
+  isLoading: false,
 };
 
 const useLauncherStore = create((set) => ({
@@ -12,12 +17,13 @@ const useLauncherStore = create((set) => ({
     set({ commandMode, filter: '' });
   },
   reset: () => {
-    set(initialState);
+    set({ ...initialState, filter: '', selected: 0, commandMode: '' });
   },
-  updateSelectedMenu: (selectedMenu) => {
-    set({ selectedMenu });
+  updateSelected: (selected) => {
+    set({ selected });
   },
   updateFilter: (filter) => set({ filter }),
+  updateIsLoading: (isLoading) => set({ isLoading }),
 }));
 
 export default useLauncherStore;

@@ -9,7 +9,7 @@ import useChromeMessage from '../../hooks/useChromeMessage';
 import useLauncherStore from '../../store/launcherStore';
 import useLauncherData from '../../hooks/useLauncherData';
 import useDisablePageScrolling from '../../hooks/useDisablePageScrolling';
-import filterMenu from '../../utils/filterMenu';
+import scoreItems from '../../utils/scoreItems';
 import action from '../../utils/action';
 
 const Wrapper = styled.div`
@@ -152,13 +152,13 @@ function Launcher() {
     (filter) => {
       const commandPattern = filter.match(/^>s*(.*)/);
       if (commandPattern) {
-        return filterMenu(allCommands, commandPattern[1]);
+        return scoreItems(allCommands, commandPattern[1]);
       } else if (commandMode && commandMode === 'switch_app') {
-        return filterMenu(allScopes, filter);
+        return scoreItems(allScopes, filter);
       } else if (commandMode) {
         return [];
       } else {
-        return filterMenu(allMenus, filter);
+        return scoreItems(allMenus, filter);
       }
     },
     [allCommands, allMenus, allScopes, commandMode],

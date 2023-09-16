@@ -7,12 +7,7 @@ import useLauncherStore from '../../store/launcherStore';
 MenuList.propTypes = {
   menuList: PropTypes.arrayOf(
     PropTypes.shape({
-      item: PropTypes.shape({
-        target: PropTypes.string,
-        label: PropTypes.string,
-        parentLabel: PropTypes.string,
-        description: PropTypes.string,
-      }),
+      key: PropTypes.string,
     }),
   ),
   handleClick: PropTypes.func,
@@ -83,7 +78,7 @@ function MenuList({ menuList, handleClick }) {
       {menuList.map((menuItem, index) => {
         return (
           <MenuItem
-            key={menuItem.item.key}
+            key={menuItem.key}
             menu={menuItem}
             active={index === selected}
             handleSelect={() => updateSelected(index)}

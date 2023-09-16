@@ -2,20 +2,12 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import styled from 'styled-components';
 
-import Highlight from '../Highlight';
-
 MenuItem.propTypes = {
   menu: PropTypes.shape({
-    item: PropTypes.shape({
-      target: PropTypes.string,
-      fullLabel: PropTypes.string,
-      description: PropTypes.string,
-    }),
-    matches: PropTypes.arrayOf(
-      PropTypes.shape({
-        indices: PropTypes.arrayOf(PropTypes.arrayOf(PropTypes.number)),
-      }),
-    ),
+    label: PropTypes.string,
+    target: PropTypes.string,
+    fullLabel: PropTypes.string,
+    description: PropTypes.string,
   }),
   active: PropTypes.bool,
   handleSelect: PropTypes.func,
@@ -79,20 +71,14 @@ const MarkSign = styled.span`
 `;
 
 function MenuItem({ menu, active, handleSelect, handleClick }) {
-  const {
-    item: { fullLabel, target, description },
-    matches = [],
-  } = menu;
-  const indices = matches[0]?.indices || [];
+  const { label, fullLabel, target, description } = menu;
 
   function renderContent() {
     const subLabel = target ? target.split('?')[0] : description;
 
     return (
       <MenuContent>
-        <MenuLabel>
-          <Highlight indices={indices} source={fullLabel} />
-        </MenuLabel>
+        <MenuLabel>{fullLabel ?? label}</MenuLabel>
         <MenuSubLabel>{subLabel}</MenuSubLabel>
       </MenuContent>
     );

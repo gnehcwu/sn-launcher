@@ -25,6 +25,7 @@ export default function useLauncherData() {
 
     getLauncherData();
   }, [updateIsLoading]);
+  // Add shown as a dependency to shown the latest data, isLoading might be the better option
 
   return [allMenus, allScopes, allCommands];
 }

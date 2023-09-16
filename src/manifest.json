@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
-  "name": "SN Launcher",
-  "version": "1.0.1",
-  "description": "Search and navigate menu, documentation, components with a simple command palette.(personal project, not affiliated to ServiceNow)",
+  "name": "SN Launcher - ServiceNow utility tool",
+  "version": "1.0.2",
+  "description": "ServiceNow utility tool, search and navigate with a command palette.(personal project, not affiliated to ServiceNow)",
   "icons": {
     "16": "./assets/icon.png",
     "32": "./assets/icon.png",

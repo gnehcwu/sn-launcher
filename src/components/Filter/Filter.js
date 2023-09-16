@@ -1,7 +1,7 @@
 import React from 'react';
 import styled from 'styled-components';
 import Loader from '../Loader';
-import { getCommandLabel } from '../../configs/commands';
+import { getCommandFullLabel } from '../../configs/commands';
 import useLauncherStore from '../../store/launcherStore';
 
 const FilterContainer = styled.div`
@@ -14,17 +14,18 @@ const FilterContainer = styled.div`
 const Input = styled.input.attrs(() => ({
   type: 'text',
   autoComplete: 'off',
+  spellCheck: false,
 }))`
   box-shadow: none;
   border: none;
   outline: none;
   caret-color: var(--sn-launcher-brand);
+  color: var(--sn-launcher-brand);
 
   width: 100%;
   margin: 12px 16px;
   padding: 8px;
   font-size: 2em;
-  color: var(--sn-launcher-text-primary);
   background-color: transparent;
 
   &::placeholder {
@@ -71,7 +72,7 @@ function Filter(_, ref) {
 
   return (
     <FilterContainer>
-      {commandMode !== '' && <Mode>{getCommandLabel(commandMode)}</Mode>}
+      {commandMode !== '' && <Mode>{getCommandFullLabel(commandMode)}</Mode>}
       <Input
         placeholder={commandMode ? '' : 'Type to search'}
         value={filter}

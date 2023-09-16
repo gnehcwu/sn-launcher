@@ -1,6 +1,6 @@
 {
   "name": "sn-launcher",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "Search and navigate Servicenow menus, documentation, components with a simple command palette interface.",
   "scripts": {
     "start": "parcel watch src/manifest.json --host localhost",
@@ -14,7 +14,6 @@
   "author": "Cheng Wu",
   "license": "MIT",
   "dependencies": {
-    "fuse.js": "^6.6.2",
     "prop-types": "^15.8.1",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",

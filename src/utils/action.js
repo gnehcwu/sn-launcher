@@ -16,7 +16,7 @@ export default async function action({
     dismissLauncher();
   } else if (commandMode) {
     if (commandMode == 'switch_app') {
-      switchToAppById(selectedMenu?.item?.key);
+      switchToAppById(selectedMenu?.key);
     } else {
       const commandAction = getCommandAction(commandMode);
       if (commandAction) {
@@ -25,9 +25,7 @@ export default async function action({
     }
     dismissLauncher();
   } else {
-    const {
-      item: { target, mode: nextCommandMode, action },
-    } = selectedMenu;
+    const { target, mode: nextCommandMode, action } = selectedMenu;
 
     if (target) {
       gotoTab(target);

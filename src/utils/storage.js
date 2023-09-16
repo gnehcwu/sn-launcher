@@ -40,4 +40,5 @@ async function clearStore() {
   await setStoreData(applicationKey, []);
 }
 
+// For local dev without local storage cache
 // clearStore();

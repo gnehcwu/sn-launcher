@@ -10,6 +10,7 @@ export default async function action({
   dismissLauncher,
   updateCommandMode,
   updateIsLoading,
+  updateStamp,
 }) {
   if (isValidShortcut(filter)) {
     goto(filter);
@@ -37,6 +38,7 @@ export default async function action({
       action().finally(() => {
         updateIsLoading(false);
         updateFilter('');
+        updateStamp();
       });
     }
   }

@@ -12,9 +12,8 @@ const ShadowRootStyle = createGlobalStyle`
   :host {
     --sn-launcher-font-sans: system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell,
       Noto Sans, sans-serif, Segoe UI, Roboto, Ubuntu, Cantarell, Noto Sans, sans-serif;
-    --sn-launcher-shadow-color: 220 3% 15%;
     --sn-launcher-layer-important: 2147483648;
-    --sn-launcher-shadow: 4px 4px 16px 0px rgba(0,0,0,0.2);
+    --sn-launcher-shadow: hsl(206 22% 7% / 35%) 0px 10px 38px -10px, hsl(206 22% 7% / 20%) 0px 10px 20px -15px;
 
     --sn-launcher-brand-light: #0ca678;
     --sn-launcher-text-primary-light: #50514f;
@@ -81,7 +80,7 @@ function ShadowRoot({ children }) {
   }, []);
 
   return (
-    <div ref={shadowElementRef}>
+    <div data-id="sn-launcher-host-inner" ref={shadowElementRef}>
       {shadowRoot &&
         createPortal(
           <StyleSheetManager target={shadowRoot}>

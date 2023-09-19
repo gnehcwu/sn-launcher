@@ -14,7 +14,9 @@ const FilterContainer = styled.div`
 const Input = styled.input.attrs(() => ({
   type: 'text',
   autoComplete: 'off',
+  autoCorrect: 'off',
   spellCheck: false,
+  autoFocus: true,
 }))`
   box-shadow: none;
   border: none;
@@ -23,7 +25,7 @@ const Input = styled.input.attrs(() => ({
   color: var(--sn-launcher-brand);
 
   width: 100%;
-  margin: 12px 16px;
+  margin: 16px 16px 8px;
   padding: 8px;
   font-size: 2em;
   background-color: transparent;
@@ -55,17 +57,13 @@ const Loading = styled(Loader)`
 `;
 
 function Filter(_, ref) {
-  const [isLoading, filter, commandMode, updateFilter, updateSelected] = useLauncherStore(
-    (state) => [
-      state.isLoading,
-      state.filter,
-      state.commandMode,
-      state.updateFilter,
-      state.updateSelected,
-    ],
-  );
+  const filter = useLauncherStore((state) => state.filter);
+  const isLoading = useLauncherStore((state) => state.isLoading);
+  const commandMode = useLauncherStore((state) => state.commandMode);
+  const updateFilter = useLauncherStore((state) => state.updateFilter);
+  const updateSelected = useLauncherStore((state) => state.updateSelected);
 
-  function handleInput(event) {
+  function handleChange(event) {
     updateFilter(event.target.value);
     updateSelected(0);
   }
@@ -76,7 +74,7 @@ function Filter(_, ref) {
       <Input
         placeholder={commandMode ? '' : 'Type to search'}
         value={filter}
-        onChange={handleInput}
+        onChange={handleChange}
         ref={ref}
       />
       {isLoading && <Loading />}

@@ -35,12 +35,11 @@ const Fallback = styled.p`
 `;
 
 function MenuList({ menuList, handleClick }) {
-  const [selected, updateSelected, filter, commandMode] = useLauncherStore((state) => [
-    state.selected,
-    state.updateSelected,
-    state.filter,
-    state.commandMode,
-  ]);
+  const isLoading = useLauncherStore((state) => state.isLoading);
+  const selected = useLauncherStore((state) => state.selected);
+  const updateSelected = useLauncherStore((state) => state.updateSelected);
+  const filter = useLauncherStore((state) => state.filter);
+  const commandMode = useLauncherStore((state) => state.commandMode);
   const menuListRef = React.useRef(null);
 
   const scrollMenuIntoView = React.useCallback((menuItem) => {
@@ -64,6 +63,10 @@ function MenuList({ menuList, handleClick }) {
     let selectedMenuElement = allMenuElements[selected];
     scrollMenuIntoView(selectedMenuElement);
   }, [menuList, selected, scrollMenuIntoView]);
+
+  if (isLoading) {
+    return <Fallback>🍜 Loading...</Fallback>;
+  }
 
   if (commandMode && commandMode !== 'switch_app') {
     return <Fallback>🔍 Enter to search</Fallback>;

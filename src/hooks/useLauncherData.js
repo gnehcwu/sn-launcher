@@ -4,7 +4,8 @@ import commands from '../configs/commands';
 import useLauncherStore from '../store/launcherStore';
 
 export default function useLauncherData() {
-  const [updateIsLoading] = useLauncherStore((state) => [state.updateIsLoading]);
+  const updateIsLoading = useLauncherStore((state) => state.updateIsLoading);
+  const stamp = useLauncherStore((state) => state.stamp);
   const [allMenus, setAllMenus] = React.useState([]);
   const [allScopes, setAllScopes] = React.useState([]);
   const [allCommands, setAllCommands] = React.useState([]);
@@ -12,7 +13,9 @@ export default function useLauncherData() {
 
   React.useEffect(() => {
     async function getLauncherData() {
-      updateIsLoading(true);
+      const timer = setTimeout(() => {
+        updateIsLoading(true);
+      }, 150);
       const allMenus = await fetchOrRetrieveMenu();
       const allScopes = await fetchOrRetrieveApps();
       const allCommands = commands;
@@ -20,12 +23,16 @@ export default function useLauncherData() {
       setAllMenus(allMenus);
       setAllScopes(allScopes);
       setAllCommands(allCommands);
+
+      // Only update loading status if it takes more 150 to load data
+      if (timer) {
+        clearTimeout(timer);
+      }
       updateIsLoading(false);
     }
 
     getLauncherData();
-  }, [updateIsLoading]);
-  // Add shown as a dependency to shown the latest data, isLoading might be the better option
+  }, [stamp, updateIsLoading]);
 
   return [allMenus, allScopes, allCommands];
 }

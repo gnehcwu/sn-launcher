@@ -1,7 +1,6 @@
 import {
-  refreshMenu,
   fetchOrRetrieveApps,
-  refreshApplications,
+  refreshApps,
   clearCache,
   searchDoc,
   searchComponent,
@@ -39,15 +38,9 @@ const commands = [
   },
   {
     key: crypto.randomUUID(),
-    fullLabel: 'Refresh menu',
-    action: refreshMenu,
-    description: 'refresh all menu items',
-  },
-  {
-    key: crypto.randomUUID(),
     fullLabel: 'Refresh applications',
-    action: refreshApplications,
-    description: 'refresh all applications',
+    action: refreshApps,
+    description: 'refresh all application menus, scopes',
   },
   {
     key: crypto.randomUUID(),

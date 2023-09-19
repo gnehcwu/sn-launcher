@@ -1,4 +1,4 @@
-export const DEFAULT_RECORDS_SHOWN = 50;
+export const DEFAULT_RECORDS_SHOWN = 30;
 export const MIN_MATCH_LENGTH = 2;
 
 export const COMMON_USED_TABLES = [

@@ -9,6 +9,8 @@ const initialState = {
   token,
   selected: 0,
   isLoading: false,
+  isShown: false,
+  stamp: new Date().getTime(),
 };
 
 const useLauncherStore = create((set) => ({
@@ -16,14 +18,16 @@ const useLauncherStore = create((set) => ({
   updateCommandMode: (commandMode) => {
     set({ commandMode, filter: '' });
   },
-  reset: () => {
-    set({ ...initialState, filter: '', selected: 0, commandMode: '' });
+  reset: (isShown) => {
+    set({ ...initialState, filter: '', selected: 0, commandMode: '', isShown: isShown ?? false });
   },
   updateSelected: (selected) => {
     set({ selected });
   },
   updateFilter: (filter) => set({ filter }),
   updateIsLoading: (isLoading) => set({ isLoading }),
+  updateIsShown: (isShown) => set({ isShown }),
+  updateStamp: () => set({ stamp: new Date().getTime() }),
 }));
 
 export default useLauncherStore;

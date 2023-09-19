@@ -26,7 +26,6 @@ export async function fetchData(url) {
     const data = await res.json();
     return data.result;
   } catch (err) {
-    console.warn(err);
     return [];
   }
 }
@@ -53,6 +52,11 @@ export async function refreshApplications() {
   const applications = await fetchApps();
   await setStoredApplication(applications);
   return applications;
+}
+
+export async function refreshApps() {
+  await refreshMenu();
+  await refreshApplications();
 }
 
 export async function fetchOrRetrieveApps() {
@@ -99,7 +103,7 @@ export async function clearCache() {
   try {
     await Promise.all(tasks);
   } catch (err) {
-    console.warn(err);
+    /* ignore */
   }
 }
 
@@ -126,7 +130,7 @@ export async function switchToAppById(appId) {
       window.top.location.reload();
     }
   } catch (error) {
-    console.warn(error);
+    /* ignore */
   }
 }
 

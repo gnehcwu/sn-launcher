@@ -14,7 +14,7 @@ const Spinner = styled.span`
   border-radius: 50%;
   width: 18px;
   height: 18px;
-  border-width: 1.5px;
+  border-width: 1px;
   animation: spin 1s linear infinite;
   transform-origin: center;
 

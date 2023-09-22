@@ -1,11 +1,10 @@
-export default function messageBackground(message) {
-  return new Promise((resolve, reject) => {
-    chrome.runtime.sendMessage(message, (response) => {
-      if (chrome.runtime.lastError) {
-        reject(chrome.runtime.lastError);
-      } else {
-        resolve(response);
-      }
-    });
-  });
+import browser from 'webextension-polyfill';
+
+export default async function messageBackground(message) {
+  try {
+    const resp = await browser.runtime.sendMessage(message);
+    return resp;
+  } catch (_) {
+    /* ignore */
+  }
 }

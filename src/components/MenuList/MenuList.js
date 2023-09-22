@@ -2,6 +2,7 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import styled from 'styled-components';
 import MenuItem from '../MenuItem';
+import Loader from '../Loader';
 import useLauncherStore from '../../store/launcherStore';
 
 MenuList.propTypes = {
@@ -26,12 +27,25 @@ const MenuListContainer = styled.div`
   scroll-padding-block: 8px; /* prevent menu item from cutting edge */
 `;
 
-const Fallback = styled.p`
+const Fallback = styled.div`
   color: var(--sn-launcher-text-secondary);
-  font-size: 2em;
-  font-weight: 600px;
-  display: grid;
-  place-content: center;
+  font-size: 2.45rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 12px;
+  opacity: 0.75;
+`;
+
+const Title = styled.span`
+  font-size: 0.95rem;
+`;
+
+const Loading = styled(Loader)`
+  width: 24px;
+  height: 24px;
+  border-width: 2px;
 `;
 
 function MenuList({ menuList, handleClick }) {
@@ -65,15 +79,27 @@ function MenuList({ menuList, handleClick }) {
   }, [menuList, selected, scrollMenuIntoView]);
 
   if (isLoading) {
-    return <Fallback>🍜 Loading...</Fallback>;
+    return (
+      <Fallback>
+        <Loading /> <Title>Loading...</Title>
+      </Fallback>
+    );
   }
 
   if (commandMode && commandMode !== 'switch_app') {
-    return <Fallback>🔍 Enter to search</Fallback>;
+    return (
+      <Fallback>
+        🔎 <Title>Enter to search</Title>
+      </Fallback>
+    );
   }
 
   if (filter && menuList?.length <= 0) {
-    return <Fallback>🧐 No results</Fallback>;
+    return (
+      <Fallback>
+        ∅ <Title>No results</Title>
+      </Fallback>
+    );
   }
 
   return (

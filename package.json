@@ -3,8 +3,10 @@
   "version": "1.1.0",
   "description": "Search and navigate Servicenow menus, documentation, components with a simple command palette interface.",
   "scripts": {
-    "start": "parcel watch src/manifest.json --host localhost",
-    "build": "parcel build src/manifest.json --no-source-maps",
+    "start": "parcel watch src/chromium/manifest.json --host localhost --dist-dir dist/chromium",
+    "build:chromium": "parcel build src/chromium/manifest.json --no-source-maps --dist-dir dist/chromium",
+    "build:firefox": "parcel build src/firefox/manifest.json --no-source-maps --dist-dir dist/firefox",
+    "clean": "rm -rf .parcel-cache && rm -rf dist",
     "new-component": "new-component"
   },
   "keywords": [
@@ -34,6 +36,8 @@
     "new-component": "^5.0.2",
     "parcel": "^2.8.3",
     "prettier": "^2.8.6",
-    "process": "^0.11.10"
+    "process": "^0.11.10",
+    "webextension-polyfill": "^0.10.0",
+    "@types/webextension-polyfill": "^0.10.1"
   }
 }

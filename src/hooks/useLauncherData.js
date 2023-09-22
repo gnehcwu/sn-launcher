@@ -9,7 +9,7 @@ export default function useLauncherData() {
   const [allMenus, setAllMenus] = React.useState([]);
   const [allScopes, setAllScopes] = React.useState([]);
   const [allCommands, setAllCommands] = React.useState([]);
-  // Todo: aad support for histories
+  // Todo: add support for histories
 
   React.useEffect(() => {
     async function getLauncherData() {

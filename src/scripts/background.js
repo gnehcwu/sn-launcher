@@ -1,10 +1,12 @@
+import browser from 'webextension-polyfill';
+
 /**
  * Get currently active browser tab
  * @returns current active tab
  */
 async function getActiveTab() {
   const queryOptions = { active: true, currentWindow: true };
-  const [tab] = await chrome.tabs.query(queryOptions);
+  const [tab] = await browser.tabs.query(queryOptions);
   return tab;
 }
 
@@ -16,27 +18,27 @@ async function notifyContent(action) {
 
   if (activeTab.url.includes('chrome://') || activeTab.url.includes('chrome.google.com')) return;
 
-  chrome.tabs.sendMessage(activeTab.id, { action });
+  browser.tabs.sendMessage(activeTab.id, { action });
 }
 
 // Listener for clicking on extension icon
-chrome.action.onClicked.addListener(function () {
+(browser.action || browser.browserAction).onClicked.addListener(function () {
   notifyContent('snl-toggle-launcher');
 });
 
 // Listener for registered command
-chrome.commands.onCommand.addListener((command) => {
+browser.commands.onCommand.addListener((command) => {
   if (command === 'snl-toggle-launcher') {
     notifyContent('snl-toggle-launcher');
   }
 });
 
 // Open new tab
-chrome.runtime.onMessage.addListener((request, _, sendResponse) => {
+browser.runtime.onMessage.addListener((request, _, sendResponse) => {
   const { action, url } = request || {};
 
   if (action === 'snl-open-tab-form-launcher') {
-    chrome.tabs.create({ url, active: true }).then(({ openerTabId }) => {
+    browser.tabs.create({ url, active: true }).then(({ openerTabId }) => {
       sendResponse({ openerTabId });
     });
   }

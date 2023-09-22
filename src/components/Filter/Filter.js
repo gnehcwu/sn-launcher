@@ -1,6 +1,5 @@
 import React from 'react';
 import styled from 'styled-components';
-import Loader from '../Loader';
 import { getCommandFullLabel } from '../../configs/commands';
 import useLauncherStore from '../../store/launcherStore';
 
@@ -25,7 +24,7 @@ const Input = styled.input.attrs(() => ({
   color: var(--sn-launcher-brand);
 
   width: 100%;
-  margin: 16px 16px 8px;
+  margin: 12px 16px;
   padding: 8px;
   font-size: 2em;
   background-color: transparent;
@@ -44,21 +43,14 @@ const Mode = styled.span`
   background-color: var(--sn-launcher-surface-content);
   color: var(--sn-launcher-text-secondary);
   border-radius: 4px;
-  font-size: 1.75em;
+  font-size: 1.65em;
   margin-left: 16px;
   padding: 6px 8px;
   white-space: nowrap;
 `;
 
-const Loading = styled(Loader)`
-  position: absolute;
-  right: 16px;
-  top: 26px;
-`;
-
 function Filter(_, ref) {
   const filter = useLauncherStore((state) => state.filter);
-  const isLoading = useLauncherStore((state) => state.isLoading);
   const commandMode = useLauncherStore((state) => state.commandMode);
   const updateFilter = useLauncherStore((state) => state.updateFilter);
   const updateSelected = useLauncherStore((state) => state.updateSelected);
@@ -77,7 +69,6 @@ function Filter(_, ref) {
         onChange={handleChange}
         ref={ref}
       />
-      {isLoading && <Loading />}
     </FilterContainer>
   );
 }

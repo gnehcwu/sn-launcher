@@ -1,22 +1,25 @@
+import browser from 'webextension-polyfill';
+
 const prefix = window?.location?.hostname || '';
 const menuKey = `${prefix}-SN-LAUNCH-MENU`;
 const applicationKey = `${prefix}-SN-LAUNCH-APPLICATION`;
 
-function getStoredData(key) {
-  return new Promise((resolve) => {
-    chrome.storage.local.get(key, (res) => {
-      resolve(JSON.parse(res[key] ?? null));
-    });
-  });
+async function getStoredData(key) {
+  try {
+    const data = await browser.storage.local.get(key);
+    return JSON.parse(data[key] ?? null);
+  } catch (_) {
+    return null;
+  }
 }
 
-function setStoreData(key, data) {
+async function setStoreData(key, data) {
   const stringifiedData = { [key]: JSON.stringify(data) };
-  return new Promise((resolve) => {
-    chrome.storage.local.set(stringifiedData, () => {
-      resolve();
-    });
-  });
+  try {
+    await browser.storage.local.set(stringifiedData);
+  } catch (_) {
+    /* ignore */
+  }
 }
 
 export async function getStoredMenu() {

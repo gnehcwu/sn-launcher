@@ -1,3 +1,4 @@
+import browser from 'webextension-polyfill';
 import React from 'react';
 
 function useChromeMessage(action, callback) {
@@ -11,10 +12,10 @@ function useChromeMessage(action, callback) {
   );
 
   React.useEffect(() => {
-    chrome.runtime.onMessage.addListener(handleChromeMessage);
+    browser.runtime.onMessage.addListener(handleChromeMessage);
 
     return () => {
-      chrome.runtime.onMessage.removeListener(handleChromeMessage);
+      browser.runtime.onMessage.removeListener(handleChromeMessage);
     };
   }, [handleChromeMessage]);
 }

@@ -90,7 +90,10 @@ export async function clearCache() {
   localStorage.clear();
   sessionStorage.clear();
 
-  const dbs = await indexedDB.databases();
+  const dbs = await indexedDB.databases?.();
+
+  if (!dbs || dbs.length < 1) return;
+
   const tasks = dbs.map(
     (db) =>
       new Promise((resolve, reject) => {

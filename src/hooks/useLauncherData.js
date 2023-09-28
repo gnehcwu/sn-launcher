@@ -1,38 +1,39 @@
 import React from 'react';
-import { fetchOrRetrieveMenu, fetchOrRetrieveApps } from '../utils/api';
+import { fetchMenus, fetchApps } from '../utils/api';
 import commands from '../configs/commands';
 import useLauncherStore from '../store/launcherStore';
 
+/**
+ * A custom React hook that fetches and stores launcher data.
+ * @returns {Array} An array containing allMenus, allScopes, and allCommands.
+ */
 export default function useLauncherData() {
   const updateIsLoading = useLauncherStore((state) => state.updateIsLoading);
-  const stamp = useLauncherStore((state) => state.stamp);
+  const updateInitialDataLoaded = useLauncherStore((state) => state.updateInitialDataLoaded);
   const [allMenus, setAllMenus] = React.useState([]);
   const [allScopes, setAllScopes] = React.useState([]);
   const [allCommands, setAllCommands] = React.useState([]);
-  // Todo: add support for histories
 
   React.useEffect(() => {
     async function getLauncherData() {
-      const timer = setTimeout(() => {
-        updateIsLoading(true);
-      }, 150);
-      const allMenus = await fetchOrRetrieveMenu();
-      const allScopes = await fetchOrRetrieveApps();
-      const allCommands = commands;
+      updateIsLoading(true);
+
+      const [allMenus, allApps, allCommands] = await Promise.all([
+        fetchMenus(),
+        fetchApps(),
+        Promise.resolve(commands.filter((command) => command.visible !== false)),
+      ]);
 
       setAllMenus(allMenus);
-      setAllScopes(allScopes);
+      setAllScopes(allApps);
       setAllCommands(allCommands);
 
-      // Only update loading status if it takes more 150 to load data
-      if (timer) {
-        clearTimeout(timer);
-      }
       updateIsLoading(false);
+      updateInitialDataLoaded(true);
     }
 
     getLauncherData();
-  }, [stamp, updateIsLoading]);
+  }, [updateInitialDataLoaded, updateIsLoading]);
 
   return [allMenus, allScopes, allCommands];
 }

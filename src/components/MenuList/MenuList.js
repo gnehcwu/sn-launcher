@@ -1,9 +1,10 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import styled from 'styled-components';
+import useLauncherStore from '../../store/launcherStore';
+import { LOADER_DEFER_TIME } from '../../configs/constants';
 import MenuItem from '../MenuItem';
 import Loader from '../Loader';
-import useLauncherStore from '../../store/launcherStore';
 
 MenuList.propTypes = {
   menuList: PropTypes.arrayOf(
@@ -14,8 +15,10 @@ MenuList.propTypes = {
   handleClick: PropTypes.func,
 };
 
-const MenuListContainer = styled.div`
+const MenuListContainer = styled.ul`
+  border-top: 1px solid var(--sn-launcher-separator);
   overflow-y: auto;
+  overscroll-behavior-y: auto;
 
   list-style: none;
   margin: 0;
@@ -28,8 +31,9 @@ const MenuListContainer = styled.div`
 `;
 
 const Fallback = styled.div`
+  border-top: 1px solid var(--sn-launcher-separator);
   color: var(--sn-launcher-text-secondary);
-  font-size: 2.45rem;
+  font-size: 4.75em;
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -39,7 +43,7 @@ const Fallback = styled.div`
 `;
 
 const Title = styled.span`
-  font-size: 0.95rem;
+  font-size: 0.325em;
 `;
 
 const Loading = styled(Loader)`
@@ -48,13 +52,21 @@ const Loading = styled(Loader)`
   border-width: 2px;
 `;
 
+/**
+ * Renders a list of menu items.
+ *
+ * @param {Object} props - The component props.
+ * @param {Array} props.menuList - The list of menu items to render.
+ * @param {Function} props.handleClick - The function to handle click events on menu items.
+ * @returns {JSX.Element} The rendered component.
+ */
 function MenuList({ menuList, handleClick }) {
   const isLoading = useLauncherStore((state) => state.isLoading);
+  const initialDataLoaded = useLauncherStore((state) => state.initialDataLoaded);
   const selected = useLauncherStore((state) => state.selected);
   const updateSelected = useLauncherStore((state) => state.updateSelected);
-  const filter = useLauncherStore((state) => state.filter);
-  const commandMode = useLauncherStore((state) => state.commandMode);
   const menuListRef = React.useRef(null);
+  const [showNoResult, setShowNoResult] = React.useState(false);
 
   const scrollMenuIntoView = React.useCallback((menuItem) => {
     if (!menuListRef.current || !menuItem) return;
@@ -71,14 +83,26 @@ function MenuList({ menuList, handleClick }) {
   }, []);
 
   React.useEffect(() => {
-    if (!menuList || menuList.length <= 0) return;
+    if (!menuListRef.current) return;
 
     const allMenuElements = menuListRef.current.querySelectorAll('li');
     let selectedMenuElement = allMenuElements[selected];
     scrollMenuIntoView(selectedMenuElement);
   }, [menuList, selected, scrollMenuIntoView]);
 
-  if (isLoading) {
+  React.useEffect(() => {
+    const timer = setTimeout(() => {
+      setShowNoResult(true);
+    }, LOADER_DEFER_TIME + 10);
+
+    return () => {
+      if (timer) {
+        clearTimeout(timer);
+      }
+    };
+  }, []);
+
+  if (isLoading || !initialDataLoaded) {
     return (
       <Fallback>
         <Loading /> <Title>Loading...</Title>
@@ -86,15 +110,7 @@ function MenuList({ menuList, handleClick }) {
     );
   }
 
-  if (commandMode && commandMode !== 'switch_app') {
-    return (
-      <Fallback>
-        🔎 <Title>Enter to search</Title>
-      </Fallback>
-    );
-  }
-
-  if (filter && menuList?.length <= 0) {
+  if (showNoResult && menuList?.length <= 0) {
     return (
       <Fallback>
         ∅ <Title>No results</Title>

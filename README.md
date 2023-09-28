@@ -1,19 +1,26 @@
 # SN Launcher browser extension
 
-Search and navigate Servicenow menus, search documentation, next experience components with a simple command palette interface.
+Supercharge your workflow on ServiceNow instance with a crafted command bar.
 
-[![SN Launcher youtube](https://img.youtube.com/vi/Q048ccaxFz8/0.jpg)](https://www.youtube.com/watch?v=Q048ccaxFz8)
-
-[Chrome web store](https://chrome.google.com/webstore/detail/sn-launcher-servicenow-ut/pngglpnmlfdihkcdglcflibenhmcipmg)
+[![SN Launcher youtube](https://img.youtube.com/vi/l-RVEdRNQdg/0.jpg)](https://www.youtube.com/watch?v=l-RVEdRNQdg)
 
 ## Features
 
-- 🔍 Search and navigate Servicenow menus with a simple command palette interface
-- 📑 Search Servicenow documentation
-- 🥪 Search Servicenow next experience components
-- 🔤 Always ready for input
-- 🗺️ Mouse free navigation
+- 🔍 Search and navigate Servicenow menus, history in a command bar
+- 🚀 Action mode
+  - search by sysid
+  - shortcut go to record list or new record
+  - switching between application scopes
+  - Search Servicenow documentation
+  - Search Servicenow next experience components
+- 🔤 Always ready for input & mouse free navigation
 - 🌙 Dark mode
+
+## Install
+
+[Chrome, Edge, Chromium based browsers](https://chrome.google.com/webstore/detail/sn-launcher-servicenow-ut/pngglpnmlfdihkcdglcflibenhmcipmg)
+
+[Firefox](https://addons.mozilla.org/en-US/firefox/addon/sn-launcher/)
 
 ## License
 

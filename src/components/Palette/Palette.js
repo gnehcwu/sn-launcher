@@ -1,131 +1,144 @@
 import React from 'react';
+import PropTypes from 'prop-types';
 import styled from 'styled-components';
 
 import Filter from '../Filter';
 import MenuList from '../MenuList';
 import Footer from '../Footer';
 import useLauncherStore from '../../store/launcherStore';
-import useLauncherData from '../../hooks/useLauncherData';
-import scoreItems from '../../utils/scoreItems';
-import action from '../../utils/action';
+import action from './action';
+import { isCompactMode, COMMAND_MODES } from '../../configs/commands';
+
+Palette.propTypes = {
+  menus: PropTypes.array.isRequired,
+};
 
 const PaletteContainer = styled.div`
+  --content-show: contentShow 150ms cubic-bezier(0.16, 1, 0.3, 1);
+  --scale: scaleAnimation 175ms ease-in-out;
+
   position: relative;
+  left: calc(50vw - 384px);
+  top: calc(50vh - 236px);
   background-color: var(--sn-launcher-surface-primary);
-  width: min(789px, 100vw);
-  height: 520px;
-  border-radius: 12px;
+  width: min(768px, 100vw);
+  height: ${(props) => (props.$isCompact ? 'auto' : '472px')};
+  border-radius: 14px;
   display: grid;
   grid-template-rows: min-content 1fr min-content;
   box-shadow: var(--sn-launcher-shadow);
+  border: 1px solid var(--sn-launcher-text-info);
+  transform-origin: center center;
   font-size: 10px;
-  animation: contentShow 150ms cubic-bezier(0.16, 1, 0.3, 1);
+  ${(props) => props.$shouldAnimate && 'animation: var(--scale)'};
 
   &:focus {
     outline: none;
   }
 
-  @keyframes contentShow {
-    from {
-      opacity: 0;
-      transform: scale(0.96);
+  @keyframes scaleAnimation {
+    0% {
+      transform: scale(1);
     }
-    to {
-      opacity: 1;
+    50% {
+      transform: scale(0.99);
+    }
+    100% {
       transform: scale(1);
     }
   }
 
   @media (prefers-color-scheme: dark) {
-    border: 1px solid var(--sn-launcher-separator);
+    border: 1px solid var(--sn-launcher-text-info);
   }
 `;
 
-function Palette(_, ref) {
-  const filterRef = React.useRef(null);
+/**
+ * A component that displays a palette of menus and allows the user to filter and select them.
+ *
+ * @param {Object} props - The component props.
+ * @param {Array} props.menus - An array of menu objects to display in the palette.
+ * @param {React.Ref} ref - A ref to attach to the component's root element.
+ * @returns {JSX.Element} The JSX element representing the palette.
+ */
+function Palette({ menus }, ref) {
   const filter = useLauncherStore((state) => state.filter);
-  const updateFilter = useLauncherStore((state) => state.updateFilter);
   const commandMode = useLauncherStore((state) => state.commandMode);
   const updateCommandMode = useLauncherStore((state) => state.updateCommandMode);
   const selected = useLauncherStore((state) => state.selected);
   const updateSelected = useLauncherStore((state) => state.updateSelected);
   const updateIsLoading = useLauncherStore((state) => state.updateIsLoading);
-  const updateStamp = useLauncherStore((state) => state.updateStamp);
   const reset = useLauncherStore((state) => state.reset);
 
-  const [allMenus, allScopes, allCommands] = useLauncherData();
-  const items = React.useRef([]);
+  const [shouldAnimate, setShouldAnimate] = React.useState(false);
 
-  const dismissLauncher = React.useCallback(() => {
-    reset();
-  }, [reset]);
+  function handleKeydown(event) {
+    event.stopPropagation();
 
-  function handleKeyPress(event) {
     const { key } = event;
     if (['ArrowUp', 'ArrowDown'].includes(key)) {
       // Stop cursor moving inside filter input
       event.preventDefault();
       handleNavigation(event);
     } else if (key === 'Escape') {
-      dismissLauncher();
+      reset();
     } else if (key === 'Enter') {
       handleAction();
-      filterRef?.current?.focus();
     } else if (key === 'Backspace') {
       if (!filter && commandMode) {
         updateCommandMode('');
+      }
+    } else if (key === 'Tab') {
+      // Trap the focus inside the palette
+      event.preventDefault();
+
+      if (!commandMode) {
+        updateCommandMode(COMMAND_MODES.ACTIONS);
       }
     }
   }
 
   function handleAction() {
     action({
-      dismissLauncher,
-      updateCommandMode,
-      selectedMenu: items.current[selected],
+      selectedMenu: menus[selected],
       filter,
-      updateFilter,
       commandMode,
+      reset,
+      updateCommandMode,
       updateIsLoading,
-      updateStamp,
     });
   }
 
   function handleNavigation(event) {
     const isArrowDown = event.key === 'ArrowDown';
     let nextIndex = isArrowDown ? selected + 1 : selected - 1;
-    if (nextIndex >= items.current.length) {
-      nextIndex = 0;
-    } else if (nextIndex < 0) {
-      nextIndex = items.current.length - 1;
-    }
+    // Calibrate index to loop around
+    nextIndex = (nextIndex + menus.length) % menus.length;
 
     updateSelected(nextIndex);
   }
 
-  const getRenderItems = React.useCallback(
-    (filter) => {
-      const commandPattern = filter.match(/^>s*(.*)/);
-      if (commandPattern) {
-        return scoreItems(allCommands, commandPattern[1]);
-      } else if (commandMode && commandMode === 'switch_app') {
-        return scoreItems(allScopes, filter);
-      } else if (commandMode) {
-        return [];
-      } else {
-        return scoreItems(allMenus, filter);
-      }
-    },
-    [allCommands, allMenus, allScopes, commandMode],
-  );
+  React.useEffect(() => {
+    commandMode && setShouldAnimate(true);
+  }, [commandMode]);
 
-  items.current = getRenderItems(filter);
+  const isCompact = isCompactMode(commandMode);
 
   return (
-    <PaletteContainer onKeyDown={handleKeyPress} ref={ref}>
-      <Filter ref={filterRef} />
-      <MenuList menuList={items.current} handleClick={handleAction} />
-      <Footer />
+    <PaletteContainer
+      key={commandMode}
+      $shouldAnimate={shouldAnimate}
+      $isCompact={isCompact}
+      onKeyDown={handleKeydown}
+      ref={ref}
+    >
+      <Filter />
+      {isCompact ? null : (
+        <>
+          <MenuList menuList={menus} handleClick={handleAction} />
+          <Footer />
+        </>
+      )}
     </PaletteContainer>
   );
 }

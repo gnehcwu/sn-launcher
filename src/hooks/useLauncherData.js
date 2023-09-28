@@ -18,7 +18,7 @@ export default function useLauncherData() {
       }, 150);
       const allMenus = await fetchOrRetrieveMenu();
       const allScopes = await fetchOrRetrieveApps();
-      const allCommands = commands;
+      const allCommands = commands.filter((command) => command.visible !== false);
 
       setAllMenus(allMenus);
       setAllScopes(allScopes);

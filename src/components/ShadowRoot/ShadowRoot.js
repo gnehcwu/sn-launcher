@@ -1,8 +1,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import { StyleSheetManager } from 'styled-components';
+import { StyleSheetManager, createGlobalStyle } from 'styled-components';
 import { createPortal } from 'react-dom';
-import { createGlobalStyle } from 'styled-components';
 
 ShadowRoot.propTypes = {
   children: PropTypes.element,
@@ -15,23 +14,23 @@ const ShadowRootStyle = createGlobalStyle`
     --sn-launcher-layer-important: 2147483648;
     --sn-launcher-shadow: hsl(206 22% 7% / 35%) 0px 10px 38px -10px, hsl(206 22% 7% / 20%) 0px 10px 20px -15px;
 
-    --sn-launcher-brand-light: #0ca678;
-    --sn-launcher-text-primary-light: #50514f;
+    --sn-launcher-brand-light: #9db0a0;
+    --sn-launcher-text-primary-light: #16191d;
     --sn-launcher-text-secondary-light: #7e8282;
     --sn-launcher-text-info-light: #b1b6b9;
     --sn-launcher-surface-primary-light: #f8fafb;
-    --sn-launcher-surface-backdrop-light: rgba(208, 213, 215, 0.75);
+    --sn-launcher-surface-backdrop-light: rgba(208, 213, 215, 0.25);
     --sn-launcher-surface-info-light: #d1d6d8;
     --sn-launcher-surface-content-light: #ebedef;
     --sn-launcher-separator-light: #ebedef;
 
     /* dark */
-    --sn-launcher-brand-dark: #0ca678;
+    --sn-launcher-brand-dark: #57705c;
     --sn-launcher-text-primary-dark: #ced4da;
     --sn-launcher-text-secondary-dark: #adb5bd;
     --sn-launcher-text-info-dark: #868e96;
     --sn-launcher-surface-primary-dark: #212529;
-    --sn-launcher-surface-backdrop-dark: rgba(3, 5, 7, 0.75);
+    --sn-launcher-surface-backdrop-dark: rgba(3, 5, 7, 0.25);
     --sn-launcher-surface-info-dark: #495057;
     --sn-launcher-surface-content-dark: #343a40;
     --sn-launcher-separator-dark: #495057;

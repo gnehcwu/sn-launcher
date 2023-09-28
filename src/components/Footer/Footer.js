@@ -2,7 +2,7 @@ import React from 'react';
 import styled from 'styled-components';
 
 const FooterContainer = styled.div`
-  padding: 16px;
+  padding: 12px 16px;
   border-top: 1px solid var(--sn-launcher-separator);
   color: var(--sn-launcher-text-secondary);
 
@@ -15,6 +15,8 @@ const Mark = styled.div`
   grid-auto-flow: column;
   column-gap: 6px;
   align-items: center;
+  font-size: 1.15em;
+  font-weight: 500;
 `;
 
 const MarkSign = styled.span`

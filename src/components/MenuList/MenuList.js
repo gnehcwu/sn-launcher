@@ -4,6 +4,7 @@ import styled from 'styled-components';
 import MenuItem from '../MenuItem';
 import Loader from '../Loader';
 import useLauncherStore from '../../store/launcherStore';
+import { isCompactMode } from '../../configs/commands';
 
 MenuList.propTypes = {
   menuList: PropTypes.arrayOf(
@@ -14,8 +15,10 @@ MenuList.propTypes = {
   handleClick: PropTypes.func,
 };
 
-const MenuListContainer = styled.div`
+const MenuListContainer = styled.ul`
+  border-top: 1px solid var(--sn-launcher-separator);
   overflow-y: auto;
+  overscroll-behavior-y: auto;
 
   list-style: none;
   margin: 0;
@@ -28,18 +31,18 @@ const MenuListContainer = styled.div`
 `;
 
 const Fallback = styled.div`
+  border-top: 1px solid var(--sn-launcher-separator);
   color: var(--sn-launcher-text-secondary);
-  font-size: 2.45rem;
+  font-size: 3.75em;
   display: flex;
   flex-direction: column;
   justify-content: center;
   align-items: center;
   gap: 12px;
-  opacity: 0.75;
 `;
 
 const Title = styled.span`
-  font-size: 0.95rem;
+  font-size: 0.375em;
 `;
 
 const Loading = styled(Loader)`
@@ -86,15 +89,7 @@ function MenuList({ menuList, handleClick }) {
     );
   }
 
-  if (commandMode && commandMode !== 'switch_app') {
-    return (
-      <Fallback>
-        🔎 <Title>Enter to search</Title>
-      </Fallback>
-    );
-  }
-
-  if (filter && menuList?.length <= 0) {
+  if (isCompactMode(commandMode) || (filter && menuList?.length <= 0)) {
     return (
       <Fallback>
         ∅ <Title>No results</Title>

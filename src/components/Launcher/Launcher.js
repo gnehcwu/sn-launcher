@@ -12,9 +12,6 @@ const Wrapper = styled.div`
 
   position: fixed;
   inset: 0;
-  display: grid;
-  place-content: center;
-
   z-index: var(--sn-launcher-layer-important);
   font-family: var(--sn-launcher-font-sans);
 

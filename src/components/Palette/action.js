@@ -1,6 +1,7 @@
-import { goto, gotoTab, switchToAppById } from './api';
-import { getCommandAction } from '../configs/commands';
-import { isValidShortcut } from '../utils/helpers';
+import { goto, gotoTab, switchToAppById } from '../../utils/api';
+import { getCommandAction } from '../../configs/commands';
+import { isActionsMode, isValidShortcut, IsValidSysId } from '../../utils/helpers';
+import getInstanceRecord from '../../utils/recordSearch';
 
 export default async function action({
   selectedMenu,
@@ -15,7 +16,16 @@ export default async function action({
   if (isValidShortcut(filter)) {
     goto(filter);
     dismissLauncher();
-  } else if (commandMode) {
+  } else if (IsValidSysId(filter)) {
+    updateIsLoading(true);
+    const { target } = await getInstanceRecord(filter);
+    if (target) {
+      gotoTab(target);
+      dismissLauncher();
+    } else {
+      updateIsLoading(false);
+    }
+  } else if (commandMode && !isActionsMode(commandMode)) {
     if (commandMode == 'switch_app') {
       switchToAppById(selectedMenu?.key);
     } else {
@@ -38,6 +48,7 @@ export default async function action({
       action().finally(() => {
         updateIsLoading(false);
         updateFilter('');
+        updateCommandMode('');
         updateStamp();
       });
     }

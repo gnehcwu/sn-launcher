@@ -7,17 +7,28 @@ import Footer from '../Footer';
 import useLauncherStore from '../../store/launcherStore';
 import useLauncherData from '../../hooks/useLauncherData';
 import scoreItems from '../../utils/scoreItems';
-import action from '../../utils/action';
+import action from './action';
+import {
+  isCompactMode,
+  isActionsMode,
+  isSwitchAppMode,
+  COMMAND_MODES,
+} from '../../configs/commands';
 
 const PaletteContainer = styled.div`
   position: relative;
+  left: 50%;
+  transform: translate(-50%, calc(50vh - 243.5px));
   background-color: var(--sn-launcher-surface-primary);
   width: min(789px, 100vw);
-  height: 520px;
-  border-radius: 12px;
+  height: ${(props) => (props.$isCompact ? 'auto' : '478px')};
+  max-height: 478px;
+  border-radius: 13px;
   display: grid;
   grid-template-rows: min-content 1fr min-content;
   box-shadow: var(--sn-launcher-shadow);
+  border: 1px solid var(--sn-launcher-text-info);
+  transform-origin: center center;
   font-size: 10px;
   animation: contentShow 150ms cubic-bezier(0.16, 1, 0.3, 1);
 
@@ -28,16 +39,14 @@ const PaletteContainer = styled.div`
   @keyframes contentShow {
     from {
       opacity: 0;
-      transform: scale(0.96);
     }
     to {
       opacity: 1;
-      transform: scale(1);
     }
   }
 
   @media (prefers-color-scheme: dark) {
-    border: 1px solid var(--sn-launcher-separator);
+    border: 1px solid var(--sn-launcher-text-info);
   }
 `;
 
@@ -61,6 +70,8 @@ function Palette(_, ref) {
   }, [reset]);
 
   function handleKeyPress(event) {
+    event.stopPropagation();
+
     const { key } = event;
     if (['ArrowUp', 'ArrowDown'].includes(key)) {
       // Stop cursor moving inside filter input
@@ -75,6 +86,14 @@ function Palette(_, ref) {
       if (!filter && commandMode) {
         updateCommandMode('');
       }
+    } else if (key === 'Tab') {
+      // Trap the focus inside the palette
+      event.preventDefault();
+
+      if (!commandMode) {
+        updateCommandMode(COMMAND_MODES.ACTIONS);
+      }
+      filterRef?.current?.focus();
     }
   }
 
@@ -105,10 +124,10 @@ function Palette(_, ref) {
 
   const getRenderItems = React.useCallback(
     (filter) => {
-      const commandPattern = filter.match(/^>s*(.*)/);
-      if (commandPattern) {
-        return scoreItems(allCommands, commandPattern[1]);
-      } else if (commandMode && commandMode === 'switch_app') {
+      const showActions = isActionsMode(commandMode);
+      if (showActions) {
+        return scoreItems(allCommands, filter);
+      } else if (isSwitchAppMode(commandMode)) {
         return scoreItems(allScopes, filter);
       } else if (commandMode) {
         return [];
@@ -121,11 +140,17 @@ function Palette(_, ref) {
 
   items.current = getRenderItems(filter);
 
+  const isCompact = isCompactMode(commandMode);
+
   return (
-    <PaletteContainer onKeyDown={handleKeyPress} ref={ref}>
+    <PaletteContainer onKeyDown={handleKeyPress} ref={ref} $isCompact={isCompact}>
       <Filter ref={filterRef} />
-      <MenuList menuList={items.current} handleClick={handleAction} />
-      <Footer />
+      {isCompact ? null : (
+        <>
+          <MenuList menuList={items.current} handleClick={handleAction} />
+          <Footer />
+        </>
+      )}
     </PaletteContainer>
   );
 }

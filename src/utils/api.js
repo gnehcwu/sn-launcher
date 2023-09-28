@@ -30,6 +30,34 @@ export async function fetchData(url) {
   }
 }
 
+export async function fetchInstanceRecord(script) {
+  const endpoint = '/sys.scripts.do';
+
+  try {
+    const token = getToken();
+    if (!token) return false;
+
+    const res = await fetch(endpoint, {
+      method: 'POST',
+      headers: {
+        'Cache-Control': 'no-cache',
+        'Content-Type': 'application/x-www-form-urlencoded',
+      },
+      body: new URLSearchParams({
+        script: script,
+        runscript: 'Run script',
+        sysparm_ck: token,
+        sys_scope: 'e24e9692d7702100738dc0da9e6103dd',
+        quota_managed_transaction: 'on',
+      }).toString(),
+    });
+
+    return await res.text();
+  } catch (_) {
+    return null;
+  }
+}
+
 async function fetchMenu() {
   const endpoint = 'api/now/ui/polaris/menu';
   const res = await fetchData(endpoint);
@@ -153,10 +181,6 @@ export function gotoTab(segmentUrl) {
 }
 
 export function goto(segment) {
-  // if (segment.match(/^[a-zA-Z0-9]{32}$/)) {
-  //   gotoTab(`sys_db_object.do?sys_id=${segment}`);
-  //   return;
-  // }
   let matched = segment.match(/(.+)\.do$/);
   if (matched) {
     gotoTab(`now/nav/ui/classic/params/target/${matched[1]}.do`);

@@ -1,6 +1,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import styled from 'styled-components';
+import { CornerDownLeft } from 'react-feather';
 
 MenuItem.propTypes = {
   menu: PropTypes.shape({
@@ -22,8 +23,8 @@ const MenuContent = styled.div`
 
 const MenuLabel = styled.span`
   user-select: none;
-  color: var(--sn-launcher-text-primary) !important;
-  font-size: 1.6em;
+  color: var(--sn-launcher-text-primary);
+  font-size: 1.5em;
   user-select: none;
 
   overflow: hidden;
@@ -34,18 +35,26 @@ const MenuLabel = styled.span`
 `;
 
 const MenuSubLabel = styled(MenuLabel)`
-  opacity: 0.75;
+  opacity: 0.85;
   font-size: 1.25em;
   color: var(--sn-launcher-text-secondary);
 `;
 
 const Menu = styled.li`
-  padding: 8px;
-  border-radius: 8px;
+  padding: 7px 8px;
+  border-radius: 10px;
   display: grid;
   grid-template-columns: 1fr min-content;
   justify-content: space-between;
-  background-color: ${(props) => props.$active && 'var(--sn-launcher-surface-content)'};
+  background-color: ${(props) => props.$active && 'var(--sn-launcher-brand)'};
+
+  & span {
+    color: ${(props) => (props.$active ? 'white !important' : 'var(--sn-launcher-text-primary)')};
+  }
+
+  & svg {
+    color: ${(props) => (props.$active ? 'white !important' : 'var(--sn-launcher-text-primary)')};
+  }
 `;
 
 const Mark = styled.div`
@@ -58,16 +67,11 @@ const Mark = styled.div`
 
 const MarkText = styled.span`
   font-size: 1.25em;
+  color: var(--sn-launcher-text-primary);
 `;
 
-const MarkSign = styled.span`
-  display: grid;
-  place-content: center;
-  background-color: var(--sn-launcher-surface-info);
-  border-radius: 4px;
-  padding: 3px 4px 2px;
-  font-weight: 600;
-  font-size: 1.1em;
+const StyledEnterIcon = styled(CornerDownLeft)`
+  color: var(--sn-launcher-text-primary);
 `;
 
 function MenuItem({ menu, active, handleSelect, handleClick }) {
@@ -95,7 +99,7 @@ function MenuItem({ menu, active, handleSelect, handleClick }) {
       {renderContent()}
       <Mark $active={active}>
         <MarkText>Select</MarkText>
-        <MarkSign>⏎</MarkSign>
+        <StyledEnterIcon size={18} />
       </Mark>
     </Menu>
   );

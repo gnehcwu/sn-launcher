@@ -15,8 +15,8 @@ const initialState = {
 
 const useLauncherStore = create((set) => ({
   ...initialState,
-  updateCommandMode: (commandMode) => {
-    set({ commandMode, filter: '' });
+  updateCommandMode: (commandMode, filter = '') => {
+    set({ commandMode, filter });
   },
   reset: (isShown) => {
     set({ ...initialState, filter: '', selected: 0, commandMode: '', isShown: isShown ?? false });

@@ -31,7 +31,8 @@ export async function fetchData(url) {
 }
 
 export async function fetchInstanceRecord(script) {
-  const endpoint = '/sys.scripts.do';
+  const { protocol, host } = window.location;
+  const endpoint = `${protocol}//${host}/sys.scripts.do`;
 
   try {
     const token = getToken();
@@ -73,6 +74,17 @@ async function fetchApps() {
     label: item.name || item.scope || item.sys_id,
     description: `switch to ${item.name} scope`,
     fullLabel: item.name || item.scope || item.sys_id,
+  }));
+}
+
+export async function fetchHistory() {
+  const endpoint = 'api/now/ui/history';
+  const res = await fetchData(endpoint);
+  return res?.list?.map((item) => ({
+    key: item.id,
+    fullLabel: item.prettyTitle,
+    subLabel: item.description || item.title,
+    target: item.url,
   }));
 }
 

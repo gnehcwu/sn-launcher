@@ -6,12 +6,14 @@ import MenuList from '../MenuList';
 import Footer from '../Footer';
 import useLauncherStore from '../../store/launcherStore';
 import useLauncherData from '../../hooks/useLauncherData';
+import useDynamicData from '../../hooks/useDynamicData';
 import scoreItems from '../../utils/scoreItems';
 import action from './action';
 import {
   isCompactMode,
   isActionsMode,
   isSwitchAppMode,
+  isHistoryMode,
   COMMAND_MODES,
 } from '../../configs/commands';
 
@@ -63,6 +65,7 @@ function Palette(_, ref) {
   const reset = useLauncherStore((state) => state.reset);
 
   const [allMenus, allScopes, allCommands] = useLauncherData();
+  const [histories] = useDynamicData();
   const items = React.useRef([]);
 
   const dismissLauncher = React.useCallback(() => {
@@ -122,21 +125,20 @@ function Palette(_, ref) {
     updateSelected(nextIndex);
   }
 
-  const getRenderItems = React.useCallback(
-    (filter) => {
-      const showActions = isActionsMode(commandMode);
-      if (showActions) {
-        return scoreItems(allCommands, filter);
-      } else if (isSwitchAppMode(commandMode)) {
-        return scoreItems(allScopes, filter);
-      } else if (commandMode) {
-        return [];
-      } else {
-        return scoreItems(allMenus, filter);
-      }
-    },
-    [allCommands, allMenus, allScopes, commandMode],
-  );
+  const getRenderItems = (filter) => {
+    const showActions = isActionsMode(commandMode);
+    if (showActions) {
+      return scoreItems(allCommands, filter);
+    } else if (isSwitchAppMode(commandMode)) {
+      return scoreItems(allScopes, filter);
+    } else if (isHistoryMode(commandMode)) {
+      return scoreItems(histories, filter);
+    } else if (commandMode) {
+      return [];
+    } else {
+      return scoreItems(allMenus, filter);
+    }
+  };
 
   items.current = getRenderItems(filter);
 

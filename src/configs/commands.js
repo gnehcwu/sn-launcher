@@ -1,11 +1,4 @@
-import {
-  fetchOrRetrieveApps,
-  refreshApps,
-  clearCache,
-  searchDoc,
-  searchComponent,
-  goto,
-} from '../utils/api';
+import { refreshApps, clearCache, searchDoc, searchComponent, goto } from '../utils/api';
 
 export const COMMAND_MODES = {
   FIND_RECORD: 'find_record',
@@ -14,6 +7,7 @@ export const COMMAND_MODES = {
   SWITCH_APP: 'switch_app',
   GO_TO: 'go_to',
   ACTIONS: 'actions',
+  HISTORY: 'history',
 };
 
 const commands = [
@@ -23,6 +17,28 @@ const commands = [
     mode: COMMAND_MODES.FIND_RECORD,
     description: 'Find record by sys id',
     placeholderText: 'Search sys id...',
+  },
+  {
+    key: crypto.randomUUID(),
+    fullLabel: 'Scope',
+    mode: COMMAND_MODES.SWITCH_APP,
+    description: 'Switch to application scope',
+    placeholderText: 'Switch application scope...',
+  },
+  {
+    key: crypto.randomUUID(),
+    fullLabel: 'Go to',
+    action: goto,
+    mode: COMMAND_MODES.GO_TO,
+    description: 'Shortcut with {table}.do / {table}.list',
+    placeholderText: 'Shortcut with {table}.do / {table}.list',
+  },
+  {
+    key: crypto.randomUUID(),
+    fullLabel: 'History',
+    mode: COMMAND_MODES.HISTORY,
+    description: 'Show history',
+    placeholderText: 'Search history...',
   },
   {
     key: crypto.randomUUID(),
@@ -42,26 +58,11 @@ const commands = [
   },
   {
     key: crypto.randomUUID(),
-    fullLabel: 'Scope',
-    action: fetchOrRetrieveApps,
-    mode: COMMAND_MODES.SWITCH_APP,
-    description: 'Switch to application scope',
-    placeholderText: 'Switch application scope...',
-  },
-  {
-    key: crypto.randomUUID(),
     mode: COMMAND_MODES.ACTIONS, // 'actions' is a special mode for actions
     fullLabel: 'Actions',
     description: 'Show all actions',
     visible: false,
-  },
-  {
-    key: crypto.randomUUID(),
-    fullLabel: 'Go to',
-    action: goto,
-    mode: COMMAND_MODES.GO_TO,
-    description: 'Shortcut with {table}.do / {table}.list',
-    placeholderText: 'Shortcut with {table}.do / {table}.list',
+    placeholderText: 'Search actions...',
   },
   {
     key: crypto.randomUUID(),
@@ -86,8 +87,13 @@ export function getCommandLabelAndPlaceholder(mode) {
   return command ? [command.fullLabel, command.placeholderText] : mode;
 }
 
-export function getCommandAction(mode) {
-  const command = findCommandByMode(mode);
+/**
+ * Get action of command
+ * @param {string} commandMode - command mode
+ * @returns Action callback of command
+ */
+export function getCommandAction(commandMode) {
+  const command = findCommandByMode(commandMode);
   return command.action;
 }
 
@@ -98,7 +104,10 @@ export function getCommandAction(mode) {
  * @returns - true/false flag of checking result
  */
 export function isCompactMode(commandMode) {
-  return commandMode && ![COMMAND_MODES.SWITCH_APP, COMMAND_MODES.ACTIONS].includes(commandMode);
+  return (
+    commandMode &&
+    ![COMMAND_MODES.SWITCH_APP, COMMAND_MODES.ACTIONS, COMMAND_MODES.HISTORY].includes(commandMode)
+  );
 }
 
 /**
@@ -119,6 +128,15 @@ export function isActionsMode(commandMode) {
  */
 export function isSwitchAppMode(commandMode) {
   return commandMode && commandMode === COMMAND_MODES.SWITCH_APP;
+}
+
+/**
+ * Check history mode based on command mode
+ * @param {string} commandMode - command mode
+ * @returns true / false flag of checking history mode
+ */
+export function isHistoryMode(commandMode) {
+  return commandMode && commandMode === COMMAND_MODES.HISTORY;
 }
 
 export default commands;

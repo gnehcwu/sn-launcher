@@ -8,6 +8,7 @@ MenuItem.propTypes = {
     label: PropTypes.string,
     target: PropTypes.string,
     fullLabel: PropTypes.string,
+    subLabel: PropTypes.string,
     description: PropTypes.string,
   }),
   active: PropTypes.bool,
@@ -41,7 +42,7 @@ const MenuSubLabel = styled(MenuLabel)`
 `;
 
 const Menu = styled.li`
-  padding: 7px 8px;
+  padding: 6px 8px;
   border-radius: 10px;
   display: grid;
   grid-template-columns: 1fr min-content;
@@ -75,15 +76,15 @@ const StyledEnterIcon = styled(CornerDownLeft)`
 `;
 
 function MenuItem({ menu, active, handleSelect, handleClick }) {
-  const { label, fullLabel, target, description } = menu;
+  const { label, fullLabel, subLabel, target, description } = menu;
 
   function renderContent() {
-    const subLabel = target ? target.split('?')[0] : description;
+    const sub = subLabel ? subLabel : target ? target.split('?')[0] : description;
 
     return (
       <MenuContent>
         <MenuLabel>{fullLabel ?? label}</MenuLabel>
-        <MenuSubLabel>{subLabel}</MenuSubLabel>
+        <MenuSubLabel>{sub}</MenuSubLabel>
       </MenuContent>
     );
   }

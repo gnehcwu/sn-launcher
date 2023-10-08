@@ -1,6 +1,7 @@
 import { goto, gotoTab, switchToAppById } from '../../utils/api';
 import { getCommandAction } from '../../configs/commands';
-import { isActionsMode, isValidShortcut, IsValidSysId } from '../../utils/helpers';
+import { isValidShortcut, IsValidSysId } from '../../utils/helpers';
+import { isActionsMode, COMMAND_MODES } from '../../configs/commands';
 import getInstanceRecord from '../../utils/recordSearch';
 
 export default async function action({
@@ -26,8 +27,11 @@ export default async function action({
       updateIsLoading(false);
     }
   } else if (commandMode && !isActionsMode(commandMode)) {
-    if (commandMode == 'switch_app') {
+    if (commandMode === COMMAND_MODES.SWITCH_APP) {
       switchToAppById(selectedMenu?.key);
+    } else if (commandMode === COMMAND_MODES.HISTORY) {
+      const { target } = selectedMenu;
+      gotoTab(target);
     } else {
       const commandAction = getCommandAction(commandMode);
       if (commandAction) {

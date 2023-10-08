@@ -9,6 +9,7 @@ import {
   isCompactMode,
   getCommandLabelAndPlaceholder,
   COMMAND_MODES,
+  isHistoryMode,
 } from '../../configs/commands';
 
 const FilterContainer = styled.div`
@@ -124,8 +125,9 @@ function Filter(_, ref) {
   const isCompact = isCompactMode(commandMode);
   const isActions = isActionsMode(commandMode);
   const isSwitchingApp = isSwitchAppMode(commandMode);
+  const isHistories = isHistoryMode(commandMode);
   const actionsLayout =
-    isActions || isSwitchingApp
+    isActions || isSwitchingApp || isHistories
       ? 'auto auto 1fr'
       : isCompact
       ? 'auto auto 1fr auto'

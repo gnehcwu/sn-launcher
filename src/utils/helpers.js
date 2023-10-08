@@ -21,33 +21,3 @@ export function IsValidSysId(strSysId) {
   const regex = RegExp('([0-9a-f]){32}');
   return regex.test(sysId);
 }
-
-/**
- *  Check compact ui mode based on command mode
- *
- * @param {string} commandMode - command mode
- * @returns - true/false flag of checking result
- */
-export function isCompactMode(commandMode) {
-  return commandMode && !['switch_app', 'actions'].includes(commandMode);
-}
-
-/**
- * Check actions mode based on command mode
- *
- * @param {string} commandMode - command mode
- * @returns - true/false flag of showing all action modes
- */
-export function isActionsMode(commandMode) {
-  return commandMode && commandMode === 'actions';
-}
-
-/**
- *Check switching application scope mode based on command mode
- *
- * @param {string} commandMode - command mode
- * @returns - true/false flag of switching application scope
- */
-export function isSwitchAppMode(commandMode) {
-  return commandMode && commandMode === 'switch_app';
-}

@@ -2,7 +2,7 @@ import React from 'react';
 import styled from 'styled-components';
 
 const FooterContainer = styled.div`
-  padding: 12px 16px;
+  padding: 10px 16px;
   border-top: 1px solid var(--sn-launcher-separator);
   color: var(--sn-launcher-text-secondary);
 
@@ -34,6 +34,10 @@ const MarkTextSign = styled(MarkSign)`
   padding: 5px;
 `;
 
+/**
+ * Renders the footer component.
+ * @returns {JSX.Element} The footer component.
+ */
 function Footer() {
   return (
     <FooterContainer>

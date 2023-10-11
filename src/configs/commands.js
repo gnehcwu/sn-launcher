@@ -1,4 +1,4 @@
-import { refreshApps, clearCache, searchDoc, searchComponent, goto } from '../utils/api';
+import { clearCache, searchDoc, searchComponent, goto } from '../utils/api';
 
 export const COMMAND_MODES = {
   FIND_RECORD: 'find_record',
@@ -10,34 +10,47 @@ export const COMMAND_MODES = {
   HISTORY: 'history',
 };
 
+/**
+ * An array of objects representing the available commands in the application.
+ * Each object contains a unique key, a full label, a mode, a sub label, a placeholder text, and an optional action.
+ * @typedef {Object} Command
+ * @property {string} key - A unique identifier for the command.
+ * @property {string} fullLabel - The full label of the command.
+ * @property {string} mode - The mode of the command.
+ * @property {string} subLabel - The sub label of the command.
+ * @property {string} placeholderText - The placeholder text for the command.
+ * @property {function} [action] - An optional action to be executed when the command is triggered.
+ * @property {boolean} [visible] - A flag indicating whether the command is visible or not.
+ * @type {Command[]}
+ */
 const commands = [
   {
     key: crypto.randomUUID(),
     fullLabel: 'Record',
     mode: COMMAND_MODES.FIND_RECORD,
-    description: 'Find record by sys id',
+    subLabel: 'Find record by sys id',
     placeholderText: 'Search sys id...',
   },
   {
     key: crypto.randomUUID(),
     fullLabel: 'Scope',
     mode: COMMAND_MODES.SWITCH_APP,
-    description: 'Switch to application scope',
-    placeholderText: 'Switch application scope...',
+    subLabel: 'Switch to application scope',
+    placeholderText: 'Search application scope...',
   },
   {
     key: crypto.randomUUID(),
     fullLabel: 'Go to',
     action: goto,
     mode: COMMAND_MODES.GO_TO,
-    description: 'Shortcut with {table}.do / {table}.list',
-    placeholderText: 'Shortcut with {table}.do / {table}.list',
+    subLabel: 'Shortcut with {table}.do / {table}.list',
+    placeholderText: '{table}.do / {table}.list',
   },
   {
     key: crypto.randomUUID(),
     fullLabel: 'History',
     mode: COMMAND_MODES.HISTORY,
-    description: 'Show history',
+    subLabel: 'Show history',
     placeholderText: 'Search history...',
   },
   {
@@ -45,7 +58,7 @@ const commands = [
     fullLabel: 'Documentation',
     action: searchDoc,
     mode: COMMAND_MODES.SEARCH_DOC,
-    description: 'Search Servicenow development documentation',
+    subLabel: 'Search Servicenow development documentation',
     placeholderText: 'Search documentation...',
   },
   {
@@ -53,44 +66,54 @@ const commands = [
     fullLabel: 'Component',
     action: searchComponent,
     mode: COMMAND_MODES.SEARCH_COMP,
-    description: 'Search Next Experience components',
-    placeholderText: 'Search component...',
+    subLabel: 'Search Next Experience components',
+    placeholderText: 'Search Next Experience component...',
   },
   {
     key: crypto.randomUUID(),
     mode: COMMAND_MODES.ACTIONS, // 'actions' is a special mode for actions
     fullLabel: 'Actions',
-    description: 'Show all actions',
+    subLabel: 'Show all actions',
     visible: false,
     placeholderText: 'Search actions...',
   },
   {
     key: crypto.randomUUID(),
     fullLabel: 'Refresh',
-    action: refreshApps,
-    description: 'Refresh all application menus, scopes',
+    subLabel: 'Refresh all application menus, scopes',
+    visible: false,
   },
   {
     key: crypto.randomUUID(),
     fullLabel: 'Clear cache',
     action: clearCache,
-    description: 'Clear client cache',
+    subLabel: 'Clear client cache',
   },
 ];
 
+/**
+ * Finds a command object in the `commands` array that matches the given `mode`.
+ * @param {string} mode - The mode to search for.
+ * @returns {Object} - The command object that matches the given `mode`, or `undefined` if no match is found.
+ */
 function findCommandByMode(mode) {
   return commands.find((item) => item.mode === mode);
 }
 
+/**
+ * Returns an array containing the full label and placeholder text for a given mode.
+ * @param {string} mode - The mode to find the command for.
+ * @returns {(string[]|string)} - An array containing the full label and placeholder text if a command is found, otherwise the mode string.
+ */
 export function getCommandLabelAndPlaceholder(mode) {
   const command = findCommandByMode(mode);
   return command ? [command.fullLabel, command.placeholderText] : mode;
 }
 
 /**
- * Get action of command
- * @param {string} commandMode - command mode
- * @returns Action callback of command
+ * Returns the action associated with the given command mode.
+ * @param {string} commandMode - The mode of the command.
+ * @returns {string} - The action associated with the command mode.
  */
 export function getCommandAction(commandMode) {
   const command = findCommandByMode(commandMode);
@@ -98,10 +121,9 @@ export function getCommandAction(commandMode) {
 }
 
 /**
- *  Check compact ui mode based on command mode
- *
- * @param {string} commandMode - command mode
- * @returns - true/false flag of checking result
+ * Determines if the given command mode is in compact mode.
+ * @param {string} commandMode - The command mode to check.
+ * @returns {boolean} - True if the command mode is in compact mode, false otherwise.
  */
 export function isCompactMode(commandMode) {
   return (
@@ -111,32 +133,57 @@ export function isCompactMode(commandMode) {
 }
 
 /**
- * Check actions mode based on command mode
- *
- * @param {string} commandMode - command mode
- * @returns - true/false flag of showing all action modes
+ * Checks if the given command mode is in actions mode.
+ * @param {string} commandMode - The command mode to check.
+ * @returns {boolean} - True if the command mode is in actions mode, false otherwise.
  */
 export function isActionsMode(commandMode) {
-  return commandMode && commandMode === COMMAND_MODES.ACTIONS;
+  return commandMode === COMMAND_MODES.ACTIONS;
 }
 
 /**
- *Check switching application scope mode based on command mode
- *
- * @param {string} commandMode - command mode
- * @returns - true/false flag of switching application scope
+ * Checks if the given command mode is for switching the app.
+ * @param {string} commandMode - The command mode to check.
+ * @returns {boolean} - True if the command mode is for switching the app, false otherwise.
  */
 export function isSwitchAppMode(commandMode) {
-  return commandMode && commandMode === COMMAND_MODES.SWITCH_APP;
+  return commandMode === COMMAND_MODES.SWITCH_APP;
 }
 
 /**
- * Check history mode based on command mode
- * @param {string} commandMode - command mode
- * @returns true / false flag of checking history mode
+ * Checks if the given command mode is history mode.
+ * @param {string} commandMode - The command mode to check.
+ * @returns {boolean} - True if the command mode is history mode, false otherwise.
  */
 export function isHistoryMode(commandMode) {
-  return commandMode && commandMode === COMMAND_MODES.HISTORY;
+  return commandMode === COMMAND_MODES.HISTORY;
+}
+
+/**
+ * Checks if the given command mode is set to "refresh".
+ * @param {string} commandMode - The command mode to check.
+ * @returns {boolean} - True if the command mode is "refresh", false otherwise.
+ */
+export function isRefreshMode(commandMode) {
+  return commandMode === COMMAND_MODES.REFRESH;
+}
+
+/**
+ * Checks if the given command mode is in "find record" mode.
+ * @param {string} commandMode - The command mode to check.
+ * @returns {boolean} - True if the command mode is in "find record" mode, false otherwise.
+ */
+export function isFindSysIdMode(commandMode) {
+  return commandMode === COMMAND_MODES.FIND_RECORD;
+}
+
+/**
+ * Checks if the command mode is shortcut mode.
+ * @param {string} commandMode - The command mode to check.
+ * @returns {boolean} - True if the command mode is shortcut mode, false otherwise.
+ */
+export function isShortcutMode(commandMode) {
+  return commandMode === COMMAND_MODES.GO_TO;
 }
 
 export default commands;

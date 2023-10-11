@@ -26,24 +26,27 @@ const MenuLabel = styled.span`
   user-select: none;
   color: var(--sn-launcher-text-primary);
   font-size: 1.5em;
+  line-height: 17.5px;
   user-select: none;
 
   overflow: hidden;
   display: -webkit-box;
   -webkit-line-clamp: 1;
-  line-clamp: 2;
+  line-clamp: 1;
   -webkit-box-orient: vertical;
 `;
 
 const MenuSubLabel = styled(MenuLabel)`
   opacity: 0.85;
   font-size: 1.25em;
+  line-height: 14.5px;
+  text-transform: lowercase;
   color: var(--sn-launcher-text-secondary);
 `;
 
 const Menu = styled.li`
-  padding: 6px 8px;
-  border-radius: 10px;
+  padding: 6px 10px 7px;
+  border-radius: 8px;
   display: grid;
   grid-template-columns: 1fr min-content;
   justify-content: space-between;
@@ -75,6 +78,16 @@ const StyledEnterIcon = styled(CornerDownLeft)`
   color: var(--sn-launcher-text-primary);
 `;
 
+/**
+ * A component that renders a menu item with label, sublabel, and target.
+ *
+ * @param {Object} props - The component props.
+ * @param {Object} props.menu - The menu object containing label, fullLabel, subLabel, target, and description.
+ * @param {boolean} props.active - Whether the menu item is currently active.
+ * @param {Function} props.handleSelect - The function to handle selecting the menu item.
+ * @param {Function} props.handleClick - The function to handle clicking the menu item.
+ * @returns {JSX.Element} The MenuItem component.
+ */
 function MenuItem({ menu, active, handleSelect, handleClick }) {
   const { label, fullLabel, subLabel, target, description } = menu;
 

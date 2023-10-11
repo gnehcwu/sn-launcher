@@ -29,8 +29,6 @@ const recordScript = `
     var remainTables = [];
     var grTables = new GlideRecord('sys_db_object');
     grTables.orderByDesc('name'); // to check tables with x_ and u_ first
-    grTables.addQuery('extension_model'); // Only want tables that don't extend from anything
-    grTables.addQuery('super_class', '=', ''); // No derived classes
     var strEncodedQuery = 'sys_update_nameISNOTEMPTY';
     strEncodedQuery += '^nameISNOTEMPTY';
     strEncodedQuery += '^nameNOT LIKEts_';
@@ -89,31 +87,45 @@ const recordScript = `
   }
 `;
 
+/**
+ * Retrieves an instance record from the server using the provided sysId.
+ * @param {string} sysId - The sysId of the instance record to retrieve.
+ * @returns {Promise<Object>} - A Promise that resolves to an object representing the retrieved instance record.
+ */
 export default async function getInstanceRecord(sysId) {
-  if (!IsValidSysId(sysId)) return;
+  try {
+    if (!IsValidSysId(sysId)) return {};
 
-  const instanceRecordScript = `
+    const instanceRecordScript = `
     ${recordScript}
     findSysID('${sysId}');
   `;
 
-  const res = await fetchInstanceRecord(instanceRecordScript);
-  const regex = /sn-launcher-start:(.*):sn-launcher-end/;
-  const match = regex.exec(res);
-  if (match) {
-    const [, type, name, link] = match[1].split('///');
-    const record = {
-      key: crypto.randomUUID(),
-      fullLabel: `${type} / ${name}`,
-      target: link,
-    };
+    const res = await fetchInstanceRecord(instanceRecordScript);
+    const regex = /sn-launcher-start:(.*):sn-launcher-end/;
+    const match = regex.exec(res);
+    if (match) {
+      const [, type, name, link] = match[1].split('///');
+      const record = {
+        key: crypto.randomUUID(),
+        fullLabel: `${type} / ${name}`,
+        target: link,
+      };
 
-    return record;
+      return record;
+    }
+
+    return {};
+  } catch (_) {
+    return {};
   }
-
-  return {};
 }
 
+/**
+ * Opens an instance record with the given sysId.
+ * @param {string} sysId - The sysId of the instance record to open.
+ * @returns {Promise<void>} - A Promise that resolves when the record is opened.
+ */
 export async function openInstanceRecord(sysId) {
   const record = await getInstanceRecord(sysId);
   const { target } = record;

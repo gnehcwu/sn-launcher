@@ -10,24 +10,24 @@ const initialState = {
   selected: 0,
   isLoading: false,
   isShown: false,
-  stamp: new Date().getTime(),
+  initialDataLoaded: false,
 };
 
 const useLauncherStore = create((set) => ({
   ...initialState,
   updateCommandMode: (commandMode, filter = '') => {
-    set({ commandMode, filter });
+    set({ commandMode, filter, selected: 0 });
   },
   reset: (isShown) => {
-    set({ ...initialState, filter: '', selected: 0, commandMode: '', isShown: isShown ?? false });
+    set({ filter: '', selected: 0, commandMode: '', isShown: isShown ?? false, isLoading: false });
   },
   updateSelected: (selected) => {
     set({ selected });
   },
-  updateFilter: (filter) => set({ filter }),
+  updateFilter: (filter) => set({ filter, selected: 0 }),
   updateIsLoading: (isLoading) => set({ isLoading }),
   updateIsShown: (isShown) => set({ isShown }),
-  updateStamp: () => set({ stamp: new Date().getTime() }),
+  updateInitialDataLoaded: () => set({ initialDataLoaded: true }),
 }));
 
 export default useLauncherStore;

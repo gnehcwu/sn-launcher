@@ -1,8 +1,12 @@
+/**
+ * Extracts menu items from an array of menu objects and returns an array of extracted menu items.
+ * @param {Array} menuItems - An array of menu objects.
+ * @returns {Array} An array of extracted menu items.
+ */
 export default function extractMenu(menuItems = []) {
   const results = [];
 
-  function traverse(obj, parentLabel) {
-    const { label, route, subItems } = obj;
+  function traverse({ label, route, subItems }, parentLabel) {
     let fullLabel = parentLabel ? `${parentLabel} / ${label}` : label;
     fullLabel = fullLabel.replace('(', '( ').replace(')', ' )');
 

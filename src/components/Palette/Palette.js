@@ -1,49 +1,55 @@
 import React from 'react';
+import PropTypes from 'prop-types';
 import styled from 'styled-components';
 
 import Filter from '../Filter';
 import MenuList from '../MenuList';
 import Footer from '../Footer';
 import useLauncherStore from '../../store/launcherStore';
-import useLauncherData from '../../hooks/useLauncherData';
-import useDynamicData from '../../hooks/useDynamicData';
-import scoreItems from '../../utils/scoreItems';
 import action from './action';
-import {
-  isCompactMode,
-  isActionsMode,
-  isSwitchAppMode,
-  isHistoryMode,
-  COMMAND_MODES,
-} from '../../configs/commands';
+import { isCompactMode, COMMAND_MODES } from '../../configs/commands';
+
+Palette.propTypes = {
+  menus: PropTypes.arrayOf(
+    PropTypes.shape({
+      key: PropTypes.string,
+    }),
+  ),
+};
 
 const PaletteContainer = styled.div`
+  --content-show: contentShow 150ms cubic-bezier(0.16, 1, 0.3, 1);
+  --scale: scaleAnimation 175ms ease-in-out;
+
   position: relative;
-  left: 50%;
-  transform: translate(-50%, calc(50vh - 243.5px));
+  left: calc(50vw - 384px);
+  top: calc(50vh - 236px);
   background-color: var(--sn-launcher-surface-primary);
-  width: min(789px, 100vw);
-  height: ${(props) => (props.$isCompact ? 'auto' : '478px')};
-  max-height: 478px;
-  border-radius: 13px;
+  width: min(768px, 100vw);
+  height: ${(props) => (props.$isCompact ? 'auto' : '472px')};
+  border-radius: 14px;
   display: grid;
   grid-template-rows: min-content 1fr min-content;
   box-shadow: var(--sn-launcher-shadow);
   border: 1px solid var(--sn-launcher-text-info);
   transform-origin: center center;
   font-size: 10px;
-  animation: contentShow 150ms cubic-bezier(0.16, 1, 0.3, 1);
+
+  ${(props) => props.$shouldAnimate && 'animation: var(--scale)'};
 
   &:focus {
     outline: none;
   }
 
-  @keyframes contentShow {
-    from {
-      opacity: 0;
+  @keyframes scaleAnimation {
+    0% {
+      transform: scale(1);
     }
-    to {
-      opacity: 1;
+    50% {
+      transform: scale(0.99);
+    }
+    100% {
+      transform: scale(1);
     }
   }
 
@@ -52,25 +58,23 @@ const PaletteContainer = styled.div`
   }
 `;
 
-function Palette(_, ref) {
-  const filterRef = React.useRef(null);
+/**
+ * Renders the Launcher palette component.
+ *
+ * @param {Object} _ - Props object (unused).
+ * @param {Object} ref - Ref object for the component.
+ * @returns {JSX.Element} The Launcher palette component.
+ */
+function Palette({ menus }, ref) {
   const filter = useLauncherStore((state) => state.filter);
-  const updateFilter = useLauncherStore((state) => state.updateFilter);
   const commandMode = useLauncherStore((state) => state.commandMode);
   const updateCommandMode = useLauncherStore((state) => state.updateCommandMode);
   const selected = useLauncherStore((state) => state.selected);
   const updateSelected = useLauncherStore((state) => state.updateSelected);
   const updateIsLoading = useLauncherStore((state) => state.updateIsLoading);
-  const updateStamp = useLauncherStore((state) => state.updateStamp);
   const reset = useLauncherStore((state) => state.reset);
 
-  const [allMenus, allScopes, allCommands] = useLauncherData();
-  const [histories] = useDynamicData();
-  const items = React.useRef([]);
-
-  const dismissLauncher = React.useCallback(() => {
-    reset();
-  }, [reset]);
+  const [shouldAnimate, setShouldAnimate] = React.useState(false);
 
   function handleKeyPress(event) {
     event.stopPropagation();
@@ -81,10 +85,9 @@ function Palette(_, ref) {
       event.preventDefault();
       handleNavigation(event);
     } else if (key === 'Escape') {
-      dismissLauncher();
+      reset();
     } else if (key === 'Enter') {
       handleAction();
-      filterRef?.current?.focus();
     } else if (key === 'Backspace') {
       if (!filter && commandMode) {
         updateCommandMode('');
@@ -96,60 +99,52 @@ function Palette(_, ref) {
       if (!commandMode) {
         updateCommandMode(COMMAND_MODES.ACTIONS);
       }
-      filterRef?.current?.focus();
     }
   }
 
   function handleAction() {
     action({
-      dismissLauncher,
-      updateCommandMode,
-      selectedMenu: items.current[selected],
+      selectedMenu: menus[selected],
       filter,
-      updateFilter,
       commandMode,
+      reset,
+      updateCommandMode,
       updateIsLoading,
-      updateStamp,
     });
   }
 
   function handleNavigation(event) {
     const isArrowDown = event.key === 'ArrowDown';
     let nextIndex = isArrowDown ? selected + 1 : selected - 1;
-    if (nextIndex >= items.current.length) {
+    if (nextIndex >= menus.length) {
       nextIndex = 0;
     } else if (nextIndex < 0) {
-      nextIndex = items.current.length - 1;
+      nextIndex = menus.length - 1;
     }
 
     updateSelected(nextIndex);
   }
 
-  const getRenderItems = (filter) => {
-    const showActions = isActionsMode(commandMode);
-    if (showActions) {
-      return scoreItems(allCommands, filter);
-    } else if (isSwitchAppMode(commandMode)) {
-      return scoreItems(allScopes, filter);
-    } else if (isHistoryMode(commandMode)) {
-      return scoreItems(histories, filter);
-    } else if (commandMode) {
-      return [];
-    } else {
-      return scoreItems(allMenus, filter);
+  React.useEffect(() => {
+    if (commandMode) {
+      setShouldAnimate(true);
     }
-  };
-
-  items.current = getRenderItems(filter);
+  }, [commandMode]);
 
   const isCompact = isCompactMode(commandMode);
 
   return (
-    <PaletteContainer onKeyDown={handleKeyPress} ref={ref} $isCompact={isCompact}>
-      <Filter ref={filterRef} />
+    <PaletteContainer
+      key={commandMode}
+      $shouldAnimate={shouldAnimate}
+      $isCompact={isCompact}
+      onKeyDown={handleKeyPress}
+      ref={ref}
+    >
+      <Filter />
       {isCompact ? null : (
         <>
-          <MenuList menuList={items.current} handleClick={handleAction} />
+          <MenuList menuList={menus} handleClick={handleAction} />
           <Footer />
         </>
       )}

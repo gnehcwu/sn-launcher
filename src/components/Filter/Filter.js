@@ -18,7 +18,7 @@ const FilterContainer = styled.div`
   align-items: center;
   justify-content: center;
   column-gap: 12px;
-  padding: 16px;
+  padding: 14px 16px;
 `;
 
 const Input = styled.input.attrs(() => ({
@@ -75,7 +75,7 @@ const Mark = styled.span`
 
 const MarkText = styled.span`
   color: var(--sn-launcher-text-info);
-  font-size: 1.35em;
+  font-size: 1.3em;
   font-weight: 500;
 `;
 
@@ -84,9 +84,9 @@ const MarkTextSign = styled.span`
   place-content: center;
   background-color: var(--sn-launcher-surface-info);
   border-radius: 4px;
-  padding: 5px;
+  padding: 4px;
   color: var(--sn-launcher-text-secondary);
-  font-size: 1.25em;
+  font-size: 1.3em;
   font-weight: 500;
   letter-spacing: 1px;
 `;
@@ -115,11 +115,15 @@ const StyledLoader = styled(Loader)`
   }
 `;
 
-function Filter(_, ref) {
+/**
+ * A component that renders a search filter input field with various modes and tips.
+ *
+ * @returns {JSX.Element} The rendered component.
+ */
+export default function Filter() {
   const filter = useLauncherStore((state) => state.filter);
   const commandMode = useLauncherStore((state) => state.commandMode);
   const updateFilter = useLauncherStore((state) => state.updateFilter);
-  const updateSelected = useLauncherStore((state) => state.updateSelected);
   const isLoading = useLauncherStore((state) => state.isLoading);
   const updateCommandMode = useLauncherStore((state) => state.updateCommandMode);
   const isCompact = isCompactMode(commandMode);
@@ -132,6 +136,7 @@ function Filter(_, ref) {
       : isCompact
       ? 'auto auto 1fr auto'
       : 'auto 1fr auto';
+  const filterRef = React.useRef(null);
 
   function handleChange(event) {
     const inputVal = event.target.value;
@@ -143,7 +148,6 @@ function Filter(_, ref) {
     }
 
     updateFilter(inputVal);
-    updateSelected(0);
   }
 
   const renderTips = () => {
@@ -172,6 +176,13 @@ function Filter(_, ref) {
     return null;
   };
 
+  React.useEffect(() => {
+    if (!filterRef.current) return;
+
+    filterRef.current.selectionStart = filterRef.current?.selectionEnd;
+    filterRef.current.focus();
+  });
+
   const [label, placeholder = ''] = getCommandLabelAndPlaceholder(commandMode);
 
   return (
@@ -179,14 +190,12 @@ function Filter(_, ref) {
       <StyledSearchIcon size={16} />
       {commandMode !== '' && <Mode>{label}</Mode>}
       <Input
-        placeholder={commandMode ? placeholder : 'Type to search'}
+        placeholder={commandMode ? placeholder : 'Search application menus...'}
         value={filter}
         onChange={handleChange}
-        ref={ref}
+        ref={filterRef}
       />
       {renderTips()}
     </FilterContainer>
   );
 }
-
-export default React.forwardRef(Filter);

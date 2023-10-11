@@ -12,7 +12,7 @@ const ShadowRootStyle = createGlobalStyle`
     --sn-launcher-font-sans: system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell,
       Noto Sans, sans-serif, Segoe UI, Roboto, Ubuntu, Cantarell, Noto Sans, sans-serif;
     --sn-launcher-layer-important: 2147483648;
-    --sn-launcher-shadow: hsl(206 22% 7% / 35%) 0px 10px 38px -10px, hsl(206 22% 7% / 20%) 0px 10px 20px -15px;
+    --sn-launcher-shadow: hsl(206 22% 7% / 15%) 0px 10px 60px 15px, hsl(206 22% 7% / 20%) 0px 10px 50px 10px;
 
     --sn-launcher-brand-light: #9db0a0;
     --sn-launcher-text-primary-light: #16191d;
@@ -64,6 +64,13 @@ const ShadowRootStyle = createGlobalStyle`
   }
 `;
 
+/**
+ * A React component that creates a shadow root and renders its children inside it.
+ *
+ * @param {Object} props - The component props.
+ * @param {React.ReactNode} props.children - The children to render inside the shadow root.
+ * @returns {JSX.Element} - The rendered component.
+ */
 function ShadowRoot({ children }) {
   const shadowElementRef = React.useRef(null);
   const onceMountRef = React.useRef(false);

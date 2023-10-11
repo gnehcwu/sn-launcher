@@ -28,6 +28,13 @@ const Spinner = styled.span`
   }
 `;
 
+/**
+ * Renders a loader component with a spinner and optional children.
+ * @param {Object} props - The props object.
+ * @param {ReactNode} props.children - The optional children to render.
+ * @param {Object} props.delegated - The delegated props to pass to the Spinner component.
+ * @returns {JSX.Element} - The loader component.
+ */
 function Loader({ children, ...delegated }) {
   return (
     <>

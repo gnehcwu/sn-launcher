@@ -10,11 +10,7 @@ import action from './action';
 import { isCompactMode, COMMAND_MODES } from '../../configs/commands';
 
 Palette.propTypes = {
-  menus: PropTypes.arrayOf(
-    PropTypes.shape({
-      key: PropTypes.string,
-    }),
-  ),
+  menus: PropTypes.array.isRequired,
 };
 
 const PaletteContainer = styled.div`
@@ -34,7 +30,6 @@ const PaletteContainer = styled.div`
   border: 1px solid var(--sn-launcher-text-info);
   transform-origin: center center;
   font-size: 10px;
-
   ${(props) => props.$shouldAnimate && 'animation: var(--scale)'};
 
   &:focus {
@@ -59,11 +54,12 @@ const PaletteContainer = styled.div`
 `;
 
 /**
- * Renders the Launcher palette component.
+ * A component that displays a palette of menus and allows the user to filter and select them.
  *
- * @param {Object} _ - Props object (unused).
- * @param {Object} ref - Ref object for the component.
- * @returns {JSX.Element} The Launcher palette component.
+ * @param {Object} props - The component props.
+ * @param {Array} props.menus - An array of menu objects to display in the palette.
+ * @param {React.Ref} ref - A ref to attach to the component's root element.
+ * @returns {JSX.Element} The JSX element representing the palette.
  */
 function Palette({ menus }, ref) {
   const filter = useLauncherStore((state) => state.filter);
@@ -76,7 +72,7 @@ function Palette({ menus }, ref) {
 
   const [shouldAnimate, setShouldAnimate] = React.useState(false);
 
-  function handleKeyPress(event) {
+  function handleKeydown(event) {
     event.stopPropagation();
 
     const { key } = event;
@@ -116,19 +112,14 @@ function Palette({ menus }, ref) {
   function handleNavigation(event) {
     const isArrowDown = event.key === 'ArrowDown';
     let nextIndex = isArrowDown ? selected + 1 : selected - 1;
-    if (nextIndex >= menus.length) {
-      nextIndex = 0;
-    } else if (nextIndex < 0) {
-      nextIndex = menus.length - 1;
-    }
+    // Calibrate index to loop around
+    nextIndex = (nextIndex + menus.length) % menus.length;
 
     updateSelected(nextIndex);
   }
 
   React.useEffect(() => {
-    if (commandMode) {
-      setShouldAnimate(true);
-    }
+    commandMode && setShouldAnimate(true);
   }, [commandMode]);
 
   const isCompact = isCompactMode(commandMode);
@@ -138,7 +129,7 @@ function Palette({ menus }, ref) {
       key={commandMode}
       $shouldAnimate={shouldAnimate}
       $isCompact={isCompact}
-      onKeyDown={handleKeyPress}
+      onKeyDown={handleKeydown}
       ref={ref}
     >
       <Filter />

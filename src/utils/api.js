@@ -133,25 +133,30 @@ export async function fetchMenus() {
  * @returns {Promise<void>} A Promise that resolves when all data has been cleared.
  */
 export async function clearCache() {
-  localStorage.clear();
-  sessionStorage.clear();
-
-  const dbs = await indexedDB.databases?.();
-
-  if (!dbs || dbs.length < 1) return;
-
-  const tasks = dbs.map(
-    (db) =>
-      new Promise((resolve, reject) => {
-        const tryToDelete = indexedDB.deleteDatabase(db);
-        tryToDelete.onsuccess = resolve;
-        tryToDelete.onerror = reject;
-        tryToDelete.onblocked = reject;
-      }),
-  );
   try {
+    localStorage.clear();
+    sessionStorage.clear();
+  } catch (_) {
+    /* ignore */
+  }
+
+  try {
+    const dbs = await indexedDB.databases?.();
+
+    if (!dbs || dbs.length < 1) return;
+
+    const tasks = dbs.map(
+      (db) =>
+        new Promise((resolve, reject) => {
+          const tryToDelete = indexedDB.deleteDatabase(db);
+          tryToDelete.onsuccess = resolve;
+          tryToDelete.onerror = reject;
+          tryToDelete.onblocked = reject;
+        }),
+    );
+
     await Promise.allSettled(tasks);
-  } catch (err) {
+  } catch (_) {
     /* ignore */
   }
 
@@ -163,6 +168,8 @@ export async function clearCache() {
   } catch (_) {
     /* ignore */
   }
+
+  window?.top?.location?.reload();
 }
 
 /**
@@ -197,7 +204,6 @@ export async function switchToAppById(appId) {
     const result = await res.json();
     if (!result?.error) {
       clearCache();
-      window.top.location.reload();
     }
   } catch (error) {
     /* ignore */

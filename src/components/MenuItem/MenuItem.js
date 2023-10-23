@@ -50,6 +50,7 @@ const Menu = styled.li`
   display: grid;
   grid-template-columns: 1fr min-content;
   justify-content: space-between;
+  column-gap: 8px;
   background-color: ${(props) => props.$active && 'var(--sn-launcher-brand)'};
 
   & span {
@@ -64,7 +65,7 @@ const Menu = styled.li`
 const Mark = styled.div`
   display: ${(props) => (props.$active ? 'grid' : 'none')};
   grid-template-columns: 1fr 1fr;
-  grid-column-gap: 8px;
+  column-gap: 4px;
   align-items: center;
   color: var(--sn-launcher-text-secondary);
 `;
@@ -79,7 +80,7 @@ const StyledEnterIcon = styled(CornerDownLeft)`
 `;
 
 /**
- * A component that renders a menu item with label, sublabel, and target.
+ * Component renders a menu item with label, sub label, and target.
  *
  * @param {Object} props - The component props.
  * @param {Object} props.menu - The menu object containing label, fullLabel, subLabel, target, and description.

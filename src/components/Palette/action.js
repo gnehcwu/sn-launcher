@@ -1,14 +1,5 @@
 import { goto, gotoTab, switchToAppById } from '../../utils/api';
-import { isValidShortcut, IsValidSysId } from '../../utils/helpers';
-import {
-  isActionsMode,
-  isShortcutMode,
-  isFindSysIdMode,
-  isCompactMode,
-  getCommandAction,
-  isHistoryMode,
-  isSwitchAppMode,
-} from '../../configs/commands';
+import { getCommandAction, COMMAND_MODES } from '../../configs/commands';
 import getInstanceRecord from '../../utils/recordSearch';
 
 /**
@@ -31,47 +22,56 @@ export default async function action({
   updateCommandMode,
   updateIsLoading,
 }) {
-  if (isValidShortcut(filter) || isShortcutMode(commandMode)) {
-    goto(filter);
-    reset();
-  } else if (IsValidSysId(filter) || isFindSysIdMode(commandMode)) {
-    updateIsLoading(true);
-    const { target } = await getInstanceRecord(filter);
-    if (target) {
-      gotoTab(target);
-    } else {
+  switch (commandMode) {
+    case COMMAND_MODES.GO_TO: {
       goto(filter);
+      reset();
+      break;
     }
-    reset();
-  } else if (commandMode && !isActionsMode(commandMode)) {
-    if (isSwitchAppMode(commandMode)) {
+    case COMMAND_MODES.FIND_RECORD: {
+      if (!filter) return;
+
+      updateIsLoading(true);
+      const { target } = await getInstanceRecord(filter);
+      target ? gotoTab(target) : goto(filter);
+      reset();
+      break;
+    }
+    case COMMAND_MODES.SWITCH_APP: {
       switchToAppById(selectedMenu?.key);
-    } else if (isHistoryMode(commandMode)) {
-      gotoTab(selectedMenu?.target);
-    } else {
-      if (isCompactMode(commandMode) && !filter.trim()) {
-        return;
-      }
+      reset();
+      break;
+    }
+    case COMMAND_MODES.SEARCH_DOC:
+    case COMMAND_MODES.SEARCH_COMP: {
+      if (!filter) return;
 
       const commandAction = getCommandAction(commandMode);
-      if (commandAction) {
-        await commandAction(filter);
-      }
-    }
-    reset();
-  } else {
-    const { target, mode: nextCommandMode, action } = selectedMenu || {};
-
-    if (target) {
-      gotoTab(target);
+      await commandAction(filter);
       reset();
-    } else if (nextCommandMode) {
-      updateCommandMode(nextCommandMode);
-    } else if (action) {
-      updateIsLoading(true);
-      action().finally(() => {
+      break;
+    }
+    case COMMAND_MODES.ACTIONS: {
+      const { action, mode: nextMode } = selectedMenu || {};
+      if (nextMode) {
+        updateCommandMode(nextMode);
+      } else if (action) {
+        // Immediately executable action
+        updateIsLoading(true);
+        await action();
         reset();
-      });
+      }
+
+      break;
+    }
+    case '':
+    case COMMAND_MODES.HISTORY: {
+      gotoTab(selectedMenu?.target);
+      reset();
+      break;
+    }
+    default: {
+      reset();
     }
   }
 }

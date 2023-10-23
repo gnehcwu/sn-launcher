@@ -87,7 +87,7 @@ const commands = [
     key: crypto.randomUUID(),
     fullLabel: 'Clear cache',
     action: clearCache,
-    subLabel: 'Clear client cache',
+    subLabel: 'Clear client cache and refresh',
   },
 ];
 

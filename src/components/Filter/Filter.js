@@ -55,7 +55,7 @@ const Mode = styled.span`
   border-radius: 9999px;
   white-space: nowrap;
   background-color: var(--sn-launcher-brand);
-  padding: 5px 10px;
+  padding: 4px 9px;
   font-size: 1.3em;
   font-weight: 500;
   user-select: none;
@@ -67,7 +67,7 @@ const Mode = styled.span`
 
 const Mark = styled.span`
   display: flex;
-  gap: 8px;
+  gap: 4px;
   justify-content: center;
   align-items: center;
   user-select: none;
@@ -116,7 +116,7 @@ const StyledLoader = styled(Loader)`
 `;
 
 /**
- * A component that renders a search filter input field with various modes and tips.
+ * Filter component that renders the search input and action tips
  *
  * @returns {JSX.Element} The rendered component.
  */

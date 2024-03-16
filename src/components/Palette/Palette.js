@@ -1,5 +1,4 @@
 import React from 'react';
-import PropTypes from 'prop-types';
 import styled from 'styled-components';
 
 import Filter from '../Filter';
@@ -8,10 +7,6 @@ import Footer from '../Footer';
 import useLauncherStore from '../../store/launcherStore';
 import action from './action';
 import { isCompactMode, COMMAND_MODES } from '../../configs/commands';
-
-Palette.propTypes = {
-  menus: PropTypes.array.isRequired,
-};
 
 const PaletteContainer = styled.div`
   --content-show: contentShow 150ms cubic-bezier(0.16, 1, 0.3, 1);

@@ -6,6 +6,7 @@ import { isValidShortcut, IsValidSysId } from '../../utils/helpers';
 import {
   isActionsMode,
   isSwitchAppMode,
+  isTablesMode,
   isCompactMode,
   getCommandLabelAndPlaceholder,
   COMMAND_MODES,
@@ -129,9 +130,10 @@ export default function Filter() {
   const isCompact = isCompactMode(commandMode);
   const isActions = isActionsMode(commandMode);
   const isSwitchingApp = isSwitchAppMode(commandMode);
+  const isTableMode = isTablesMode(commandMode);
   const isHistories = isHistoryMode(commandMode);
   const actionsLayout =
-    isActions || isSwitchingApp || isHistories
+    isActions || isSwitchingApp || isHistories || isTableMode
       ? 'auto auto 1fr'
       : isCompact
       ? 'auto auto 1fr auto'

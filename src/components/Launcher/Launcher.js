@@ -1,7 +1,12 @@
 import React from 'react';
 import styled from 'styled-components';
 import scoreItems from '../../utils/scoreItems';
-import { isActionsMode, isSwitchAppMode, isHistoryMode } from '../../configs/commands';
+import {
+  isActionsMode,
+  isSwitchAppMode,
+  isHistoryMode,
+  isTablesMode,
+} from '../../configs/commands';
 import useLauncherData from '../../hooks/useLauncherData';
 import useHistory from '../../hooks/useHistory';
 import useChromeMessage from '../../hooks/useChromeMessage';
@@ -56,7 +61,7 @@ function Launcher() {
   const token = useLauncherStore((state) => state.token);
   const filter = useLauncherStore((state) => state.filter);
   const commandMode = useLauncherStore((state) => state.commandMode);
-  const [allMenus, allScopes, allCommands] = useLauncherData();
+  const [allMenus, allScopes, allCommands, allTables] = useLauncherData();
   const [histories, clearHistories] = useHistory();
   const availableMenusRef = React.useRef([]);
 
@@ -70,6 +75,8 @@ function Launcher() {
         return scoreItems(allCommands, filter);
       } else if (isSwitchAppMode(commandMode)) {
         return scoreItems(allScopes, filter);
+      } else if (isTablesMode(commandMode)) {
+        return scoreItems(allTables, filter);
       } else if (isHistoryMode(commandMode)) {
         return scoreItems(histories, filter);
       } else if (commandMode) {

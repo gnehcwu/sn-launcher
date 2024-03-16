@@ -1,10 +1,11 @@
-import { fetchInstanceRecord, gotoTab } from './api';
+import { fetchResultViaScript, gotoTab } from './api';
 import { IsValidSysId } from './helpers';
 
 const recordScript = `
   var priorityTables = [
     'sys_script_include',
     'sys_script_client',
+    'sys_script',
     'sys_ui_policy',
     'sys_ux_app_route',
     'sys_ux_client_script',
@@ -101,7 +102,7 @@ export default async function getInstanceRecord(sysId) {
     findSysID('${sysId}');
   `;
 
-    const res = await fetchInstanceRecord(instanceRecordScript);
+    const res = await fetchResultViaScript(instanceRecordScript);
     const regex = /sn-launcher-start:(.*):sn-launcher-end/;
     const match = regex.exec(res);
     if (match) {

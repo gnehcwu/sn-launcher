@@ -35,18 +35,18 @@ export async function fetchData(url) {
     });
 
     const data = await res.json();
-    return data.result;
+    return data.result ?? [];
   } catch (err) {
     return [];
   }
 }
 
 /**
- * Fetches an instance record from the ServiceNow instance using the provided script.
+ * Fetches result from the ServiceNow instance using the provided script.
  * @param {string} script - The script to execute on the ServiceNow instance.
  * @returns {Promise<string|null|false>} - A Promise that resolves with the response text if successful, null if there was an error, or false if the token is invalid.
  */
-export async function fetchInstanceRecord(script) {
+export async function fetchResultViaScript(script) {
   try {
     const [isValidToken, token] = checkToken();
     if (!isValidToken) return null;
@@ -92,7 +92,7 @@ export async function fetchHistory() {
   const endpoint = 'api/now/ui/history';
   const res = await fetchData(endpoint);
 
-  return res?.list?.map(mapHistoryItem) || [];
+  return res?.list?.map(mapHistoryItem);
 }
 
 /**
@@ -113,7 +113,25 @@ export async function fetchApps() {
   const endpoint =
     'api/now/table/sys_scope?sysparm_query=ORDERBYDESCsys_updated_on&sysparm_display_value=true&sysparm_fields=sys_id%2Cscope%2Cname';
   const data = await fetchData(endpoint);
-  return data?.map(mapAppItem) || [];
+  return data?.map(mapAppItem);
+}
+
+/**
+ * Fetches all tables.
+ * @returns {Promise<Array<Object>>} A promise that resolves to an array of table objects.
+ */
+export async function fetchAllTables() {
+  const endpoint = 'api/now/table/sys_db_object?sysparm_fields=label%2Cname';
+
+  const res = await fetchData(endpoint);
+
+  const tables = res?.map(({ name, label }) => ({
+    key: crypto.randomUUID(),
+    fullLabel: `${label}: ${name}`,
+    target: `${name}_list.do`,
+  }));
+
+  return tables;
 }
 
 /**

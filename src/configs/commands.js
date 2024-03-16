@@ -8,6 +8,7 @@ export const COMMAND_MODES = {
   GO_TO: 'go_to',
   ACTIONS: 'actions',
   HISTORY: 'history',
+  ALL_TABLES: 'all_tables',
 };
 
 /**
@@ -26,10 +27,10 @@ export const COMMAND_MODES = {
 const commands = [
   {
     key: crypto.randomUUID(),
-    fullLabel: 'Record',
-    mode: COMMAND_MODES.FIND_RECORD,
-    subLabel: 'Find record by sys id',
-    placeholderText: 'Search sys id...',
+    fullLabel: 'Tables',
+    mode: COMMAND_MODES.ALL_TABLES,
+    subLabel: 'Show all tables',
+    placeholderText: 'search tables...',
   },
   {
     key: crypto.randomUUID(),
@@ -40,11 +41,10 @@ const commands = [
   },
   {
     key: crypto.randomUUID(),
-    fullLabel: 'Go to',
-    action: goto,
-    mode: COMMAND_MODES.GO_TO,
-    subLabel: 'Shortcut with {table}.do / {table}.list',
-    placeholderText: '{table}.do / {table}.list',
+    fullLabel: 'Record',
+    mode: COMMAND_MODES.FIND_RECORD,
+    subLabel: 'Find record by sys id',
+    placeholderText: 'Search sys id...',
   },
   {
     key: crypto.randomUUID(),
@@ -52,6 +52,14 @@ const commands = [
     mode: COMMAND_MODES.HISTORY,
     subLabel: 'Show history',
     placeholderText: 'Search history...',
+  },
+  {
+    key: crypto.randomUUID(),
+    fullLabel: 'Go to',
+    action: goto,
+    mode: COMMAND_MODES.GO_TO,
+    subLabel: 'Shortcut with {table}.do / {table}.list',
+    placeholderText: '{table}.do / {table}.list',
   },
   {
     key: crypto.randomUUID(),
@@ -128,7 +136,12 @@ export function getCommandAction(commandMode) {
 export function isCompactMode(commandMode) {
   return (
     commandMode &&
-    ![COMMAND_MODES.SWITCH_APP, COMMAND_MODES.ACTIONS, COMMAND_MODES.HISTORY].includes(commandMode)
+    ![
+      COMMAND_MODES.SWITCH_APP,
+      COMMAND_MODES.ACTIONS,
+      COMMAND_MODES.HISTORY,
+      COMMAND_MODES.ALL_TABLES,
+    ].includes(commandMode)
   );
 }
 
@@ -148,6 +161,10 @@ export function isActionsMode(commandMode) {
  */
 export function isSwitchAppMode(commandMode) {
   return commandMode === COMMAND_MODES.SWITCH_APP;
+}
+
+export function isTablesMode(commandMode) {
+  return commandMode === COMMAND_MODES.ALL_TABLES;
 }
 
 /**

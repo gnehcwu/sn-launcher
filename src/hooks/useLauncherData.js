@@ -1,5 +1,5 @@
 import React from 'react';
-import { fetchMenus, fetchApps } from '../utils/api';
+import { fetchMenus, fetchApps, fetchAllTables } from '../utils/api';
 import commands from '../configs/commands';
 import useLauncherStore from '../store/launcherStore';
 
@@ -13,20 +13,23 @@ export default function useLauncherData() {
   const [allMenus, setAllMenus] = React.useState([]);
   const [allScopes, setAllScopes] = React.useState([]);
   const [allCommands, setAllCommands] = React.useState([]);
+  const [allTables, setAllTables] = React.useState([]);
 
   React.useEffect(() => {
     async function getLauncherData() {
       updateIsLoading(true);
 
-      const [allMenus, allApps, allCommands] = await Promise.all([
+      const [allMenus, allApps, allCommands, allTables] = await Promise.all([
         fetchMenus(),
         fetchApps(),
         Promise.resolve(commands.filter((command) => command.visible !== false)),
+        fetchAllTables(),
       ]);
 
       setAllMenus(allMenus);
       setAllScopes(allApps);
       setAllCommands(allCommands);
+      setAllTables(allTables);
 
       updateIsLoading(false);
       updateInitialDataLoaded(true);
@@ -35,5 +38,5 @@ export default function useLauncherData() {
     getLauncherData();
   }, [updateInitialDataLoaded, updateIsLoading]);
 
-  return [allMenus, allScopes, allCommands];
+  return [allMenus, allScopes, allCommands, allTables];
 }

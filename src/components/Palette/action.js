@@ -65,6 +65,7 @@ export default async function action({
       break;
     }
     case '':
+    case COMMAND_MODES.ALL_TABLES:
     case COMMAND_MODES.HISTORY: {
       gotoTab(selectedMenu?.target);
       reset();

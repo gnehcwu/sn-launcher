@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "SN Launcher - ServiceNow utility tool",
-  "version": "1.2.2",
+  "version": "1.2.3",
   "description": "ServiceNow utility tool, search and navigate with a command palette.(personal project, not affiliated to ServiceNow)",
   "icons": {
     "16": "../../assets/icon.png",
@@ -10,13 +10,14 @@
     "128": "../../assets/icon.png"
   },
   "background": {
-    "service_worker": "../../src/scripts/background.js",
+    "service_worker": "../../src/scripts/background.ts",
     "type": "module"
   },
   "content_scripts": [
     {
       "matches": ["<all_urls>"],
-      "js": ["../../src/scripts/content.js"]
+      "js": ["/src/scripts/content.ts"],
+      "run_at": "document_idle"
     }
   ],
   "action": {
@@ -30,8 +31,10 @@
   "commands": {
     "snl-toggle-launcher": {
       "suggested_key": {
-        "default": "Ctrl+Shift+L",
-        "mac": "Command+Shift+L"
+        "windows": "Ctrl+Shift+L",
+        "mac": "Command+Shift+L",
+        "chromeos": "Ctrl+Shift+L",
+        "linux": "Ctrl+Shift+L"
       },
       "description": "Open launcher"
     }

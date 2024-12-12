@@ -1,6 +1,6 @@
 {
   "name": "sn-launcher",
-  "version": "1.2.2",
+  "version": "1.2.3",
   "description": "Search and navigate Servicenow menus, documentation, components with a simple command palette interface.",
   "scripts": {
     "start": "parcel watch ./manifests/chromium/manifest.json --host localhost --dist-dir dist/chromium",
@@ -8,7 +8,9 @@
     "build:chromium": "parcel build ./manifests/chromium/manifest.json --no-source-maps --dist-dir dist/chromium",
     "build:firefox": "parcel build ./manifests/firefox/manifest.json --no-source-maps --dist-dir dist/firefox",
     "clean": "rm -rf .parcel-cache && rm -rf dist",
-    "new-component": "new-component"
+    "new-component": "new-component",
+    "type-check": "tsc --noEmit",
+    "type-check:watch": "tsc --noEmit --watch"
   },
   "keywords": [
     "Browser",
@@ -17,18 +19,27 @@
   "author": "Cheng Wu",
   "license": "MIT",
   "dependencies": {
-    "@radix-ui/react-dialog": "^1.0.4",
-    "prop-types": "^15.8.1",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-feather": "^2.0.10",
+    "react-window": "^1.8.10",
     "styled-components": "^5.3.10",
-    "zustand": "^4.3.8"
+    "webextension-polyfill": "^0.10.0",
+    "zustand": "^4.3.8",
+    "react-focus-lock": "^2.13.2",
+    "react-remove-scroll": "^2.6.0"
   },
   "devDependencies": {
-    "@parcel/config-webextension": "^2.8.3",
-    "@parcel/transformer-inline-string": "^2.8.3",
+    "parcel": "^2.13.2",
+    "@parcel/config-webextension": "^2.13.2",
     "@types/chrome": "0.0.224",
+    "@types/react": "^18.2.0",
+    "@types/react-dom": "^18.2.0",
+    "@types/react-window": "^1.8.8",
+    "@types/styled-components": "^5.1.34",
+    "@types/webextension-polyfill": "^0.10.1",
+    "@typescript-eslint/eslint-plugin": "^6.13.2",
+    "@typescript-eslint/parser": "^6.13.2",
     "eslint": "^8.36.0",
     "eslint-config-prettier": "^8.8.0",
     "eslint-plugin-jsx-a11y": "^6.7.1",
@@ -36,10 +47,8 @@
     "eslint-plugin-react": "^7.32.2",
     "eslint-plugin-react-hooks": "^4.6.0",
     "new-component": "^5.0.2",
-    "parcel": "^2.8.3",
     "prettier": "^2.8.6",
     "process": "^0.11.10",
-    "webextension-polyfill": "^0.10.0",
-    "@types/webextension-polyfill": "^0.10.1"
+    "typescript": "^5.3.3"
   }
 }

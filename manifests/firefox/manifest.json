@@ -6,20 +6,23 @@
   "content_scripts": [
     {
       "matches": ["<all_urls>"],
-      "js": ["../../src/scripts/content.js"]
+      "js": ["../../src/scripts/content.ts"],
+      "run_at": "document_idle"
     }
   ],
   "browser_action": {
     "default_icon": "../../assets/icon.png"
   },
   "background": {
-    "scripts": ["../../src/scripts/background.js"]
+    "scripts": ["../../src/scripts/background.ts"]
   },
   "commands": {
     "snl-toggle-launcher": {
       "suggested_key": {
-        "default": "Ctrl+Shift+L",
-        "mac": "Command+Shift+L"
+        "windows": "Ctrl+Shift+L",
+        "mac": "Command+Shift+L",
+        "chromeos": "Ctrl+Shift+L",
+        "linux": "Ctrl+Shift+L"
       },
       "description": "Open launcher"
     }

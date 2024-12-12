@@ -19,18 +19,17 @@
   "author": "Cheng Wu",
   "license": "MIT",
   "dependencies": {
+    "lucide-react": "^0.468.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
-    "react-feather": "^2.0.10",
+    "react-focus-lock": "^2.13.2",
+    "react-remove-scroll": "^2.6.0",
     "react-window": "^1.8.10",
     "styled-components": "^5.3.10",
     "webextension-polyfill": "^0.10.0",
-    "zustand": "^4.3.8",
-    "react-focus-lock": "^2.13.2",
-    "react-remove-scroll": "^2.6.0"
+    "zustand": "^4.3.8"
   },
   "devDependencies": {
-    "parcel": "^2.13.2",
     "@parcel/config-webextension": "^2.13.2",
     "@types/chrome": "0.0.224",
     "@types/react": "^18.2.0",
@@ -47,6 +46,7 @@
     "eslint-plugin-react": "^7.32.2",
     "eslint-plugin-react-hooks": "^4.6.0",
     "new-component": "^5.0.2",
+    "parcel": "^2.13.2",
     "prettier": "^2.8.6",
     "process": "^0.11.10",
     "typescript": "^5.3.3"

@@ -21,6 +21,7 @@ export interface CommandItem {
   placeholderText?: string;
   action?: (...args: any[]) => Promise<void> | void;
   visible?: boolean;
+  icon?: React.ReactNode;
 }
 
 export interface LauncherState {
@@ -32,3 +33,17 @@ export interface LauncherState {
   token: string | null;
   initialDataLoaded: boolean;
 }
+
+export type LauncherActionType = 
+  | 'TOGGLE_LAUNCHER_COMMAND'
+  | 'OPEN_TAB_COMMAND'
+  | 'SWITCH_SCOPE_COMMAND'
+  | 'SEARCH_TABLE_COMMAND'
+  | 'SEARCH_HISTORY_COMMAND';
+
+export type LauncherActionValue = 
+  | 'snl-toggle-launcher-command'
+  | 'snl-open-tab-form-launcher-command'
+  | 'snl-switch-scope-command'
+  | 'snl-search-table-command'
+  | 'snl-search-history-command';

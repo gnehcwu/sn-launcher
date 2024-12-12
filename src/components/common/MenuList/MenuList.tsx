@@ -64,7 +64,7 @@ function MenuList({ menuList, onClick }: MenuListProps) {
   if (!menuList?.length) {
     return (
       <Fallback>
-        ∅ <Title>No results</Title>
+        ∅ <Title>No results found.</Title>
       </Fallback>
     );
   }

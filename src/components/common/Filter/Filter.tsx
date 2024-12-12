@@ -1,26 +1,41 @@
-import React, { useCallback, useEffect, useMemo, useRef } from 'react';
+import React, { useCallback, useEffect, useRef } from 'react';
 import useLauncherStore from '../../../store/launcherStore';
 import { isValidShortcut, isValidSysId } from '../../../utilities/validation';
 import {
-  isActionsMode,
-  isSwitchScopeMode,
-  isTableMode,
-  isCompactMode,
+  isCompactLayoutMode,
   getCommandLabelAndPlaceholder,
-  COMMAND_MODES,
-  isHistoryMode,
 } from '../../../utilities/configs/commands';
-import Loader from '../../shared/Loader';
+import { COMMAND_MODES } from '../../../utilities/configs/constants';
+import { Loader } from '../../shared';
 import {
   FilterContainer,
   Input,
   Mode,
   Mark,
   MarkText,
-  MarkTextSign,
+  KeyboardTab,
   StyledSearchIcon,
   StyledEnterIcon,
 } from './Filter.styles';
+
+type HintConfig = {
+  text?: string;
+  icon: React.ReactNode;
+};
+
+const HINT_CONFIG: Record<string, HintConfig> = {
+  loadingCompact: {
+    icon: <Loader size={18} stroke={2} />,
+  },
+  compact: {
+    text: 'Search',
+    icon: <StyledEnterIcon size={18} />,
+  },
+  default: {
+    text: 'More Actions',
+    icon: <KeyboardTab>Tab</KeyboardTab>,
+  },
+};
 
 function Filter() {
   const filter = useLauncherStore((state) => state.filter);
@@ -31,18 +46,7 @@ function Filter() {
 
   const filterRef = useRef<HTMLInputElement>(null);
 
-  const isCompact = isCompactMode(commandMode);
-  const isActions = isActionsMode(commandMode);
-  const isSwitchingApp = isSwitchScopeMode(commandMode);
-  const isTable = isTableMode(commandMode);
-  const isHistories = isHistoryMode(commandMode);
-
-  const actionsLayout = useMemo(() => {
-    if (isActions || isSwitchingApp || isHistories || isTable) {
-      return 'auto auto 1fr';
-    }
-    return isCompact ? 'auto auto 1fr auto' : 'auto 1fr auto';
-  }, [isActions, isSwitchingApp, isHistories, isTable, isCompact]);
+  const isCompact = isCompactLayoutMode(commandMode);
 
   const handleChange = useCallback(
     (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -59,31 +63,22 @@ function Filter() {
     [updateCommandMode, updateFilter],
   );
 
-  const renderTips = useCallback(() => {
+  const renderHints = () => {
     if (isCompact && isLoading) {
-      return <Loader size={18} stroke={2} />;
+      return HINT_CONFIG.loadingCompact.icon;
     }
 
-    if (isCompact) {
-      return (
-        <Mark>
-          <MarkText>Search</MarkText>
-          <StyledEnterIcon size={18} />
-        </Mark>
-      );
-    }
+    const hintConfig = isCompact ? HINT_CONFIG.compact : !commandMode ? HINT_CONFIG.default : null;
 
-    if (!commandMode) {
-      return (
-        <Mark>
-          <MarkText>Search Actions</MarkText>
-          <MarkTextSign>Tab</MarkTextSign>
-        </Mark>
-      );
-    }
+    if (!hintConfig) return null;
 
-    return null;
-  }, [isCompact, isLoading, commandMode]);
+    return (
+      <Mark>
+        <MarkText>{hintConfig.text}</MarkText>
+        {hintConfig.icon}
+      </Mark>
+    );
+  };
 
   useEffect(() => {
     const timeoutId = setTimeout(() => {
@@ -100,17 +95,17 @@ function Filter() {
   const [label, placeholder = ''] = getCommandLabelAndPlaceholder(commandMode);
 
   return (
-    <FilterContainer $layout={actionsLayout}>
+    <FilterContainer $commandMode={commandMode}>
       <StyledSearchIcon size={16} />
       {commandMode !== '' && <Mode>{label}</Mode>}
       <Input
-        placeholder={commandMode ? placeholder : 'Search application menus...'}
+        placeholder={commandMode ? placeholder : 'Type to search all menus...'}
         value={filter}
         onChange={handleChange}
         ref={filterRef}
         autoFocus
       />
-      {renderTips()}
+      {renderHints()}
     </FilterContainer>
   );
 }

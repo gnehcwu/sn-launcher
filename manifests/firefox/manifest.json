@@ -1,8 +1,8 @@
 {
-  "manifest_version": 2,
+  "manifest_version": 3,
   "name": "SN Launcher - ServiceNow utility tool",
   "description": "ServiceNow utility tool, search and navigate with a command palette.(personal project, not affiliated to ServiceNow)",
-  "version": "1.2.2",
+  "version": "1.2.3",
   "content_scripts": [
     {
       "matches": ["<all_urls>"],
@@ -10,14 +10,20 @@
       "run_at": "document_idle"
     }
   ],
-  "browser_action": {
-    "default_icon": "../../assets/icon.png"
+  "action": {
+    "default_icon": {
+      "16": "../../assets/icon.png",
+      "32": "../../assets/icon.png",
+      "48": "../../assets/icon.png",
+      "128": "../../assets/icon.png"
+    },
+    "default_title": "SN Launcher"
   },
   "background": {
     "scripts": ["../../src/scripts/background.ts"]
   },
   "commands": {
-    "snl-toggle-launcher": {
+    "snl-toggle-launcher-command": {
       "suggested_key": {
         "windows": "Ctrl+Shift+L",
         "mac": "Command+Shift+L",
@@ -25,6 +31,33 @@
         "linux": "Ctrl+Shift+L"
       },
       "description": "Open launcher"
+    },
+    "snl-switch-scope-command": {
+      "suggested_key": {
+        "windows": "Ctrl+Shift+S",
+        "mac": "Command+Shift+S",
+        "chromeos": "Ctrl+Shift+S",
+        "linux": "Ctrl+Shift+S"
+      },
+      "description": "Switch scope"
+    },
+    "snl-search-table-command": {
+      "suggested_key": {
+        "windows": "Alt+Shift+A",
+        "mac": "Alt+Shift+A",
+        "chromeos": "Alt+Shift+A",
+        "linux": "Alt+Shift+A"
+      },
+      "description": "Search table"
+    },
+    "snl-search-history-command": {
+      "suggested_key": {
+        "windows": "Alt+Shift+H",
+        "mac": "Alt+Shift+H",
+        "chromeos": "Alt+Shift+H",
+        "linux": "Alt+Shift+H"
+      },
+      "description": "Search history"
     }
   },
   "permissions": ["tabs", "activeTab"],

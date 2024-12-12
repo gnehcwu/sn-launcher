@@ -42,12 +42,11 @@ export const Launcher = styled.div`
 
 interface PaletteContainerProps {
   $isCompact: boolean;
-  $shouldAnimate: boolean;
+  $shouldAttractAttention: boolean;
+  $isInitialShow: boolean;
 }
 
 export const PaletteContainer = styled.div<PaletteContainerProps>`
-  --scale: scale 175ms cubic-bezier(0.16, 1, 0.3, 1);
-
   @media (min-width: 768px) {
     position: absolute;
     left: calc(50vw - 384px);
@@ -64,13 +63,35 @@ export const PaletteContainer = styled.div<PaletteContainerProps>`
   border: 1px solid var(--sn-launcher-text-info);
   transform-origin: center center;
   font-size: 10px;
-  animation: ${(props) => (props.$shouldAnimate ? 'var(--scale)' : 'none')};
+
+  --scale: scale 175ms cubic-bezier(0.16, 1, 0.3, 1);
+  --show: show 125ms ease-in-out;
+  /*
+    Don't animate the palette when reduced motion is preferred.
+  */
+  @media (prefers-reduced-motion: no-preference) {
+    animation: ${props => {
+      if (props.$isInitialShow) {
+        return 'var(--show)';
+      }
+      return props.$shouldAttractAttention ? 'var(--scale)' : 'none';
+    }};
+  }
 
   @keyframes scale {
     0% {
       transform: scale(1);
     }
     50% {
+      transform: scale(0.99);
+    }
+    100% {
+      transform: scale(1);
+    }
+  }
+
+  @keyframes show {
+    0% {
       transform: scale(0.99);
     }
     100% {

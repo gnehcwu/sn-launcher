@@ -8,15 +8,14 @@ import useLauncherStore from '../../../store/launcherStore';
 import { useLauncherData, useHistory, useTable, useScope } from '../../../hooks';
 import { Filter, MenuList, Footer } from '../../common';
 import {
-  COMMAND_MODES,
-  isCompactMode,
+  isCompactLayoutMode,
   isTableMode,
   isHistoryMode,
   isSwitchScopeMode,
   isActionsMode,
 } from '../../../utilities/configs/commands';
 import action from './action';
-import { SN_LAUNCHER_ACTIONS } from '../../../utilities/configs/constants';
+import { COMMAND_MODES, SN_LAUNCHER_COMMAND_SHORTCUTS } from '../../../utilities/configs/constants';
 import { PaletteContainer, Launcher } from './Palette.styles';
 
 function Palette() {
@@ -31,7 +30,8 @@ function Palette() {
   const reset = useLauncherStore((state) => state.reset);
 
   const totalCount = useRef<number>(0);
-  const [shouldAnimate, setShouldAnimate] = useState(true);
+  const [shouldAttractAttention, setShouldAttractAttention] = useState(false);
+  const [isInitialShow, setIsInitialShow] = useState(true);
   const [currentMenuList, setCurrentMenuList] = useState<CommandItem[]>([]);
 
   const [menus, commands] = useLauncherData();
@@ -92,7 +92,13 @@ function Palette() {
     }
   };
 
-  useChromeMessage(SN_LAUNCHER_ACTIONS.TOGGLE_LAUNCHER, () => reset(!isShown));
+  // Register extensioncommand shortcuts
+  Object.entries(SN_LAUNCHER_COMMAND_SHORTCUTS).forEach(([shortcut, mode]) => {
+    useChromeMessage(shortcut, () => {
+      reset(!isShown);
+      if (mode) updateCommandMode(mode);
+    });
+  });
 
   useEffect(() => {
     try {
@@ -119,15 +125,28 @@ function Palette() {
   }, [commandMode, filter, commands, scopes, tables, histories, menus]);
 
   useEffect(() => {
-    setShouldAnimate(true);
-    const timer = setTimeout(() => setShouldAnimate(false), 175);
-    return () => clearTimeout(timer);
-  }, [isShown, commandMode]);
+    if (commandMode && !isInitialShow) {
+      setShouldAttractAttention(true);
+      const timer = setTimeout(() => setShouldAttractAttention(false), 175);
+
+      return () => clearTimeout(timer);
+    }
+  }, [commandMode, isInitialShow]);
+
+  useEffect(() => {
+    if (isShown) {
+      // Reset transition state whenever launcher is shown
+      setIsInitialShow(true);
+      const timer = setTimeout(() => setIsInitialShow(false), 125);
+
+      return () => clearTimeout(timer);
+    }
+  }, [isShown]);
 
   // Avoid rendering the launcher if there is no valid token
   if (!token) return null;
 
-  const isCompact = isCompactMode(commandMode);
+  const isCompact = isCompactLayoutMode(commandMode);
 
   return (
     isShown && (
@@ -135,8 +154,9 @@ function Palette() {
         <RemoveScroll>
           <Launcher onClick={handleClick}>
             <PaletteContainer
-              $shouldAnimate={shouldAnimate}
+              $shouldAttractAttention={shouldAttractAttention}
               $isCompact={isCompact}
+              $isInitialShow={isInitialShow}
               onKeyDown={handleKeydown}
             >
               <Filter />

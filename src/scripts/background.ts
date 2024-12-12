@@ -1,7 +1,7 @@
 import browser from 'webextension-polyfill';
 import { SN_LAUNCHER_ACTIONS } from '../utilities/configs/constants';
+import { LauncherActionValue } from 'types';
 
-// Interface for message requests
 interface MessageRequest {
   action: typeof SN_LAUNCHER_ACTIONS[keyof typeof SN_LAUNCHER_ACTIONS];
   url?: string;
@@ -17,7 +17,7 @@ async function getActiveTab(): Promise<browser.Tabs.Tab | undefined> {
   return tab;
 }
 
-async function notifyContent(action: string): Promise<void> {
+async function notifyContent(action: LauncherActionValue): Promise<void> {
   try {
     const activeTab = await getActiveTab();
 
@@ -32,12 +32,12 @@ async function notifyContent(action: string): Promise<void> {
 }
 
 (browser.action || browser.browserAction).onClicked.addListener(() => {
-  notifyContent(SN_LAUNCHER_ACTIONS.TOGGLE_LAUNCHER);
+  notifyContent(SN_LAUNCHER_ACTIONS.TOGGLE_LAUNCHER_COMMAND);
 });
 
 browser.commands.onCommand.addListener((command: string) => {
-  if (command === SN_LAUNCHER_ACTIONS.TOGGLE_LAUNCHER) {
-    notifyContent(SN_LAUNCHER_ACTIONS.TOGGLE_LAUNCHER);
+  if (Object.values(SN_LAUNCHER_ACTIONS).includes(command as LauncherActionValue)) {
+    notifyContent(command as LauncherActionValue);
   }
 });
 
@@ -45,7 +45,7 @@ browser.runtime.onMessage.addListener(async (request: MessageRequest) => {
   try {
     const { action, url } = request || {};
 
-    if (action === SN_LAUNCHER_ACTIONS.OPEN_TAB && url) {
+    if (action === SN_LAUNCHER_ACTIONS.OPEN_TAB_COMMAND && url) {
       await browser.tabs.create({ url, active: true });
     }
   } catch (error) {

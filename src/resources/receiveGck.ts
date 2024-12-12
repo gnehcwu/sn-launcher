@@ -15,6 +15,6 @@ const receiveGck = async (event: GckEvent) => {
   }
 };
 
-export default function injectGckReceiver() {
+export default function registerGckReceiver() {
   window.addEventListener('message', receiveGck as (ev: MessageEvent) => void);
 }

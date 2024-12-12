@@ -24,8 +24,6 @@ export default function usePaletteData(): [
 
         setMenus(fetchedMenus);
         setCommands(fetchedCommands);
-
-        updateIsLoading(false);
       } catch (error) {
         console.error('SN Launcher: failed to fetch launcher data:', error);
       } finally {

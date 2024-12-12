@@ -1,13 +1,34 @@
 import styled from 'styled-components';
-import { Search as SearchIcon, CornerDownLeft, Loader } from 'react-feather';
+import { Search as SearchIcon, CornerDownLeft } from 'lucide-react';
+import { Keyboard } from '../../shared';
+import { isCompactLayoutMode, isFullLayoutMode } from 'utilities/configs/commands';
+import { CommandMode } from 'types';
+
+const LAYOUT_PATTERNS = {
+  EXTENDED: 'auto auto 1fr',
+  COMPACT: 'auto auto 1fr auto',
+  DEFAULT: 'auto 1fr auto',
+} as const;
+
+function getLayoutPattern(commandMode: CommandMode) {
+  if (isFullLayoutMode(commandMode)) {
+    return LAYOUT_PATTERNS.EXTENDED;
+  }
+
+  if (isCompactLayoutMode(commandMode)) {
+    return LAYOUT_PATTERNS.COMPACT;
+  }
+
+  return LAYOUT_PATTERNS.DEFAULT;
+}
 
 interface FilterContainerProps {
-  $layout: string;
+  $commandMode: CommandMode;
 }
 
 export const FilterContainer = styled.div<FilterContainerProps>`
   display: grid;
-  grid-template-columns: ${(props) => props.$layout};
+  grid-template-columns: ${(props) => getLayoutPattern(props.$commandMode)};
   align-items: center;
   justify-content: center;
   column-gap: 12px;
@@ -69,15 +90,11 @@ export const MarkText = styled.span`
   font-size: 1.25em;
 `;
 
-export const MarkTextSign = styled.span`
-  display: inline-grid;
-  place-content: center;
-  background-color: var(--sn-launcher-surface-info);
-  border-radius: 4px;
-  padding: 4px;
+export const KeyboardTab = styled(Keyboard)`
   color: var(--sn-launcher-text-secondary);
+  padding: 5px;
   font-size: 1.25em;
-  letter-spacing: 1px;
+  letter-spacing: 0.65px;
 `;
 
 export const StyledSearchIcon = styled(SearchIcon)`

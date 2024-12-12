@@ -1,4 +1,5 @@
 import styled from 'styled-components';
+import { Keyboard } from '../../shared';
 
 export const FooterContainer = styled.div`
   padding: 10px 16px;
@@ -22,17 +23,7 @@ export const MarkTotal = styled(Mark)`
   font-weight: 600;
 `;
 
-export const MarkSign = styled.span`
-  padding: 3px 5px;
-  font-size: 1.15em;
-  display: inline-grid;
-  place-content: center;
-  background-color: var(--sn-launcher-surface-info);
-  border-radius: 4px;
-  line-height: 100%;
-`;
-
-export const MarkTextSign = styled(MarkSign)`
+export const KeyboardESC = styled(Keyboard)`
   font-size: 0.85em;
   padding: 5px;
-`; 
+`;

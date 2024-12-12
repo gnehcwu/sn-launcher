@@ -35,11 +35,18 @@ const useLauncherStore = create<LauncherState & LauncherActions>((set) => ({
     set({ commandMode, filter, selected: 0 });
   },
   reset: (isShown) => {
-    set({ filter: '', selected: 0, commandMode: '', isShown: isShown ?? false, isLoading: false });
+    set((state) => ({
+      filter: '',
+      selected: 0,
+      commandMode: '',
+      isShown: isShown ?? false,
+      // reset will be called by commands
+      // check isShown to avoid interfering
+      // only reset isLoading when closing the palette
+      isLoading: isShown === false ? false : state.isLoading,
+    }));
   },
-  updateSelected: (selected) => {
-    set({ selected });
-  },
+  updateSelected: (selected) => set({ selected }),
   updateFilter: (filter) => set({ filter, selected: 0 }),
   updateIsLoading: (isLoading) => set({ isLoading }),
   updateIsShown: (isShown) => set({ isShown }),

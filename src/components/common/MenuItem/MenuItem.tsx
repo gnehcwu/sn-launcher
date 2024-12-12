@@ -1,14 +1,6 @@
 import { memo } from 'react';
 import type { CommandItem } from '../../../types';
-import {
-  MenuContent,
-  MenuLabel,
-  MenuSubLabel,
-  Menu,
-  Mark,
-  MarkText,
-  StyledEnterIcon,
-} from './MenuItem.styles';
+import { MenuLabel, MenuSubLabel, Menu, MenuIcon } from './MenuItem.styles';
 
 interface MenuItemProps {
   menu: CommandItem;
@@ -18,7 +10,7 @@ interface MenuItemProps {
 }
 
 function MenuItem({ menu, active, onSelect, onClick }: MenuItemProps) {
-  const { label, fullLabel, subLabel, target, description } = menu;
+  const { icon, label, fullLabel, subLabel, target, description } = menu;
 
   const sub = subLabel || (target ? target.split('?')[0] : description);
 
@@ -27,20 +19,16 @@ function MenuItem({ menu, active, onSelect, onClick }: MenuItemProps) {
       role="option"
       aria-selected={active}
       $active={active}
+      $hasIcon={!!icon}
       onPointerMove={onSelect}
       onClick={(e) => {
         e.stopPropagation();
         onClick();
       }}
     >
-      <MenuContent>
-        <MenuLabel>{fullLabel ?? label}</MenuLabel>
-        <MenuSubLabel>{sub}</MenuSubLabel>
-      </MenuContent>
-      <Mark $active={active}>
-        <MarkText>Select</MarkText>
-        <StyledEnterIcon size={18} />
-      </Mark>
+      {icon && <MenuIcon>{icon}</MenuIcon>}
+      <MenuLabel>{fullLabel ?? label}</MenuLabel>
+      <MenuSubLabel>{sub}</MenuSubLabel>
     </Menu>
   );
 }

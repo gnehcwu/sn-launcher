@@ -1,5 +1,6 @@
 import React from 'react';
-import { FooterContainer, Mark, MarkSign, MarkTextSign, MarkTotal } from './Footer.styles';
+import { Keyboard } from '../../shared';
+import { FooterContainer, Mark, KeyboardESC, MarkTotal } from './Footer.styles';
 
 interface FooterProps {
   totalCount: number;
@@ -10,6 +11,7 @@ const KEYBOARD_SYMBOLS = {
   UP: '↑',
   DOWN: '↓',
   ESC: 'ESC',
+  ENTER: '⏎',
 } as const;
 
 function Footer({ totalCount, currentCount }: FooterProps) {
@@ -19,11 +21,14 @@ function Footer({ totalCount, currentCount }: FooterProps) {
         {currentCount} / {totalCount}
       </MarkTotal>
       <Mark>
-        <MarkTextSign>{KEYBOARD_SYMBOLS.ESC}</MarkTextSign> to close
+        <KeyboardESC>{KEYBOARD_SYMBOLS.ESC}</KeyboardESC> to close
       </Mark>
       <Mark>
-        <MarkSign>{KEYBOARD_SYMBOLS.UP}</MarkSign>
-        <MarkSign>{KEYBOARD_SYMBOLS.DOWN}</MarkSign> to navigate
+        <Keyboard>{KEYBOARD_SYMBOLS.ENTER}</Keyboard> to open
+      </Mark>
+      <Mark>
+        <Keyboard>{KEYBOARD_SYMBOLS.UP}</Keyboard>
+        <Keyboard>{KEYBOARD_SYMBOLS.DOWN}</Keyboard> to navigate
       </Mark>
     </FooterContainer>
   );

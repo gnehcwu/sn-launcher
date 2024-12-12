@@ -1,26 +1,34 @@
 import styled from 'styled-components';
-import { CornerDownLeft } from 'react-feather';
 
 interface StyledMenuProps {
   $active: boolean;
+  $hasIcon: boolean;
 }
 
-interface MarkProps {
-  $active: boolean;
-}
+export const getMenuItemColor = (active: boolean) =>
+  active ? 'white !important' : 'var(--sn-launcher-text-primary)';
 
-export const MenuContent = styled.div`
-  display: flex;
-  flex-direction: column;
-  row-gap: 1px;
+export const Menu = styled.div<StyledMenuProps>`
+  padding: 8px 12px;
+  border-radius: 8px;
+  display: grid;
+  grid-template-columns: ${props => props.$hasIcon ? 'auto 1fr' : '1fr'};
+  grid-column-gap: ${props => props.$hasIcon ? '10px' : '0'};
+  grid-row-gap: 1px;
+  align-items: center;
+  background-color: ${(props) => props.$active && 'var(--sn-launcher-brand)'};
+  transition: background-color 0.2s ease;
+
+  --menu-primary-color: ${(props) => props.$active ? 'white' : 'var(--sn-launcher-text-primary)'};
+  --menu-secondary-color: ${(props) =>
+    props.$active ? 'rgba(255, 255, 255, 0.85)' : 'var(--sn-launcher-text-secondary)'};
 `;
 
 export const MenuLabel = styled.span`
   user-select: none;
-  color: var(--sn-launcher-text-primary);
+  color: var(--menu-primary-color);
   font-size: 1.4em;
   line-height: 17.5px;
-  user-select: none;
 
   overflow: hidden;
   display: -webkit-box;
@@ -30,44 +38,20 @@ export const MenuLabel = styled.span`
 `;
 
 export const MenuSubLabel = styled(MenuLabel)`
-  opacity: 0.85;
   font-size: 1.2em;
-  line-height: 14.5px;
-  text-transform: lowercase;
-  color: var(--sn-launcher-text-secondary);
+  color: var(--menu-secondary-color);
 `;
 
-export const Menu = styled.li<StyledMenuProps>`
-  padding: 8px 12px;
-  border-radius: 8px;
-  display: grid;
-  grid-template-columns: 1fr min-content;
-  justify-content: space-between;
-  column-gap: 8px;
-  background-color: ${(props) => props.$active && 'var(--sn-launcher-brand)'};
+export const MenuIcon = styled.div`
+  grid-row: 1 / 3;
+  grid-column: 1;
 
-  & span {
-    color: ${(props) => (props.$active ? 'white !important' : 'var(--sn-launcher-text-primary)')};
-  }
+  display: inline-grid;
+  place-content: center;
 
   & svg {
-    color: ${(props) => (props.$active ? 'white !important' : 'var(--sn-launcher-text-primary)')};
+    width: 21px;
+    height: 21px;
+    color: var(--menu-primary-color);
   }
 `;
-
-export const Mark = styled.div<MarkProps>`
-  display: ${(props) => (props.$active ? 'grid' : 'none')};
-  grid-template-columns: 1fr 1fr;
-  column-gap: 4px;
-  align-items: center;
-  color: var(--sn-launcher-text-secondary);
-`;
-
-export const MarkText = styled.span`
-  font-size: 1.25em;
-  color: var(--sn-launcher-text-primary);
-`;
-
-export const StyledEnterIcon = styled(CornerDownLeft)`
-  color: var(--sn-launcher-text-primary);
-`; 

@@ -1,69 +1,68 @@
+import React from 'react';
 import { clearCache, searchDoc, searchComponent, goto } from '../api/service';
 import type { CommandMode, CommandItem } from '../../types';
-
-export enum COMMAND_MODES {
-  FIND_RECORD = 'find_record',
-  SEARCH_DOC = 'search_doc',
-  SEARCH_COMP = 'search_comp',
-  SWITCH_SCOPE = 'switch_scope',
-  GO_TO = 'go_to',
-  ACTIONS = 'actions',
-  HISTORY = 'history',
-  TABLE = 'table',
-}
+import { COMMAND_MODES } from './constants';
+import { ArrowRightLeft, Table2, TextSearch, History, Route, Files, Component, GalleryVerticalEnd} from 'lucide-react';
 
 const commands: CommandItem[] = [
-  {
-    key: crypto.randomUUID(),
-    fullLabel: 'Tables',
-    mode: COMMAND_MODES.TABLE,
-    subLabel: 'Show all tables',
-    placeholderText: 'search tables...',
-  },
   {
     key: crypto.randomUUID(),
     fullLabel: 'Switch scope',
     mode: COMMAND_MODES.SWITCH_SCOPE,
     subLabel: 'Switch to application scope',
-    placeholderText: 'Search application scope...',
+    placeholderText: 'Type to search...',
+    icon: React.createElement(ArrowRightLeft),
+  },
+  {
+    key: crypto.randomUUID(),
+    fullLabel: 'Tables',
+    mode: COMMAND_MODES.TABLE,
+    subLabel: 'Show all tables',
+    placeholderText: 'Type to search...',
+    icon: React.createElement(Table2),
   },
   {
     key: crypto.randomUUID(),
     fullLabel: 'Find record',
     mode: COMMAND_MODES.FIND_RECORD,
     subLabel: 'Find record by sys id',
-    placeholderText: 'Search sys id...',
+    placeholderText: 'Type sys id to search...',
+    icon: React.createElement(TextSearch),
   },
   {
     key: crypto.randomUUID(),
     fullLabel: 'History',
     mode: COMMAND_MODES.HISTORY,
-    subLabel: 'Show history',
-    placeholderText: 'Search history...',
+    subLabel: 'Search history',
+    placeholderText: 'Type to search...',
+    icon: React.createElement(History),
   },
   {
     key: crypto.randomUUID(),
     fullLabel: 'Go to',
     action: goto,
     mode: COMMAND_MODES.GO_TO,
-    subLabel: 'Shortcut with {table}.do / {table}.list',
+    subLabel: 'Shortcut to {table}.do / {table}.list',
     placeholderText: '{table}.do / {table}.list',
+    icon: React.createElement(Route),
   },
   {
     key: crypto.randomUUID(),
     fullLabel: 'Search documentation',
     action: searchDoc,
     mode: COMMAND_MODES.SEARCH_DOC,
-    subLabel: 'Search Servicenow development documentation',
-    placeholderText: 'Search documentation...',
+    subLabel: 'Search development documentation',
+    placeholderText: 'Type to search...',
+    icon: React.createElement(Files),
   },
   {
     key: crypto.randomUUID(),
     fullLabel: 'Search seismic component',
     action: searchComponent,
     mode: COMMAND_MODES.SEARCH_COMP,
-    subLabel: 'Search Next Experience components',
-    placeholderText: 'Search Next Experience component...',
+    subLabel: 'Search Next Experience seismic components',
+    placeholderText: 'Type to search...',
+    icon: React.createElement(Component),
   },
   {
     key: crypto.randomUUID(),
@@ -71,12 +70,14 @@ const commands: CommandItem[] = [
     fullLabel: 'Actions',
     subLabel: 'Show all actions',
     visible: false,
+    placeholderText: 'Type to search...',
   },
   {
     key: crypto.randomUUID(),
     fullLabel: 'Clear cache',
     action: clearCache,
     subLabel: 'Clear client cache and refresh',
+    icon: React.createElement(GalleryVerticalEnd),
   },
 ];
 
@@ -109,14 +110,36 @@ export function getCommandAction(commandMode: CommandMode): ((...args: any[]) =>
   return command?.action;
 }
 
-export function isCompactMode(commandMode: CommandMode): boolean {
-  const nonCompactModes = new Set([
-    COMMAND_MODES.SWITCH_SCOPE,
-    COMMAND_MODES.ACTIONS,
-    COMMAND_MODES.HISTORY,
-    COMMAND_MODES.TABLE
+/**
+ * Checks if the given command mode is a compact mode.
+ * Compact modes are specific command types that use a condensed UI layout.
+ * @param {CommandMode} commandMode - The command mode to check.
+ * @returns {boolean} - True if the command mode is a compact mode and the mode is not empty.
+ */
+export function isCompactLayoutMode(commandMode: CommandMode): boolean {
+  const compactModes = new Set([
+    COMMAND_MODES.FIND_RECORD,
+    COMMAND_MODES.GO_TO,
+    COMMAND_MODES.SEARCH_DOC,
+    COMMAND_MODES.SEARCH_COMP,
   ]);
-  return Boolean(commandMode) && !nonCompactModes.has(commandMode as COMMAND_MODES);
+  return Boolean(commandMode) && compactModes.has(commandMode as COMMAND_MODES);
+}
+
+/**
+ * Checks if the given command mode is an extended mode.
+ * Extended modes are command types that use an expanded UI layout with additional features.
+ * @param {CommandMode} commandMode - The command mode to check.
+ * @returns {boolean} - True if the command mode is an extended mode and the mode is not empty.
+ */
+export function isFullLayoutMode(commandMode: CommandMode): boolean {
+  return (
+    Boolean(commandMode) &&
+    (isActionsMode(commandMode) ||
+      isSwitchScopeMode(commandMode) ||
+      isTableMode(commandMode) ||
+      isHistoryMode(commandMode))
+  );
 }
 
 /**
@@ -134,48 +157,47 @@ function isMode(commandMode: CommandMode, targetMode: COMMAND_MODES): boolean {
  * @param {CommandMode} commandMode - The command mode to check.
  * @returns {boolean} - True if the command mode is in actions mode, false otherwise.
  */
-export const isActionsMode = (commandMode: CommandMode): boolean => isMode(commandMode, COMMAND_MODES.ACTIONS);
+export const isActionsMode = (commandMode: CommandMode): boolean =>
+  isMode(commandMode, COMMAND_MODES.ACTIONS);
 
 /**
  * Checks if the given command mode is for switching the app.
  * @param {CommandMode} commandMode - The command mode to check.
  * @returns {boolean} - True if the command mode is for switching the app, false otherwise.
  */
-export const isSwitchScopeMode = (commandMode: CommandMode): boolean => isMode(commandMode, COMMAND_MODES.SWITCH_SCOPE);
+export const isSwitchScopeMode = (commandMode: CommandMode): boolean =>
+  isMode(commandMode, COMMAND_MODES.SWITCH_SCOPE);
 
 /**
  * Checks if the given command mode is table mode.
  * @param {CommandMode} commandMode - The command mode to check.
  * @returns {boolean} - True if the command mode is table mode, false otherwise.
  */
-export const isTableMode = (commandMode: CommandMode): boolean => isMode(commandMode, COMMAND_MODES.TABLE);
+export const isTableMode = (commandMode: CommandMode): boolean =>
+  isMode(commandMode, COMMAND_MODES.TABLE);
 
 /**
  * Checks if the given command mode is history mode.
  * @param {CommandMode} commandMode - The command mode to check.
  * @returns {boolean} - True if the command mode is history mode, false otherwise.
  */
-export const isHistoryMode = (commandMode: CommandMode): boolean => isMode(commandMode, COMMAND_MODES.HISTORY);
-
-/**
- * Checks if the given command mode is set to "refresh".
- * @param {CommandMode} commandMode - The command mode to check.
- * @returns {boolean} - True if the command mode is "refresh", false otherwise.
- */
-export const isRefreshMode = (commandMode: CommandMode): boolean => isMode(commandMode, COMMAND_MODES.REFRESH);
+export const isHistoryMode = (commandMode: CommandMode): boolean =>
+  isMode(commandMode, COMMAND_MODES.HISTORY);
 
 /**
  * Checks if the given command mode is in "find record" mode.
  * @param {CommandMode} commandMode - The command mode to check.
  * @returns {boolean} - True if the command mode is in "find record" mode, false otherwise.
  */
-export const isFindSysIdMode = (commandMode: CommandMode): boolean => isMode(commandMode, COMMAND_MODES.FIND_RECORD);
+export const isFindSysIdMode = (commandMode: CommandMode): boolean =>
+  isMode(commandMode, COMMAND_MODES.FIND_RECORD);
 
 /**
  * Checks if the command mode is shortcut mode.
  * @param {CommandMode} commandMode - The command mode to check.
  * @returns {boolean} - True if the command mode is shortcut mode, false otherwise.
  */
-export const isShortcutMode = (commandMode: CommandMode): boolean => isMode(commandMode, COMMAND_MODES.GO_TO);
+export const isShortcutMode = (commandMode: CommandMode): boolean =>
+  isMode(commandMode, COMMAND_MODES.GO_TO);
 
 export default commands;

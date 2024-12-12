@@ -280,7 +280,7 @@ export async function switchToAppById(appId: string) {
  */
 export function searchDoc(input: string) {
   const docUrl = `${SN_LAUNCHER_SEARCH_DOC_URL}${encodeURIComponent(input)}`;
-  messageBackground({ action: SN_LAUNCHER_ACTIONS.OPEN_TAB, url: docUrl });
+  messageBackground({ action: SN_LAUNCHER_ACTIONS.OPEN_TAB_COMMAND, url: docUrl });
 }
 
 /**
@@ -289,7 +289,7 @@ export function searchDoc(input: string) {
  */
 export function searchComponent(input: string) {
   const componentSearchUrl = `${SN_LAUNCHER_SEARCH_COMPONENT_URL}${encodeURIComponent(input)}`;
-  messageBackground({ action: SN_LAUNCHER_ACTIONS.OPEN_TAB, url: componentSearchUrl });
+  messageBackground({ action: SN_LAUNCHER_ACTIONS.OPEN_TAB_COMMAND, url: componentSearchUrl });
 }
 
 /**
@@ -299,7 +299,7 @@ export function searchComponent(input: string) {
  */
 export function gotoTab(segmentUrl: string) {
   const gotoUrl = `${location.protocol}//${window.location.host}/${segmentUrl}`;
-  messageBackground({ action: SN_LAUNCHER_ACTIONS.OPEN_TAB, url: gotoUrl });
+  messageBackground({ action: SN_LAUNCHER_ACTIONS.OPEN_TAB_COMMAND, url: gotoUrl });
 }
 
 /**

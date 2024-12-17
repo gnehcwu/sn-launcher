@@ -50,14 +50,12 @@ h3 {
 
 .platforms {
   display: flex;
-  justify-content: space-between;
+  flex-direction: row;
+  gap: 1.5rem;
 }
 
-.chromiums {
-  display: flex;
-  flex: row;
-  justify-content: space-between;
-  gap: 1.5rem;
+.platforms .firefox {
+  margin-left: 4.5rem;
 }
 
 .logo {

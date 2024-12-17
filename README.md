@@ -1,22 +1,23 @@
 # SN Launcher browser extension
 
-Supercharge your workflow on ServiceNow instance with a crafted command bar.
+Supercharge your workflow on ServiceNow instance with a crafted command palette.
 
-[![SN Launcher youtube](https://img.youtube.com/vi/l-RVEdRNQdg/0.jpg)](https://www.youtube.com/watch?v=l-RVEdRNQdg)
+<a href="https://www.youtube.com/watch?v=nKIqjEVyTgc">
+  <img src="./docs/poster.png" alt="SN Launcher video" width="426" height="240">
+</a>
 
 ## Features
 
-- 🔍 Search and navigate Servicenow menus, history in a command bar
-- 🚀 Action mode
-  - search by sysid
-  - shortcut go to record list or new record
-  - switching between application scopes
-  - Search Servicenow documentation
-  - Search Servicenow next experience components
-- 🔤 Always ready for input & mouse free navigation
-- 🌙 Dark mode
+- Search and navigate ServiceNow instance menus in a command palette
+- Action mode
+  - Find record by sysId
+  - Search tables, histories, developer documentation, and seismic components
+  - Switch between application scopes
+- Browser extension shortcut commands to instantly enter action mode
+- Enable animations in accordance with the user's system motion preferences.
+- Light / Dark theme
 
-## Install
+## Install from store
 
 [Chrome, Edge, Chromium based browsers](https://chrome.google.com/webstore/detail/sn-launcher-servicenow-ut/pngglpnmlfdihkcdglcflibenhmcipmg)
 
@@ -24,6 +25,4 @@ Supercharge your workflow on ServiceNow instance with a crafted command bar.
 
 ## License
 
-[MIT](https://opensource.org/licenses/MIT)
-
-Copyright (c) 2023-present, Cheng Wu
+[MIT](LICENSE)

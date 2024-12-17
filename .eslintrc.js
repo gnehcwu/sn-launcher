@@ -7,6 +7,7 @@ module.exports = {
   },
   extends: [
     'eslint:recommended',
+    'plugin:@typescript-eslint/recommended',
     'plugin:jsx-a11y/strict',
     'plugin:prettier/recommended',
     'plugin:react/recommended',
@@ -19,7 +20,7 @@ module.exports = {
       jsx: true,
     },
   },
-  plugins: ['react', 'react-hooks', 'jsx-a11y'],
+  plugins: ['react', 'react-hooks', 'jsx-a11y', '@typescript-eslint'],
   settings: {
     react: {
       version: 'detect',

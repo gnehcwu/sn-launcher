@@ -1,8 +1,18 @@
 import React from 'react';
-import { clearCache, searchDoc, searchComponent, goto } from '../api/service';
+import { clearCache, searchDoc, searchComponent, goto, about } from '../api/service';
 import type { CommandMode, CommandItem } from '../../types';
 import { COMMAND_MODES } from './constants';
-import { ArrowRightLeft, Table2, TextSearch, History, Route, Files, Component, GalleryVerticalEnd} from 'lucide-react';
+import {
+  ArrowRightLeft,
+  Table2,
+  TextSearch,
+  History,
+  Route,
+  Files,
+  Component,
+  GalleryVerticalEnd,
+  BadgeInfo,
+} from 'lucide-react';
 
 const commands: CommandItem[] = [
   {
@@ -74,10 +84,17 @@ const commands: CommandItem[] = [
   },
   {
     key: crypto.randomUUID(),
-    fullLabel: 'Clear cache',
     action: clearCache,
+    fullLabel: 'Clear cache',
     subLabel: 'Clear client cache and refresh',
     icon: React.createElement(GalleryVerticalEnd),
+  },
+  {
+    key: crypto.randomUUID(),
+    action: about,
+    fullLabel: 'About',
+    subLabel: 'More about this tool',
+    icon: React.createElement(BadgeInfo),
   },
 ];
 

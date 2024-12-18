@@ -12,6 +12,8 @@ export const SN_LAUNCHER_TABLE_ENDPOINT = 'api/now/table/sys_db_object?sysparm_f
 export const SN_LAUNCHER_MENU_ENDPOINT = 'api/now/ui/polaris/menu';
 export const SN_LAUNCHER_SWITCH_APP_ENDPOINT = 'api/now/ui/concoursepicker/application';
 export const SN_LAUNCHER_TAB_PREFIX = 'now/nav/ui/classic/params/target/';
+export const SN_LAUNCHER_SCRIPT_ENDPOINT = 'sys.scripts.do';
+export const SN_LAUNCHER_ABOUT_URL = 'https://github.com/gnehcwu/sn-launcher';
 export const SN_LAUNCHER_ACTIONS: Record<LauncherActionType, LauncherActionValue> = {
   TOGGLE_LAUNCHER_COMMAND: 'snl-toggle-launcher-command',
   OPEN_TAB_COMMAND: 'snl-open-tab-form-launcher-command',
@@ -30,8 +32,24 @@ export enum COMMAND_MODES {
   TABLE = 'table',
 }
 export const SN_LAUNCHER_COMMAND_SHORTCUTS = {
-  [SN_LAUNCHER_ACTIONS.TOGGLE_LAUNCHER_COMMAND]: undefined,
-  [SN_LAUNCHER_ACTIONS.SWITCH_SCOPE_COMMAND]: COMMAND_MODES.SWITCH_SCOPE,
-  [SN_LAUNCHER_ACTIONS.SEARCH_TABLE_COMMAND]: COMMAND_MODES.TABLE,
-  [SN_LAUNCHER_ACTIONS.SEARCH_HISTORY_COMMAND]: COMMAND_MODES.HISTORY,
+  [SN_LAUNCHER_ACTIONS.TOGGLE_LAUNCHER_COMMAND]: {
+    commandMode: '',
+    title: 'Open SN Launcher',
+    isContextMenu: false,
+  },
+  [SN_LAUNCHER_ACTIONS.SWITCH_SCOPE_COMMAND]: {
+    commandMode: COMMAND_MODES.SWITCH_SCOPE,
+    title: 'Switch scope',
+    isContextMenu: true,
+  },
+  [SN_LAUNCHER_ACTIONS.SEARCH_TABLE_COMMAND]: {
+    commandMode: COMMAND_MODES.TABLE,
+    title: 'Search table',
+    isContextMenu: true,
+  },
+  [SN_LAUNCHER_ACTIONS.SEARCH_HISTORY_COMMAND]: {
+    commandMode: COMMAND_MODES.HISTORY,
+    title: 'Search history',
+    isContextMenu: true,
+  },
 } as const;

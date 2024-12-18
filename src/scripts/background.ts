@@ -1,9 +1,13 @@
 import browser from 'webextension-polyfill';
-import { SN_LAUNCHER_ACTIONS } from '../utilities/configs/constants';
+import {
+  SN_LAUNCHER_ABOUT_URL,
+  SN_LAUNCHER_ACTIONS,
+  SN_LAUNCHER_COMMAND_SHORTCUTS,
+} from '../utilities/configs/constants';
 import { LauncherActionValue } from 'types';
 
 interface MessageRequest {
-  action: typeof SN_LAUNCHER_ACTIONS[keyof typeof SN_LAUNCHER_ACTIONS];
+  action: (typeof SN_LAUNCHER_ACTIONS)[keyof typeof SN_LAUNCHER_ACTIONS];
   url?: string;
 }
 
@@ -50,5 +54,40 @@ browser.runtime.onMessage.addListener(async (request: MessageRequest) => {
     }
   } catch (error) {
     console.error('SN Launcher: Error handling message:', error);
+  }
+});
+
+browser.runtime.onInstalled.addListener(() => {
+  browser.contextMenus.create({
+    id: 'shortcuts',
+    title: 'Shortcuts',
+    contexts: ['action'],
+  });
+
+  Object.entries(SN_LAUNCHER_COMMAND_SHORTCUTS).forEach(([key, { title, isContextMenu }]) => {
+    if (isContextMenu === true) {
+      browser.contextMenus.create({
+        id: key,
+        parentId: 'shortcuts',
+        title,
+        contexts: ['action'],
+      });
+    }
+  });
+
+  browser.contextMenus.create({
+    id: 'about',
+    title: 'More about SN Launcher',
+    contexts: ['action'],
+  });
+});
+
+browser.contextMenus.onClicked.addListener((info) => {
+  const { menuItemId } = info;
+
+  if (menuItemId === 'about') {
+    browser.tabs.create({ url: SN_LAUNCHER_ABOUT_URL, active: true });
+  } else if (Object.keys(SN_LAUNCHER_COMMAND_SHORTCUTS).includes(menuItemId as string)) {
+    notifyContent(menuItemId as LauncherActionValue);
   }
 });

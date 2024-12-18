@@ -92,11 +92,12 @@ function Palette() {
     }
   };
 
-  // Register extensioncommand shortcuts
-  Object.entries(SN_LAUNCHER_COMMAND_SHORTCUTS).forEach(([shortcut, mode]) => {
+  
+  // Register extension command shortcuts
+  Object.entries(SN_LAUNCHER_COMMAND_SHORTCUTS).forEach(([shortcut, { commandMode }]) => {
     useChromeMessage(shortcut, () => {
       reset(!isShown);
-      if (mode) updateCommandMode(mode);
+      if (commandMode) updateCommandMode(commandMode);
     });
   });
 

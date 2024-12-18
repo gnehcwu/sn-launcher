@@ -3,7 +3,6 @@ import browser from 'webextension-polyfill';
 interface Message {
   action: string;
   url?: string;
-  [key: string]: unknown;
 }
 
 /**

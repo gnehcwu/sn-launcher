@@ -2,7 +2,7 @@
   "manifest_version": 3,
   "name": "SN Launcher - ServiceNow utility tool",
   "description": "ServiceNow utility tool, search and navigate with a command palette.(personal project, not affiliated to ServiceNow)",
-  "version": "1.2.3",
+  "version": "1.2.5",
   "content_scripts": [
     {
       "matches": ["<all_urls>"],
@@ -23,21 +23,20 @@
     "scripts": ["../../src/scripts/background.ts"]
   },
   "commands": {
-    "snl-toggle-launcher-command": {
+    "_execute_action": {
       "suggested_key": {
         "windows": "Ctrl+Shift+L",
         "mac": "Command+Shift+L",
         "chromeos": "Ctrl+Shift+L",
         "linux": "Ctrl+Shift+L"
-      },
-      "description": "Open launcher"
+      }
     },
     "snl-switch-scope-command": {
       "suggested_key": {
-        "windows": "Ctrl+Shift+S",
-        "mac": "Command+Shift+S",
-        "chromeos": "Ctrl+Shift+S",
-        "linux": "Ctrl+Shift+S"
+        "windows": "Alt+Shift+S",
+        "mac": "Alt+Shift+S",
+        "chromeos": "Alt+Shift+S",
+        "linux": "Alt+Shift+S"
       },
       "description": "Switch scope"
     },
@@ -60,7 +59,7 @@
       "description": "Search history"
     }
   },
-  "permissions": ["tabs", "activeTab"],
+  "permissions": ["tabs", "activeTab", "contextMenus"],
   "browser_specific_settings": {
     "gecko": {
       "id": "chengwudev@gmail.com"

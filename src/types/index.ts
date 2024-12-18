@@ -1,4 +1,4 @@
-export type CommandMode = 
+export type CommandMode =
   | 'find_record'
   | 'search_doc'
   | 'search_comp'
@@ -34,14 +34,14 @@ export interface LauncherState {
   initialDataLoaded: boolean;
 }
 
-export type LauncherActionType = 
+export type LauncherActionType =
   | 'TOGGLE_LAUNCHER_COMMAND'
   | 'OPEN_TAB_COMMAND'
   | 'SWITCH_SCOPE_COMMAND'
   | 'SEARCH_TABLE_COMMAND'
   | 'SEARCH_HISTORY_COMMAND';
 
-export type LauncherActionValue = 
+export type LauncherActionValue =
   | 'snl-toggle-launcher-command'
   | 'snl-open-tab-form-launcher-command'
   | 'snl-switch-scope-command'

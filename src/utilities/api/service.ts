@@ -11,6 +11,8 @@ import {
   SN_LAUNCHER_SWITCH_APP_ENDPOINT,
   SN_LAUNCHER_TAB_PREFIX,
   SN_LAUNCHER_ACTIONS,
+  SN_LAUNCHER_ABOUT_URL,
+  SN_LAUNCHER_SCRIPT_ENDPOINT,
 } from '../configs/constants';
 
 /**
@@ -78,8 +80,7 @@ export async function fetchResultViaScript(script: string) {
     const [isValidToken, token] = checkToken();
     if (!isValidToken) return null;
 
-    const { protocol, host } = window.location;
-    const endpoint = `${protocol}//${host}/sys.scripts.do`;
+    const endpoint = `${getBaseUrl()}/${SN_LAUNCHER_SCRIPT_ENDPOINT}`;
 
     const res = await fetch(endpoint, {
       method: 'POST',
@@ -298,7 +299,7 @@ export function searchComponent(input: string) {
  * @param {string} segmentUrl - The URL segment for the tab to navigate to.
  */
 export function gotoTab(segmentUrl: string) {
-  const gotoUrl = `${location.protocol}//${window.location.host}/${segmentUrl}`;
+  const gotoUrl = `${getBaseUrl()}/${segmentUrl}`;
   messageBackground({ action: SN_LAUNCHER_ACTIONS.OPEN_TAB_COMMAND, url: gotoUrl });
 }
 
@@ -326,4 +327,12 @@ export function goto(segment: string) {
   } else {
     gotoTab(`${SN_LAUNCHER_TAB_PREFIX}${segment}`);
   }
+}
+
+/**
+ * Opens the About page in a new tab.
+ * This function sends a message to the background script to open the ServiceNow Launcher's About URL.
+ */
+export function about() {
+  messageBackground({ action: SN_LAUNCHER_ACTIONS.OPEN_TAB_COMMAND, url: SN_LAUNCHER_ABOUT_URL });
 }

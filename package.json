@@ -1,6 +1,6 @@
 {
   "name": "sn-launcher",
-  "version": "1.2.3",
+  "version": "1.2.5",
   "description": "Search and navigate Servicenow menus, documentation, components with a simple command palette interface.",
   "scripts": {
     "start": "parcel watch ./manifests/chromium/manifest.json --host localhost --dist-dir dist/chromium",
@@ -31,7 +31,7 @@
   },
   "devDependencies": {
     "@parcel/config-webextension": "^2.13.2",
-    "@types/chrome": "0.0.224",
+    "@types/chrome": "^0.0.287",
     "@types/react": "^18.2.0",
     "@types/react-dom": "^18.2.0",
     "@types/react-window": "^1.8.8",

@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import type { CommandMode } from '../types';
+import type { CommandMode } from '@/types';
 
 interface LauncherState {
   filter: string;

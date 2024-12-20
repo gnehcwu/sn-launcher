@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import useLauncherStore from '../store/launcherStore';
-import type { CommandItem, CommandMode } from '../types';
+import useLauncherStore from '@store/launcherStore';
+import type { CommandItem, CommandMode } from '@/types';
 
 interface UseFetchDemandItemsOptions {
   fetchFn: () => Promise<CommandItem[]>;

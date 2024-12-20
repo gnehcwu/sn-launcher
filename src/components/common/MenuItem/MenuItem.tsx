@@ -1,5 +1,5 @@
 import { memo } from 'react';
-import type { CommandItem } from '../../../types';
+import type { CommandItem } from '@/types';
 import { MenuLabel, MenuSubLabel, Menu, MenuIcon } from './MenuItem.styles';
 
 interface MenuItemProps {

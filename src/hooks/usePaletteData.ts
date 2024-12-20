@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
-import { fetchMenus, fetchCommands } from '../utilities/api';
-import useLauncherStore from '../store/launcherStore';
-import type { CommandItem } from '../types';
+import { fetchMenus, fetchCommands } from '@utilities/api';
+import useLauncherStore from '@store/launcherStore';
+import type { CommandItem } from '@/types';
 
 export default function usePaletteData(): [
   CommandItem[],

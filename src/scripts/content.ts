@@ -1,7 +1,7 @@
 import React, { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
-import { ShadowRoot, Palette } from '../components/layout';
-import { HOST_ELEMENT_ATTR_ID } from '../utilities/configs/constants';
+import { ShadowRoot, Palette } from '@components/layout';
+import { HOST_ELEMENT_ATTR_ID } from '@utilities/configs/constants';
 import registerGckReceiver from '../resources/receiveGck';
 // @ts-ignore
 import sendGckScript from 'url:../resources/sendGck.ts';

@@ -1,4 +1,4 @@
-import { SN_LAUNCHER_SEND_GCK_EVENT } from '../utilities/configs/constants';
+import { SN_LAUNCHER_SEND_GCK_EVENT } from '@utilities/configs/constants';
 
 function sendGck(maxRetries = 10, interval = 100) {
   let retries = 0;

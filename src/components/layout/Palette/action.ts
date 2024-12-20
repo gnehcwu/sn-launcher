@@ -1,7 +1,7 @@
-import { goto, gotoTab, switchToAppById, getInstanceRecord } from '../../../utilities/api';
-import { getCommandAction } from '../../../utilities/configs/commands';
-import { COMMAND_MODES } from '../../../utilities/configs/constants';
-import type { CommandItem, CommandMode } from '../../../types';
+import { goto, gotoTab, switchToAppById, getInstanceRecord } from '@utilities/api';
+import { getCommandAction } from '@utilities/configs/commands';
+import { COMMAND_MODES } from '@utilities/configs/constants';
+import type { CommandItem, CommandMode } from '@/types';
 
 interface ActionOptions {
   selectedMenu: CommandItem;

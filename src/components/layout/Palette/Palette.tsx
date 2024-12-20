@@ -1,33 +1,44 @@
 import React, { useEffect, useRef, useState } from 'react';
-import type { CommandItem } from '../../../types';
+import type { CommandItem } from '@/types';
 import FocusLock from 'react-focus-lock';
 import { RemoveScroll } from 'react-remove-scroll';
-import useChromeMessage from '../../../hooks/useChromeMessage';
-import scoreItems from '../../../utilities/scoring/scoreItems';
-import useLauncherStore from '../../../store/launcherStore';
-import { useLauncherData, useHistory, useTable, useScope } from '../../../hooks';
-import { Filter, MenuList, Footer } from '../../common';
+import scoreItems from '@utilities/scoring/scoreItems';
+import useLauncherStore from '@store/launcherStore';
+import { useLauncherData, useHistory, useTable, useScope, useChromeMessage } from '@/hooks';
+import { Filter, MenuList, Footer } from '@components/common';
 import {
   isCompactLayoutMode,
   isTableMode,
   isHistoryMode,
   isSwitchScopeMode,
   isActionsMode,
-} from '../../../utilities/configs/commands';
+} from '@/utilities/configs/commands';
 import action from './action';
-import { COMMAND_MODES, SN_LAUNCHER_COMMAND_SHORTCUTS } from '../../../utilities/configs/constants';
+import { COMMAND_MODES, SN_LAUNCHER_COMMAND_SHORTCUTS } from '@utilities/configs/constants';
 import { PaletteContainer, Launcher } from './Palette.styles';
 
 function Palette() {
-  const filter = useLauncherStore((state) => state.filter);
-  const commandMode = useLauncherStore((state) => state.commandMode);
-  const token = useLauncherStore((state) => state.token);
-  const selected = useLauncherStore((state) => state.selected);
-  const isShown = useLauncherStore((state) => state.isShown);
-  const updateCommandMode = useLauncherStore((state) => state.updateCommandMode);
-  const updateSelected = useLauncherStore((state) => state.updateSelected);
-  const updateIsLoading = useLauncherStore((state) => state.updateIsLoading);
-  const reset = useLauncherStore((state) => state.reset);
+  const {
+    filter,
+    commandMode,
+    token,
+    selected,
+    isShown,
+    updateCommandMode,
+    updateSelected,
+    updateIsLoading,
+    reset,
+  } = useLauncherStore((state) => ({
+    filter: state.filter,
+    commandMode: state.commandMode,
+    token: state.token,
+    selected: state.selected,
+    isShown: state.isShown,
+    updateCommandMode: state.updateCommandMode,
+    updateSelected: state.updateSelected,
+    updateIsLoading: state.updateIsLoading,
+    reset: state.reset,
+  }));
 
   const totalCount = useRef<number>(0);
   const [shouldAttractAttention, setShouldAttractAttention] = useState(false);
@@ -82,7 +93,9 @@ function Palette() {
 
   const handleNavigation = (event: React.KeyboardEvent) => {
     const isArrowDown = event.key === 'ArrowDown';
-    const nextIndex = ((isArrowDown ? selected + 1 : selected - 1) + currentMenuList.length) % currentMenuList.length;
+    const nextIndex =
+      ((isArrowDown ? selected + 1 : selected - 1) + currentMenuList.length) %
+      currentMenuList.length;
     updateSelected(nextIndex);
   };
 
@@ -92,7 +105,6 @@ function Palette() {
     }
   };
 
-  
   // Register extension command shortcuts
   Object.entries(SN_LAUNCHER_COMMAND_SHORTCUTS).forEach(([shortcut, { commandMode }]) => {
     useChromeMessage(shortcut, () => {

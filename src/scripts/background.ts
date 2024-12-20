@@ -3,8 +3,8 @@ import {
   SN_LAUNCHER_ABOUT_URL,
   SN_LAUNCHER_ACTIONS,
   SN_LAUNCHER_COMMAND_SHORTCUTS,
-} from '../utilities/configs/constants';
-import { LauncherActionValue } from 'types';
+} from '@utilities/configs/constants';
+import type { LauncherActionValue } from '@/types';
 
 interface MessageRequest {
   action: (typeof SN_LAUNCHER_ACTIONS)[keyof typeof SN_LAUNCHER_ACTIONS];

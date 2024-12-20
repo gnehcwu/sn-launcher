@@ -1,6 +1,6 @@
 import useFetchDemandItems from './useFetchDemandItems';
-import { fetchScopes } from '../utilities/api';
-import { COMMAND_MODES } from '../utilities/configs/constants';
+import { fetchScopes } from '@utilities/api';
+import { COMMAND_MODES } from '@utilities/configs/constants';
 
 export default function useScope() {
   return useFetchDemandItems({

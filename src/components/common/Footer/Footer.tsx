@@ -1,5 +1,5 @@
 import React from 'react';
-import { Keyboard } from '../../shared';
+import { Keyboard } from '@components/shared';
 import { FooterContainer, Mark, KeyboardESC, MarkTotal } from './Footer.styles';
 
 interface FooterProps {

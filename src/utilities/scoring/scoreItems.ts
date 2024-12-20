@@ -1,4 +1,4 @@
-import type { CommandItem } from '../../types';
+import type { CommandItem } from '@/types';
 import { commandScore } from './score';
 import { MIN_MATCH_LENGTH } from '../configs/constants';
 

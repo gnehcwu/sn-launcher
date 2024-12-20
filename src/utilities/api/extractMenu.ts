@@ -1,4 +1,4 @@
-import type { CommandItem } from '../../types';
+import type { CommandItem } from '@/types';
 
 interface Route {
   params?: {

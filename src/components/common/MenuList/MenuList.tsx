@@ -1,10 +1,10 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { FixedSizeList } from 'react-window';
-import useLauncherStore from '../../../store/launcherStore';
-import { LOADER_DEFER_TIME } from '../../../utilities/configs/constants';
-import type { CommandItem } from '../../../types';
+import useLauncherStore from '@store/launcherStore';
+import { LOADER_DEFER_TIME } from '@utilities/configs/constants';
+import type { CommandItem } from '@/types';
 import MenuItem from '../MenuItem';
-import Loader from '../../shared/Loader';
+import Loader from '@components/shared/Loader';
 import { MenuListContainer, MenuItemRow, Fallback, Title } from './MenuList.styles';
 
 interface MenuListProps {

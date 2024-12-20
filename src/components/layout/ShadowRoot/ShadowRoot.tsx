@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { StyleSheetManager } from 'styled-components';
 import { ShadowRootStyle } from './ShadowRoot.styles';
-import { HOST_ELEMENT_ATTR_ID } from '../../../utilities/configs/constants';
+import { HOST_ELEMENT_ATTR_ID } from '@utilities/configs/constants';
 
 interface ShadowRootProps {
   children: React.ReactNode;

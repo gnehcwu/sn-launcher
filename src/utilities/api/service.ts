@@ -1,5 +1,5 @@
 import messageBackground from '../browser/messageBackground';
-import useLauncherStore from '../../store/launcherStore';
+import useLauncherStore from '@/store/launcherStore';
 import extractMenu from './extractMenu';
 import commands from '../configs/commands';
 import {

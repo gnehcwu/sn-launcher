@@ -1,12 +1,12 @@
 import React, { useCallback, useEffect, useRef } from 'react';
-import useLauncherStore from '../../../store/launcherStore';
-import { isValidShortcut, isValidSysId } from '../../../utilities/validation';
+import useLauncherStore from '@store/launcherStore';
+import { isValidShortcut, isValidSysId } from '@utilities/validation';
 import {
   isCompactLayoutMode,
   getCommandLabelAndPlaceholder,
-} from '../../../utilities/configs/commands';
-import { COMMAND_MODES } from '../../../utilities/configs/constants';
-import { Loader } from '../../shared';
+} from '@utilities/configs/commands';
+import { COMMAND_MODES } from '@utilities/configs/constants';
+import { Loader } from '@components/shared';
 import {
   FilterContainer,
   Input,
@@ -99,6 +99,7 @@ function Filter() {
       <StyledSearchIcon size={16} />
       {commandMode !== '' && <Mode>{label}</Mode>}
       <Input
+        id="filter"
         placeholder={commandMode ? placeholder : 'Type to search all menus...'}
         value={filter}
         onChange={handleChange}

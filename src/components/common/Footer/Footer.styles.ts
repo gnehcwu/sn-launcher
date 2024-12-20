@@ -1,5 +1,5 @@
 import styled from 'styled-components';
-import { Keyboard } from '../../shared';
+import { Keyboard } from '@components/shared';
 
 export const FooterContainer = styled.div`
   padding: 10px 16px;

@@ -1,5 +1,5 @@
-import { SN_LAUNCHER_SEND_GCK_EVENT } from '../utilities/configs/constants';
-import useLauncherStore from '../store/launcherStore';
+import { SN_LAUNCHER_SEND_GCK_EVENT } from '@utilities/configs/constants';
+import useLauncherStore from '@store/launcherStore';
 
 type GckEvent = {
   data: {

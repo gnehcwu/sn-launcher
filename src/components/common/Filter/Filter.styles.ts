@@ -1,8 +1,8 @@
 import styled from 'styled-components';
 import { Search as SearchIcon, CornerDownLeft } from 'lucide-react';
-import { Keyboard } from '../../shared';
-import { isCompactLayoutMode, isFullLayoutMode } from 'utilities/configs/commands';
-import { CommandMode } from 'types';
+import { Keyboard } from '@components/shared';
+import { isCompactLayoutMode, isFullLayoutMode } from '@utilities/configs/commands';
+import { CommandMode } from '@/types';
 
 const LAYOUT_PATTERNS = {
   EXTENDED: 'auto auto 1fr',

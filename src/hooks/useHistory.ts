@@ -1,6 +1,6 @@
-import useFetchDemandItems from './useFetchDemandItems';
-import { fetchHistory } from '../utilities/api';
-import { COMMAND_MODES } from '../utilities/configs/constants';
+import useFetchDemandItems from '@hooks/useFetchDemandItems';
+import { fetchHistory } from '@utilities/api';
+import { COMMAND_MODES } from '@utilities/configs/constants';
 
 export default function useHistory() {
   return useFetchDemandItems({

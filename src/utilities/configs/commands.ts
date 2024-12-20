@@ -1,6 +1,6 @@
 import React from 'react';
 import { clearCache, searchDoc, searchComponent, goto, about } from '../api/service';
-import type { CommandMode, CommandItem } from '../../types';
+import type { CommandMode, CommandItem } from '@/types';
 import { COMMAND_MODES } from './constants';
 import {
   ArrowRightLeft,

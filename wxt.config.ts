@@ -22,6 +22,15 @@ export default defineConfig({
         matches: ["*://*/*"],
       },
     ],
+    action: {
+      default_icon: {
+        "16": "./icon/16.png",
+        "32": "./icon/32.png",
+        "48": "./icon/48.png",
+        "128": "./icon/128.png",
+      },
+      default_title: "SN Launcher",
+    },
     commands: {
       [SN_LAUNCHER_ACTIONS.TOGGLE_LAUNCHER_COMMAND]: {
         suggested_key: {

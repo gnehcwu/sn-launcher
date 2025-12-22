@@ -1,11 +1,11 @@
 import { useEffect, useState } from "react";
-import { List, useListRef, RowComponentProps, } from "react-window";
+import { List, useListRef, RowComponentProps } from "react-window";
 import useLauncherStore from "@/utils/launcherStore";
 import { LOADER_DEFER_TIME } from "@/utils/configs/constants";
 import type { CommandItem } from "@/utils/types";
-import { Spinner } from "@/components/ui/spinner";
 import { Empty, EmptyHeader, EmptyDescription, EmptyMedia, EmptyTitle } from "@/components/ui/empty";
 import { Item, ItemTitle, ItemContent, ItemMedia, ItemDescription } from "@/components/ui/item";
+import { Skeleton } from "./ui/skeleton";
 import { Shell } from "lucide-react";
 import "@/assets/tailwind.css";
 
@@ -14,27 +14,45 @@ interface MenuListProps {
   onAction: () => void;
 }
 
+const SKELETON_COUNT = 8;
+const SKELETON_WIDTHS = Array.from({ length: SKELETON_COUNT }, (_, i) => ({
+  title: 40 + ((i * 17 + 7) % 36),
+  subtitle: 25 + ((i * 13 + 11) % 31),
+}));
+
 function EmptyState() {
   return (
-      <Empty className="font-mono h-[416px]">
-        <EmptyHeader>
-          <EmptyMedia variant="default" className="text-3xl dark:text-neutral-400 text-neutral-500">
-            <Shell size={48} className="text-neutral-700 dark:text-neutral-300" />
-          </EmptyMedia>
-          <EmptyTitle className="text-neutral-700 dark:text-neutral-300">No results found</EmptyTitle>
-          <EmptyDescription className="text-neutral-700 dark:text-neutral-300">Try again with a different search term</EmptyDescription>
-        </EmptyHeader>
-      </Empty>
-    );
+    <Empty className="font-mono h-[416px]">
+      <EmptyHeader>
+        <EmptyMedia variant="default" className="text-3xl dark:text-neutral-400 text-neutral-500">
+          <Shell size={48} className="text-neutral-700 dark:text-neutral-300" />
+        </EmptyMedia>
+        <EmptyTitle className="text-neutral-700 dark:text-neutral-300">No results found</EmptyTitle>
+        <EmptyDescription className="text-neutral-700 dark:text-neutral-300">
+          Try again with a different search term
+        </EmptyDescription>
+      </EmptyHeader>
+    </Empty>
+  );
 }
 
 function LoadingState() {
   return (
-      <div className="flex items-center justify-center h-[416px] gap-x-1">
-        <Spinner className="text-neutral-700 dark:text-neutral-300" />
-        <span className="font-mono text-sm text-neutral-700 dark:text-neutral-300">Loading...</span>
-      </div>
-    );
+    <div className="flex flex-col justify-between h-[416px] py-2 px-3">
+      {SKELETON_WIDTHS.map(({ title, subtitle }) => (
+        <Item role="listitem" size="sm" className="w-full h-[50px] p-1!">
+          <ItemContent className="flex-1 flex flex-col content-center h-full gap-0 gap-y-2! justify-center">
+            <ItemTitle className="w-full">
+              <Skeleton className="h-[13px]" style={{ width: `${title}%` }} />
+            </ItemTitle>
+            <ItemDescription className="w-full">
+              <Skeleton className="h-[9px]" style={{ width: `${subtitle}%` }} />
+            </ItemDescription>
+          </ItemContent>
+        </Item>
+      ))}
+    </div>
+  );
 }
 
 function MenuList({ menuList, onAction }: MenuListProps) {
@@ -66,7 +84,7 @@ function MenuList({ menuList, onAction }: MenuListProps) {
     listRef.current?.scrollToRow({ index: selected, behavior: "instant", align: "auto" });
   }, [selected]);
 
-  const Row = ({ index, style, menuList }: RowComponentProps<{menuList: CommandItem[]}>) => {
+  const Row = ({ index, style, menuList }: RowComponentProps<{ menuList: CommandItem[] }>) => {
     const item = menuList?.[index];
 
     if (!item) return <div style={style}>No data</div>;
@@ -114,7 +132,7 @@ function MenuList({ menuList, onAction }: MenuListProps) {
         listRef={listRef}
         rowCount={menuList.length}
         rowHeight={50}
-        rowProps={{menuList}}
+        rowProps={{ menuList }}
         className="overscroll-contain scrollbar-hide h-[400px] w-full"
         rowComponent={Row}
       />

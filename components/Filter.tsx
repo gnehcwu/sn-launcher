@@ -101,21 +101,21 @@ function Filter() {
 
   return (
     <div
-      className={`border-neutral-300 dark:border-neutral-600 relative flex items-center p-[0px_16px] ${
+      className={`border-neutral-300 dark:border-neutral-600 flex items-center p-[0px_21px] gap-x-3 ${
         isCompact ? "border-none" : "border-b"
       }`}
     >
       {commandMode && (
         <Badge
           variant="secondary"
-          className="text-neutral-800 dark:text-neutral-200 h-5 min-w-5 rounded-full px-1.5 font-mono text-xs cursor-default"
+          className="text-neutral-800 dark:text-neutral-200 border-neutral-300 dark:border-neutral-600 h-5 min-w-5 rounded-full px-1.5 font-mono text-xs cursor-default tracking-tight"
         >
           {label}
         </Badge>
       )}
       <input
         id="filter"
-        className="dark:text-neutral-300 text-neutral-950 outline-none border-none box-shadow-none focus:outline-none active:outline-none m-[16px_0px] p-[0px_8px] w-[calc(100%-32px)] bg-transparent text-sm font-mono"
+        className="dark:text-neutral-300 text-neutral-950 outline-none border-none box-shadow-none focus:outline-none active:outline-none m-[16px_0px] flex-1 bg-transparent text-sm font-mono"
         ref={filterRef}
         aria-label="Search"
         placeholder="Type to search..."

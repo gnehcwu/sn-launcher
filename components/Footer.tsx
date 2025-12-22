@@ -17,7 +17,7 @@ function Footer({ totalCount, filteredCount }: FooterProps) {
   const searchedResult = `${Math.min(filteredCount, totalCount)}/${totalCount}`;
 
   return (
-    <div className="flex flex-row items-center justify-between p-[12px_16px] border-t border-neutral-300 dark:border-neutral-600 text-neutral-500 dark:text-neutral-400 text-xs font-mono cursor-default">
+    <div className="flex flex-row items-center justify-between p-[12px_21px] border-t border-neutral-300 dark:border-neutral-600 text-neutral-500 dark:text-neutral-400 text-xs font-mono cursor-default">
       <p>{searchedResult}</p>
       <div className="items-center gap-x-6 hidden sm:flex">
         <div className="flex items-center gap-x-1">

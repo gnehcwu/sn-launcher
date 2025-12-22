@@ -1,6 +1,6 @@
 {
   "name": "sn-launcher",
-  "version": "1.3.3",
+  "version": "1.3.6",
   "description": "Search and navigate Servicenow menus, documentation, components with a simple command palette interface.",
   "type": "module",
   "scripts": {

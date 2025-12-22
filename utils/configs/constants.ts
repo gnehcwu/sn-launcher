@@ -1,4 +1,4 @@
-import { LauncherActionType, LauncherActionValue } from '@/utilities/types';
+import { LauncherActionType, LauncherActionValue } from '@/utils/types';
 
 export const MIN_MATCH_LENGTH = 2;
 export const LOADER_DEFER_TIME = 150;

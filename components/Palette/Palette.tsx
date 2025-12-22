@@ -172,7 +172,7 @@ function Palette() {
           onClick={dismiss}
         >
           <div
-            className="border border-neutral-300 dark:border-neutral-600 relative bg-white dark:bg-black rounded-[12px] shadow-2xl w-[min(789px,100vw)] grid grid-rows-[min-content_1fr_min-content] animate-in zoom-in-95 duration-125"
+            className="border border-neutral-300 dark:border-neutral-600 relative bg-white dark:bg-black rounded-xl shadow-2xl w-[min(789px,100vw)] grid grid-rows-[min-content_1fr_min-content] animate-in zoom-in-95 duration-125"
             onKeyDown={handleKeydown}
             key={animationTrigger}
             data-animate={animationTrigger > 0 ? "true" : "false"}

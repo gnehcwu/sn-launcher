@@ -1,7 +1,7 @@
-import messageBackground from '../browser/messageBackground';
-import useLauncherStore from '@/utils/launcherStore';
-import extractMenu from './extractMenu';
-import commands from '../configs/commands';
+import messageBackground from "../browser/messageBackground";
+import useLauncherStore from "@/utils/launcherStore";
+import extractMenu from "./extractMenu";
+import commands from "../configs/commands";
 import {
   SN_LAUNCHER_SEARCH_DOC_URL,
   SN_LAUNCHER_SEARCH_COMPONENT_URL,
@@ -13,7 +13,7 @@ import {
   SN_LAUNCHER_ACTIONS,
   SN_LAUNCHER_ABOUT_URL,
   SN_LAUNCHER_SCRIPT_ENDPOINT,
-} from '../configs/constants';
+} from "../configs/constants";
 
 /**
  * Base URL configuration
@@ -26,9 +26,9 @@ const getBaseUrl = () => {
 /**
  * Common headers configuration
  */
-const getAuthHeaders = (token: string, contentType = 'application/json') => ({
-  'x-usertoken': token,
-  'Content-Type': contentType,
+const getAuthHeaders = (token: string, contentType = "application/json") => ({
+  "x-usertoken": token,
+  "Content-Type": contentType,
 });
 
 /**
@@ -54,8 +54,8 @@ export async function fetchData(url: string) {
     const endpoint = `${getBaseUrl()}/${url}`;
     const res = await fetch(endpoint, {
       headers: getAuthHeaders(token),
-      mode: 'cors',
-      credentials: 'include',
+      mode: "cors",
+      credentials: "include",
     });
 
     if (!res.ok) {
@@ -65,7 +65,7 @@ export async function fetchData(url: string) {
     const data = await res.json();
     return data.result ?? [];
   } catch (err) {
-    console.error('SN Launcher: Error fetching data:', err);
+    console.error("SN Launcher: Error fetching data:", err);
     return [];
   }
 }
@@ -83,17 +83,17 @@ export async function fetchResultViaScript(script: string) {
     const endpoint = `${getBaseUrl()}/${SN_LAUNCHER_SCRIPT_ENDPOINT}`;
 
     const res = await fetch(endpoint, {
-      method: 'POST',
+      method: "POST",
       headers: {
-        'Cache-Control': 'no-cache',
-        'Content-Type': 'application/x-www-form-urlencoded',
+        "Cache-Control": "no-cache",
+        "Content-Type": "application/x-www-form-urlencoded",
       },
       body: new URLSearchParams({
         script: script,
-        runscript: 'Run script',
+        runscript: "Run script",
         sysparm_ck: token,
-        sys_scope: 'e24e9692d7702100738dc0da9e6103dd',
-        quota_managed_transaction: 'on',
+        sys_scope: "e24e9692d7702100738dc0da9e6103dd",
+        quota_managed_transaction: "on",
       }).toString(),
     });
 
@@ -108,16 +108,35 @@ export async function fetchResultViaScript(script: string) {
  * @returns {Promise<Array>} An array of history items, each containing a key, fullLabel, subLabel, and target.
  */
 export async function fetchHistory() {
+  const formatDate = (timestamp: number) => {
+    const date = new Date(timestamp);
+    const now = new Date();
+    const diffInDays = Math.floor(
+      (now.getTime() - date.getTime()) / (1000 * 60 * 60 * 24)
+    );
+
+    if (diffInDays === 0) {
+      return "Today";
+    }
+
+    if (diffInDays === 1) {
+      return "Yesterday";
+    }
+
+    return date.toLocaleDateString("en-US", { month: "long", day: "numeric" });
+  };
+
   function mapHistoryItem(item: any) {
     return {
       key: item.id,
       fullLabel: item.prettyTitle,
-      subLabel: item.description || item.title,
+      subLabel: item.url || item.description || item.title,
       target: item.url,
+      parentLabel: formatDate(item.timestamp),
     };
   }
 
-  const endpoint = 'api/now/ui/history';
+  const endpoint = "api/now/ui/history";
   const res = await fetchData(endpoint);
 
   return res?.list?.map(mapHistoryItem);
@@ -129,12 +148,13 @@ export async function fetchHistory() {
  */
 export async function fetchScopes() {
   function mapScopeItem(item: any) {
-    const name = item.name || item.scope || item.sys_id;
+    const { name, scope, sys_id} = item || {};
+    const displayLabel = name || scope || sys_id;
     return {
-      key: item.sys_id,
-      label: name,
-      subLabel: `Switch to ${name} scope`,
-      fullLabel: name,
+      key: sys_id,
+      label: displayLabel,
+      subLabel: `Switch to scope ${scope || displayLabel}`,
+      fullLabel: `${name} ${scope}`
     };
   }
 
@@ -151,7 +171,8 @@ export async function fetchTables() {
 
   const tables = res?.map(({ name, label }: { name: string; label: string }) => ({
     key: crypto.randomUUID(),
-    fullLabel: `${label}: ${name}`,
+    label: label,
+    fullLabel: `${label} ${name}`,
     target: `${name}_list.do`,
   }));
 
@@ -189,7 +210,7 @@ export async function clearCache() {
       } catch (err) {
         throw err;
       }
-    })(),
+    })()
   );
 
   // Clear caches
@@ -201,7 +222,7 @@ export async function clearCache() {
       } catch (err) {
         throw err;
       }
-    })(),
+    })()
   );
 
   // Clear indexedDB
@@ -223,18 +244,18 @@ export async function clearCache() {
                 };
               });
             }
-          }),
+          })
         );
       } catch (err) {
         throw err;
       }
-    })(),
+    })()
   );
 
   try {
     await Promise.all(clearPromises);
   } catch (err) {
-    console.error('SN Launcher: Error clearing cache:', err);
+    console.error("SN Launcher: Error clearing cache:", err);
   } finally {
     window?.top?.location?.reload();
   }
@@ -256,7 +277,7 @@ export async function switchToAppById(appId: string) {
     const endpoint = `${getBaseUrl()}/${SN_LAUNCHER_SWITCH_APP_ENDPOINT}`;
 
     const res = await fetch(endpoint, {
-      method: 'PUT',
+      method: "PUT",
       headers: getAuthHeaders(token),
       body: JSON.stringify(payload),
     });
@@ -270,7 +291,7 @@ export async function switchToAppById(appId: string) {
       await clearCache();
     }
   } catch (error) {
-    console.error('SN Launcher: Error switching app:', error);
+    console.error("SN Launcher: Error switching app:", error);
     window?.top?.location?.reload();
   }
 }
@@ -315,10 +336,10 @@ export function goto(segment: string) {
     const target = matched[1];
     const suffix = matched[2];
     switch (suffix) {
-      case 'do':
+      case "do":
         gotoTab(`${SN_LAUNCHER_TAB_PREFIX}${target}.do`);
         break;
-      case 'list':
+      case "list":
         gotoTab(`${SN_LAUNCHER_TAB_PREFIX}${target}_list.do`);
         break;
       default:

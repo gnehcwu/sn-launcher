@@ -1,4 +1,5 @@
 import type { CommandItem } from '@/utils/types';
+import { SPECIAL_CHARS } from '@/utils/configs/constants';
 
 interface Route {
   params?: {
@@ -16,11 +17,6 @@ interface MenuItem {
   subItems?: MenuItem[];
   parentLabel?: string;
 }
-
-const SPECIAL_CHARS = {
-  EXTERNAL_LINK: ' ➚',
-  SEPARATOR: '/',
-} as const;
 
 function formatLabel(label: string): string {
   return label

@@ -2,9 +2,11 @@ import { useEffect, useState } from "react";
 import { List, useListRef, RowComponentProps } from "react-window";
 import useLauncherStore from "@/utils/launcherStore";
 import { LOADER_DEFER_TIME } from "@/utils/configs/constants";
+import { SPECIAL_CHARS } from "@/utils/configs/constants";
 import type { CommandItem } from "@/utils/types";
 import { Empty, EmptyHeader, EmptyDescription, EmptyMedia, EmptyTitle } from "@/components/ui/empty";
 import { Item, ItemTitle, ItemContent, ItemMedia, ItemDescription } from "@/components/ui/item";
+import { Badge } from "./ui/badge";
 import { Skeleton } from "./ui/skeleton";
 import { Shell } from "lucide-react";
 import "@/assets/tailwind.css";
@@ -13,6 +15,33 @@ interface MenuListProps {
   menuList: CommandItem[];
   onAction: () => void;
 }
+
+const truncateMiddle = (str: string, maxLength: number): string => {
+  if (str.length <= maxLength) return str;
+
+  const ellipsis = "…";
+  const segments = str.split(SPECIAL_CHARS.SEPARATOR);
+  
+  if (segments.length === 1) {
+    const charsToShow = maxLength - ellipsis.length;
+    const frontChars = Math.ceil(charsToShow / 2);
+    const backChars = Math.floor(charsToShow / 2);
+    return str.slice(0, frontChars) + ellipsis + str.slice(-backChars);
+  }
+
+  const separatorLength = SPECIAL_CHARS.SEPARATOR.length * (segments.length - 1);
+  const availableChars = maxLength - separatorLength - (segments.length * ellipsis.length);
+  const charsPerSegment = Math.max(2, Math.floor(availableChars / segments.length));
+
+  const truncatedSegments = segments.map((segment) => {
+    if (segment.length <= charsPerSegment) return segment;
+    const frontChars = Math.ceil(charsPerSegment / 2);
+    const backChars = Math.floor(charsPerSegment / 2);
+    return segment.slice(0, frontChars) + ellipsis + segment.slice(-backChars);
+  });
+
+  return truncatedSegments.join(SPECIAL_CHARS.SEPARATOR);
+};
 
 const SKELETON_COUNT = 8;
 const SKELETON_WIDTHS = Array.from({ length: SKELETON_COUNT }, (_, i) => ({
@@ -89,8 +118,8 @@ function MenuList({ menuList, onAction }: MenuListProps) {
 
     if (!item) return <div style={style}>No data</div>;
 
-    const { icon, label, fullLabel, subLabel, target, description } = item;
-    const title = fullLabel ?? label;
+    const { icon, label, fullLabel, subLabel, parentLabel, target, description } = item;
+    const title = label ?? fullLabel;
     const subTitle = subLabel || (target ? target.split("?")[0] : description);
     const active = index === selected;
 
@@ -103,7 +132,7 @@ function MenuList({ menuList, onAction }: MenuListProps) {
           e.preventDefault();
         }}
         style={style}
-        className={`p-[4px_8px] gap-0 gap-x-3 font-mono cursor-default ${active ? "bg-muted/90 dark:bg-muted/80" : ""}`}
+        className={`p-[4px_8px] gap-0 gap-x-3 font-mono cursor-default items-center ${active ? "bg-muted/90 dark:bg-muted/80" : ""}`}
       >
         {icon && <ItemMedia className="size-5 self-center! dark:text-neutral-200 text-neutral-950">{icon}</ItemMedia>}
         <ItemContent className="gap-0 flex-1 min-w-0">
@@ -114,6 +143,19 @@ function MenuList({ menuList, onAction }: MenuListProps) {
             {subTitle}
           </ItemDescription>
         </ItemContent>
+        {
+          parentLabel && (
+            <ItemContent className="flex items-center justify-end">
+              <Badge
+                variant="outline"
+                className="border-neutral-300 dark:border-neutral-600 h-5 min-w-5 rounded-full px-1.5 font-mono text-xs overflow-hidden whitespace-nowrap relative text-neutral-500 dark:text-neutral-400 hidden sm:inline-flex items-center justify-center tracking-tight"
+                title={parentLabel}
+              >
+                {truncateMiddle(parentLabel, 50)}
+              </Badge>
+            </ItemContent>
+          )
+        }
       </Item>
     );
   };

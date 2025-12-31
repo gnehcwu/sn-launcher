@@ -6,6 +6,7 @@ import { COMMAND_MODES, DEBOUNCE_DELAY } from "@/utils/configs/constants";
 import { Spinner } from "@/components/ui/spinner";
 import { Badge } from "@/components/ui/badge";
 import { CornerDownLeft } from "lucide-react";
+import { Search } from "lucide-react";
 import debounce from "lodash.debounce";
 import "@/assets/tailwind.css";
 
@@ -105,13 +106,15 @@ function Filter() {
         isCompact ? "border-none" : "border-b"
       }`}
     >
-      {commandMode && (
+      {commandMode ? (
         <Badge
-          variant="secondary"
-          className="text-neutral-800 dark:text-neutral-200 border-neutral-300 dark:border-neutral-600 h-5 min-w-5 rounded-full px-1.5 font-mono text-xs cursor-default tracking-tight"
+          variant="outline"
+          className="h-5 min-w-5 rounded-full px-1.5 font-mono text-xs cursor-default"
         >
           {label}
         </Badge>
+      ) : (
+        <Search className="text-neutral-500 dark:text-neutral-400" size={16} />
       )}
       <input
         id="filter"

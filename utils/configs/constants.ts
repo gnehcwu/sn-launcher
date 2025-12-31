@@ -3,6 +3,10 @@ import { LauncherActionType, LauncherActionValue } from '@/utils/types';
 export const MIN_MATCH_LENGTH = 2;
 export const LOADER_DEFER_TIME = 150;
 export const DEBOUNCE_DELAY = 200;
+export const SPECIAL_CHARS = {
+  EXTERNAL_LINK: ' ➚',
+  SEPARATOR: ' › ',
+} as const;
 export const HOST_ELEMENT_ATTR_ID = 'sn-launcher-root';
 export const SN_LAUNCHER_SEND_GCK_EVENT = `sn-launcher-send-gck`;
 export const SN_LAUNCHER_SEARCH_DOC_URL = `https://www.servicenow.com/docs/search?q=`;

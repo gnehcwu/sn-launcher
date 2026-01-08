@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useMemo } from "react";
+import React, { useEffect, useRef, useState, useMemo } from "react";
 import useLauncherStore from "@/utils/launcherStore";
 import { isValidShortcut, isValidSysId } from "@/utils/validation";
 import { isCompactLayoutMode, getCommandLabelAndPlaceholder } from "@/utils/configs/commands";
@@ -56,11 +56,11 @@ function Filter() {
     setInputValue(inputVal);
 
     if (isValidSysId(inputVal)) {
-      updateCommandMode(COMMAND_MODES.FIND_RECORD);
-      updateFilter(inputVal);
+      debouncedUpdateFilter.cancel();
+      updateCommandMode(COMMAND_MODES.FIND_RECORD, inputVal);
     } else if (isValidShortcut(inputVal)) {
-      updateCommandMode(COMMAND_MODES.GO_TO);
-      updateFilter(inputVal);
+      debouncedUpdateFilter.cancel();
+      updateCommandMode(COMMAND_MODES.GO_TO, inputVal);
     } else if (commandMode) {
       updateFilter(inputVal);
     } else {

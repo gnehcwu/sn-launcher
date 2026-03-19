@@ -1,109 +1,363 @@
 <!DOCTYPE html>
-<html lang="en" data-theme="dark">
+<html lang="en">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>SN Launcher - ServiceNow utility tool</title>
-    <meta property="og:title" content="SN Launcher - ServiceNow utility tool" />
-    <meta name="twitter:title" content="SN Launcher - ServiceNow utility tool" />
-
+    <title>SN Launcher — Supercharge your ServiceNow workflow</title>
+    <meta property="og:title" content="SN Launcher — Supercharge your ServiceNow workflow" />
+    <meta name="twitter:title" content="SN Launcher — Supercharge your ServiceNow workflow" />
     <meta
       name="description"
-      content="ServiceNow utility tool, supercharge your workflow on ServiceNow instance."
+      content="A browser extension that lets you instantly search, navigate, and act across your ServiceNow instance. For Chrome, Firefox, Edge, and all Chromium browsers."
     />
     <meta
       property="og:description"
-      content="ServiceNow utility tool, supercharge your workflow on ServiceNow instance."
+      content="A browser extension that lets you instantly search, navigate, and act across your ServiceNow instance."
     />
     <meta
       name="twitter:description"
-      content="ServiceNow utility tool, supercharge your workflow on ServiceNow instance."
+      content="A browser extension that lets you instantly search, navigate, and act across your ServiceNow instance."
     />
+    <meta property="og:image" content="./poster.png" />
 
-    <link rel="stylesheet" href="https://unpkg.com/open-props" />
-    <!-- optional imports that use the props -->
-    <link rel="stylesheet" href="https://unpkg.com/open-props/normalize.min.css" />
-    <link rel="stylesheet" href="https://unpkg.com/open-props/gradients.min.css" />
-    <link rel="stylesheet" href="https://unpkg.com/open-props/theme.dark.switch.min.css" />
-    <link rel="stylesheet" href="./style.css"
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500;1,600&family=Instrument+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="./style.css" />
   </head>
   <body>
-    <div class="container">
-      <div class="headerContainer">
-        <div class="title">
-          <h1 class="header gradient-text">SN Launcher</h1>
-          <a href="https://github.com/gnehcwu/sn-launcher" target="_blank">
-            <img width="28" height="28" src="./icons/github-mark.svg" alt="github repo" />
+    <div class="page">
+
+      <nav class="nav" aria-label="Primary">
+        <a class="nav__logo" href="https://github.com/gnehcwu/sn-launcher" target="_blank" rel="noopener">
+          <span class="nav__mark" aria-hidden="true">/</span>
+          SN Launcher
+        </a>
+        <a class="nav__link" href="https://github.com/gnehcwu/sn-launcher" target="_blank" rel="noopener">
+          <img width="18" height="18" src="./icons/github-mark.svg" alt="GitHub" />
+        </a>
+      </nav>
+
+      <header class="hero reveal">
+        <a class="hero__pill" href="https://github.com/gnehcwu/sn-launcher" target="_blank" rel="noopener">
+          <span class="hero__pill-dot"></span>
+          v1.3.8 is now live
+          <span class="hero__pill-arrow">&rarr;</span>
+        </a>
+
+        <h1 class="hero__heading">
+          <span class="hero__heading-top">Stop clicking through&nbsp;menus.</span>
+          <em>Start searching.</em>
+        </h1>
+
+        <div class="hero__cta">
+          <a class="cta cta--fill" href="https://chrome.google.com/webstore/detail/sn-launcher-servicenow-ut/pngglpnmlfdihkcdglcflibenhmcipmg" target="_blank" rel="noopener">
+            <img width="18" height="18" src="./icons/chrome.svg" alt="" />
+            Add to Chrome
+          </a>
+          <a class="cta cta--ghost" href="https://addons.mozilla.org/en-US/firefox/addon/sn-launcher" target="_blank" rel="noopener">
+            <img width="18" height="18" src="./icons/firefox.svg" alt="" />
+            Add to Firefox
           </a>
         </div>
-        <p class="subHeader">
-          ServiceNow utility tool <br />
-          Supercharge workflow on ServiceNow instance
+
+        <p class="hero__browsers">
+          Also available for
+          <a href="https://chrome.google.com/webstore/detail/sn-launcher-servicenow-ut/pngglpnmlfdihkcdglcflibenhmcipmg" target="_blank" rel="noopener">Edge &amp; all Chromium browsers</a>.
         </p>
-      </div>
-      <section class="platformsContainer">
-        <h3 class="gradient-text">Supported browsers</h3>
-        <div class="platforms">
-          <a
-            class="chromiums"
-            target="_blank"
-            href="https://chrome.google.com/webstore/detail/sn-launcher-servicenow-ut/pngglpnmlfdihkcdglcflibenhmcipmg"
-          >
-            <img
-              width="58"
-              height="58"
-              src="./icons/chrome.svg"
-              alt="browser chrome"
-              class="logo"
-            />
-          </a>
-          <a
-            class="chromium"
-            target="_blank"
-            href="https://chrome.google.com/webstore/detail/sn-launcher-servicenow-ut/pngglpnmlfdihkcdglcflibenhmcipmg"
-          >
-            <img
-              class="logo"
-              width="58"
-              height="58"
-              src="./icons/chromium.svg"
-              alt="browser chromium"
-            />
-          </a>
-          <a
-            class="edge"
-            target="_blank"
-            href="https://chrome.google.com/webstore/detail/sn-launcher-servicenow-ut/pngglpnmlfdihkcdglcflibenhmcipmg"
-          >
-            <img class="logo" width="58" height="58" src="./icons/edge.svg" alt="browser edge" />
-          </a>
-          <a
-            class="firefox"
-            target="_blank"
-            href="https://addons.mozilla.org/en-US/firefox/addon/sn-launcher"
-          >
-            <img
-              class="logo"
-              width="58"
-              height="58"
-              src="./icons/firefox.svg"
-              alt="browser firefox"
-            />
-          </a>
+      </header>
+
+      <section class="demo reveal" aria-label="Product preview">
+        <p class="demo__sub">A command palette for your ServiceNow instance.</p>
+        <div class="demo__frame">
+          <div class="pal">
+            <div class="pal__bar">
+              <svg class="pal__icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+              <span class="pal__input" aria-label="Simulated search typing"></span>
+              <div class="pal__bar-right">
+                <span class="pal__hint">More Actions</span>
+                <kbd class="pal__kbd">Tab</kbd>
+              </div>
+            </div>
+            <ul class="pal__list" role="list">
+              <li class="pal__row pal__row--on" aria-current="true">
+                <div class="pal__row-left">
+                  <span class="pal__name">Self-Service / Business Applications</span>
+                  <code class="pal__path">cmdb_ci_business_app_list.do</code>
+                </div>
+                <kbd class="pal__enter">&crarr;</kbd>
+              </li>
+              <li class="pal__row">
+                <span class="pal__name">Self-Service / Dashboards</span>
+                <code class="pal__path">$pa_dashboards_overview.do</code>
+              </li>
+              <li class="pal__row">
+                <span class="pal__name">Self-Service / Service Catalog</span>
+                <code class="pal__path">catalog_home.do</code>
+              </li>
+              <li class="pal__row">
+                <span class="pal__name">Self-Service / Knowledge</span>
+                <code class="pal__path">kb_knowledge_list.do</code>
+              </li>
+              <li class="pal__row pal__row--fade">
+                <span class="pal__name">Self-Service / Employee Center</span>
+                <code class="pal__path">esc</code>
+              </li>
+            </ul>
+            <div class="pal__foot">
+              <span class="pal__count">9 / 999</span>
+              <span class="pal__keys"><span class="pal__key-group"><kbd>Esc</kbd> close</span><span class="pal__key-group"><kbd>&crarr;</kbd> open</span><span class="pal__key-group"><kbd>&uarr;</kbd><kbd>&darr;</kbd> nav</span></span>
+            </div>
+          </div>
         </div>
       </section>
-      <div class="screenshot">
-        <h3 class="gradient-text">More</h3>
-        <iframe
-          src="https://www.youtube.com/embed/nKIqjEVyTgc?si=i20jH-RJRE5goWUb"
-          title="YouTube video player"
-          frameborder="0"
-          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-          referrerpolicy="strict-origin-when-cross-origin"
-          allowfullscreen
-        ></iframe>
-      </div>
-      <footer class="footer">Built with ❤️ by Cheng Wu, 2023-present</footer>
+
+      <section class="features reveal" aria-label="Features">
+        <h2 class="features__heading">
+          Everything you need,<br><em>one keystroke away.</em>
+        </h2>
+
+        <div class="features__scroll" id="featScroll">
+          <div class="features__grid">
+            <article class="feat">
+              <div class="feat__icon">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+              </div>
+              <div>
+                <h3 class="feat__name">Instant search</h3>
+                <p class="feat__text">Fuzzy-search across all application menus in your instance.</p>
+              </div>
+            </article>
+            <article class="feat">
+              <div class="feat__icon">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h6v6"/><path d="M10 14 21 3"/><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/></svg>
+              </div>
+              <div>
+                <h3 class="feat__name">Jump to records</h3>
+                <p class="feat__text">Find any record, no digging through lists.</p>
+              </div>
+            </article>
+            <article class="feat">
+              <div class="feat__icon">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m12 3-1.9 5.8a2 2 0 0 1-1.3 1.3L3 12l5.8 1.9a2 2 0 0 1 1.3 1.3L12 21l1.9-5.8a2 2 0 0 1 1.3-1.3L21 12l-5.8-1.9a2 2 0 0 1-1.3-1.3L12 3Z"/></svg>
+              </div>
+              <div>
+                <h3 class="feat__name">Quick actions</h3>
+                <p class="feat__text">Open menu, find record, search documents and more.</p>
+              </div>
+            </article>
+            <article class="feat">
+              <div class="feat__icon">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="16" x="2" y="4" rx="2"/><path d="M6 8h.01"/><path d="M10 8h.01"/><path d="M14 8h.01"/><path d="M18 8h.01"/><path d="M6 12h.01"/><path d="M10 12h.01"/><path d="M14 12h.01"/><path d="M18 12h.01"/><path d="M8 16h8"/></svg>
+              </div>
+              <div>
+                <h3 class="feat__name">Keyboard-native</h3>
+                <p class="feat__text">Arrow keys to navigate, Enter to open, Escape to dismiss. Hands stay on the keyboard.</p>
+              </div>
+            </article>
+          </div>
+        </div>
+        <div class="features__dots" id="featDots"></div>
+      </section>
+
+      <section class="steps reveal" aria-label="Getting started">
+        <h2 class="steps__heading">
+          Up and running in<br><em>three steps.</em>
+        </h2>
+
+        <ol class="steps__list">
+          <li class="step">
+            <span class="step__num">1</span>
+            <div class="step__body">
+              <h3 class="step__title">Install the extension</h3>
+              <p class="step__text">Add SN Launcher from the Chrome Web Store or Firefox add-ons store. Works on Edge and all Chromium browsers too.</p>
+            </div>
+          </li>
+          <li class="step">
+            <span class="step__num">2</span>
+            <div class="step__body">
+              <h3 class="step__title">Open ServiceNow &amp; press the shortcut</h3>
+              <p class="step__text">Navigate to any ServiceNow instance and hit <kbd class="step__kbd">Ctrl</kbd> + <kbd class="step__kbd">Shift</kbd> + <kbd class="step__kbd">L</kbd> or your customized shortcut to open the command palette.</p>
+            </div>
+          </li>
+          <li class="step">
+            <span class="step__num">3</span>
+            <div class="step__body">
+              <h3 class="step__title">Type and go</h3>
+              <p class="step__text">Search across all your menus instantly. Select a result and you're there. That's it.</p>
+            </div>
+          </li>
+        </ol>
+      </section>
+
+      <section class="video reveal" aria-label="Demo video">
+        <h2 class="video__heading">
+          See it in action,<br><em>a quick demo.</em>
+        </h2>
+        <a
+          class="video__link"
+          href="https://www.youtube.com/watch?v=nKIqjEVyTgc"
+          target="_blank"
+          rel="noopener"
+          aria-label="Watch SN Launcher demo on YouTube"
+        >
+          <div class="video__frame">
+            <img
+              class="video__poster"
+              src="./poster.png"
+              alt="SN Launcher command palette demo"
+              width="1280"
+              height="720"
+              loading="lazy"
+            />
+            <div class="video__play" aria-hidden="true">
+              <svg width="52" height="52" viewBox="0 0 52 52" fill="none">
+                <circle cx="26" cy="26" r="26" fill="white"/>
+                <path d="M22 17l14 9-14 9V17z" fill="#1a2030"/>
+              </svg>
+            </div>
+          </div>
+        </a>
+      </section>
+
+      <footer class="foot">
+        <span class="foot__mark" aria-hidden="true">/</span>
+        <p class="foot__copy">Built by <a href="https://github.com/gnehcwu" target="_blank" rel="noopener">Cheng Wu</a></p>
+        <nav class="foot__links" aria-label="Footer">
+          <a href="https://github.com/gnehcwu/sn-launcher" target="_blank" rel="noopener">GitHub</a>
+          <a href="https://chrome.google.com/webstore/detail/sn-launcher-servicenow-ut/pngglpnmlfdihkcdglcflibenhmcipmg" target="_blank" rel="noopener">Chrome</a>
+          <a href="https://addons.mozilla.org/en-US/firefox/addon/sn-launcher" target="_blank" rel="noopener">Firefox</a>
+        </nav>
+      </footer>
     </div>
+
+    <script>
+      const io = new IntersectionObserver(
+        (entries) => entries.forEach((e) => {
+          if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); }
+        }),
+        { threshold: 0.1, rootMargin: '0px 0px -40px 0px' }
+      );
+      document.querySelectorAll('.reveal').forEach((el) => io.observe(el));
+
+      (function () {
+        const el = document.querySelector('.pal__input');
+        if (!el || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+
+        const text = 'self service';
+        let i = 0;
+        let direction = 1;
+        const typeSpeed = 110;
+        const deleteSpeed = 60;
+        const pauseAfterType = 2400;
+        const pauseAfterDelete = 800;
+
+        function tick() {
+          if (direction === 1) {
+            i++;
+            el.textContent = text.slice(0, i);
+            if (i === text.length) {
+              direction = -1;
+              setTimeout(tick, pauseAfterType);
+            } else {
+              setTimeout(tick, typeSpeed + Math.random() * 60);
+            }
+          } else {
+            i--;
+            el.textContent = text.slice(0, i);
+            if (i === 0) {
+              direction = 1;
+              setTimeout(tick, pauseAfterDelete);
+            } else {
+              setTimeout(tick, deleteSpeed);
+            }
+          }
+        }
+
+        const demoObs = new IntersectionObserver((entries) => {
+          if (entries[0].isIntersecting) {
+            demoObs.disconnect();
+            setTimeout(tick, 600);
+          }
+        }, { threshold: 0.3 });
+        const demoSection = document.querySelector('.demo');
+        if (demoSection) demoObs.observe(demoSection);
+      })();
+
+      /* Equalize feature card widths & toggle edge fade */
+      (function () {
+        const cards = document.querySelectorAll('.feat');
+        const scroller = document.querySelector('.features__scroll');
+        if (!cards.length || !scroller) return;
+
+        function equalize() {
+          var mobile = window.matchMedia('(max-width: 768px)').matches;
+          cards.forEach(function (c) { c.style.width = ''; });
+          if (!mobile) {
+            var max = 0;
+            cards.forEach(function (c) { max = Math.max(max, c.offsetWidth); });
+            cards.forEach(function (c) { c.style.width = max + 'px'; });
+          }
+
+          if (scroller.scrollWidth <= scroller.clientWidth) {
+            scroller.classList.add('features__scroll--no-mask');
+          } else {
+            scroller.classList.remove('features__scroll--no-mask');
+          }
+        }
+        equalize();
+        window.addEventListener('resize', equalize);
+        if (document.fonts) document.fonts.ready.then(equalize);
+      })();
+
+      /* Feature scroll dots */
+      (function () {
+        var scroller = document.getElementById('featScroll');
+        var dotsWrap = document.getElementById('featDots');
+        var cards = scroller ? scroller.querySelectorAll('.feat') : [];
+        if (!scroller || !dotsWrap || !cards.length) return;
+
+        cards.forEach(function (card, i) {
+          var dot = document.createElement('button');
+          dot.className = 'features__dot' + (i === 0 ? ' features__dot--active' : '');
+          dot.setAttribute('aria-label', 'Go to feature ' + (i + 1));
+          dot.addEventListener('click', function () {
+            var rect = card.getBoundingClientRect();
+            var scrollerRect = scroller.getBoundingClientRect();
+            var cardCenterOffset = rect.left - scrollerRect.left + scroller.scrollLeft + rect.width / 2;
+            var prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+            scroller.scrollTo({ left: cardCenterOffset - scroller.clientWidth / 2, behavior: prefersReduced ? 'auto' : 'smooth' });
+          });
+          dotsWrap.appendChild(dot);
+        });
+        var dots = dotsWrap.querySelectorAll('.features__dot');
+
+        function update() {
+          var show = scroller.scrollWidth > scroller.clientWidth;
+          dotsWrap.classList.toggle('features__dots--visible', show);
+          if (!show) return;
+          var scrollerRect = scroller.getBoundingClientRect();
+          var scrollerCenter = scrollerRect.left + scrollerRect.width / 2;
+          var closest = 0;
+          var minDist = Infinity;
+          cards.forEach(function (c, i) {
+            var r = c.getBoundingClientRect();
+            var d = Math.abs(r.left + r.width / 2 - scrollerCenter);
+            if (d < minDist) { minDist = d; closest = i; }
+          });
+          dots.forEach(function (d, i) {
+            d.classList.toggle('features__dot--active', i === closest);
+          });
+        }
+        scroller.addEventListener('scroll', update, { passive: true });
+        window.addEventListener('resize', update);
+        update();
+        if (document.fonts) document.fonts.ready.then(update);
+      })();
+
+    </script>
   </body>
 </html>

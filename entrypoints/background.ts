@@ -3,6 +3,7 @@ import {
   SN_LAUNCHER_ABOUT_URL,
   SN_LAUNCHER_ACTIONS,
   SN_LAUNCHER_COMMAND_SHORTCUTS,
+  SN_LAUNCHER_SETTINGS_MENU_ID,
 } from "@/utils/configs/constants";
 import type { LauncherActionValue } from "@/utils/types";
 
@@ -56,6 +57,8 @@ export default defineBackground(() => {
 
       if (action === SN_LAUNCHER_ACTIONS.OPEN_TAB_COMMAND && url) {
         await browser.tabs.create({ url, active: true });
+      } else if (action === SN_LAUNCHER_ACTIONS.OPEN_OPTIONS_COMMAND) {
+        await browser.runtime.openOptionsPage();
       }
     } catch (error) {
       console.error("SN Launcher: Error handling message:", error);
@@ -83,6 +86,12 @@ export default defineBackground(() => {
     );
 
     browser.contextMenus.create({
+      id: SN_LAUNCHER_SETTINGS_MENU_ID,
+      title: "Settings",
+      contexts: ["action"],
+    });
+
+    browser.contextMenus.create({
       id: "about",
       title: "More about SN Launcher",
       contexts: ["action"],
@@ -94,6 +103,8 @@ export default defineBackground(() => {
 
     if (menuItemId === "about") {
       browser.tabs.create({ url: SN_LAUNCHER_ABOUT_URL, active: true });
+    } else if (menuItemId === SN_LAUNCHER_SETTINGS_MENU_ID) {
+      browser.runtime.openOptionsPage();
     } else if (
       Object.keys(SN_LAUNCHER_COMMAND_SHORTCUTS).includes(menuItemId as string)
     ) {

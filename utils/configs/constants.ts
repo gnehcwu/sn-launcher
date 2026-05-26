@@ -25,7 +25,10 @@ export const SN_LAUNCHER_ACTIONS: Record<LauncherActionType, LauncherActionValue
   SWITCH_SCOPE_COMMAND: 'snl-switch-scope-command',
   SEARCH_TABLE_COMMAND: 'snl-search-table-command',
   SEARCH_HISTORY_COMMAND: 'snl-search-history-command',
+  SHOW_RECORD_XML_COMMAND: 'snl-show-record-xml-command',
+  OPEN_OPTIONS_COMMAND: 'snl-open-options-command',
 } as const;
+export const SN_LAUNCHER_SETTINGS_MENU_ID = 'settings';
 export enum COMMAND_MODES {
   FIND_RECORD = 'find_record',
   SEARCH_DOC = 'search_doc',
@@ -41,20 +44,30 @@ export const SN_LAUNCHER_COMMAND_SHORTCUTS = {
     commandMode: '',
     title: 'Open SN Launcher',
     isContextMenu: false,
+    isDirectAction: false,
   },
   [SN_LAUNCHER_ACTIONS.SWITCH_SCOPE_COMMAND]: {
     commandMode: COMMAND_MODES.SWITCH_SCOPE,
     title: 'Switch scope',
     isContextMenu: true,
+    isDirectAction: false,
   },
   [SN_LAUNCHER_ACTIONS.SEARCH_TABLE_COMMAND]: {
     commandMode: COMMAND_MODES.TABLE,
     title: 'Search table',
     isContextMenu: true,
+    isDirectAction: false,
   },
   [SN_LAUNCHER_ACTIONS.SEARCH_HISTORY_COMMAND]: {
     commandMode: COMMAND_MODES.HISTORY,
     title: 'Search history',
     isContextMenu: true,
+    isDirectAction: false,
+  },
+  [SN_LAUNCHER_ACTIONS.SHOW_RECORD_XML_COMMAND]: {
+    commandMode: '',
+    title: 'Show record XML',
+    isContextMenu: true,
+    isDirectAction: true,
   },
 } as const;

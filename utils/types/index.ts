@@ -39,11 +39,15 @@ export type LauncherActionType =
   | 'OPEN_TAB_COMMAND'
   | 'SWITCH_SCOPE_COMMAND'
   | 'SEARCH_TABLE_COMMAND'
-  | 'SEARCH_HISTORY_COMMAND';
+  | 'SEARCH_HISTORY_COMMAND'
+  | 'SHOW_RECORD_XML_COMMAND'
+  | 'OPEN_OPTIONS_COMMAND';
 
 export type LauncherActionValue =
   | 'snl-toggle-launcher-command'
   | 'snl-open-tab-form-launcher-command'
   | 'snl-switch-scope-command'
   | 'snl-search-table-command'
-  | 'snl-search-history-command';
+  | 'snl-search-history-command'
+  | 'snl-show-record-xml-command'
+  | 'snl-open-options-command';

@@ -1,0 +1,83 @@
+name: Release
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 2
+
+      - name: Detect version bump
+        id: check
+        run: |
+          curr=$(jq -r .version package.json)
+          echo "version=$curr" >> "$GITHUB_OUTPUT"
+
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          prev=$(git show HEAD^:package.json 2>/dev/null | jq -r .version || echo "")
+          if [ "$prev" != "$curr" ]; then
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Setup Node
+        if: steps.check.outputs.changed == 'true'
+        uses: actions/setup-node@v5
+        with:
+          node-version: '22'
+          cache: npm
+
+      - name: Install dependencies
+        if: steps.check.outputs.changed == 'true'
+        run: npm ci
+
+      - name: Build extension zips
+        if: steps.check.outputs.changed == 'true'
+        run: |
+          npm run zip
+          npm run zip:firefox
+
+      - name: Sanity-check zips
+        if: steps.check.outputs.changed == 'true'
+        run: |
+          set -euo pipefail
+          shopt -s nullglob extglob
+          zips=(.output/!(*-sources).zip)
+          if [ ${#zips[@]} -eq 0 ]; then
+            echo "::error::No extension zips produced in .output/"
+            exit 1
+          fi
+          for zip in "${zips[@]}"; do
+            [ -s "$zip" ] || { echo "::error::$zip is empty"; exit 1; }
+            unzip -l "$zip" | grep -q "manifest.json" || { echo "::error::$zip missing manifest.json"; exit 1; }
+            echo "OK: $zip"
+          done
+
+      - name: Create GitHub Release
+        if: steps.check.outputs.changed == 'true'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAG: v${{ steps.check.outputs.version }}
+        run: |
+          shopt -s extglob
+          if gh release view "$TAG" >/dev/null 2>&1; then
+            gh release upload "$TAG" .output/!(*-sources).zip --clobber
+          else
+            gh release create "$TAG" .output/!(*-sources).zip \
+              --title "$TAG" \
+              --generate-notes
+          fi

@@ -1,5 +1,6 @@
 import React from 'react';
-import { clearCache, searchDoc, searchComponent, goto, about } from '../api/service';
+import { clearCache, searchDoc, searchComponent, goto, about, openOptions } from '../api/service';
+import { showCurrentRecordXml } from '../api/extractRecord';
 import type { CommandMode, CommandItem } from '@/utils/types';
 import { COMMAND_MODES } from './constants';
 import {
@@ -12,6 +13,8 @@ import {
   Component,
   GalleryVerticalEnd,
   BadgeInfo,
+  FileCode,
+  Settings,
 } from 'lucide-react';
 
 const commands: CommandItem[] = [
@@ -84,10 +87,24 @@ const commands: CommandItem[] = [
   },
   {
     key: crypto.randomUUID(),
+    action: showCurrentRecordXml,
+    fullLabel: 'Show record XML',
+    subLabel: 'Open the current record\'s XML in a new tab',
+    icon: React.createElement(FileCode),
+  },
+  {
+    key: crypto.randomUUID(),
     action: clearCache,
     fullLabel: 'Clear cache',
     subLabel: 'Clear client cache and refresh',
     icon: React.createElement(GalleryVerticalEnd),
+  },
+  {
+    key: crypto.randomUUID(),
+    action: openOptions,
+    fullLabel: 'Settings',
+    subLabel: 'Open SN Launcher settings',
+    icon: React.createElement(Settings),
   },
   {
     key: crypto.randomUUID(),

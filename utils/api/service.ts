@@ -357,3 +357,12 @@ export function goto(segment: string) {
 export function about() {
   messageBackground({ action: SN_LAUNCHER_ACTIONS.OPEN_TAB_COMMAND, url: SN_LAUNCHER_ABOUT_URL });
 }
+
+/**
+ * Opens the SN Launcher Settings (options) page.
+ * Routed through the background script so the browser uses `runtime.openOptionsPage`
+ * (focuses an existing tab if open, respects the manifest's open-in-tab preference).
+ */
+export function openOptions() {
+  messageBackground({ action: SN_LAUNCHER_ACTIONS.OPEN_OPTIONS_COMMAND });
+}

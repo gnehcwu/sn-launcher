@@ -20,8 +20,13 @@ import {
   isActionsMode,
 } from "@/utils/configs/commands";
 import action from "./palette-action";
-import { COMMAND_MODES, SN_LAUNCHER_COMMAND_SHORTCUTS } from "@/utils/configs/constants";
+import { COMMAND_MODES, SN_LAUNCHER_ACTIONS, SN_LAUNCHER_COMMAND_SHORTCUTS } from "@/utils/configs/constants";
+import { showCurrentRecordXml } from "@/utils/api/extractRecord";
 import "@/assets/tailwind.css";
+
+const DIRECT_ACTION_HANDLERS: Record<string, () => void> = {
+  [SN_LAUNCHER_ACTIONS.SHOW_RECORD_XML_COMMAND]: showCurrentRecordXml,
+};
 
 function Palette() {
   const { filter, commandMode, token, selected, isShown, updateCommandMode, updateSelected, updateIsLoading, reset } =
@@ -109,8 +114,13 @@ function Palette() {
   };
 
   // Register extension command shortcuts
-  Object.entries(SN_LAUNCHER_COMMAND_SHORTCUTS).forEach(([shortcut, { commandMode }]) => {
+  Object.entries(SN_LAUNCHER_COMMAND_SHORTCUTS).forEach(([shortcut, { commandMode, isDirectAction }]) => {
     useChromeMessage(shortcut, () => {
+      if (isDirectAction) {
+        DIRECT_ACTION_HANDLERS[shortcut]?.();
+        return;
+      }
+
       const newIsShow = !isShown;
       reset(newIsShow);
 

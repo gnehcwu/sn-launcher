@@ -15,7 +15,7 @@ export default defineConfig({
     },
   }),
   manifest: {
-    permissions: ["tabs", "activeTab", "contextMenus", "scripting"],
+    permissions: ["tabs", "activeTab", "contextMenus", "scripting", "storage"],
     web_accessible_resources: [
       {
         resources: ["main-world.js"],

@@ -1,56 +1,70 @@
 import { create } from 'zustand';
-import type { CommandMode } from '@/utils/types';
+import type { CommandMode, CommandModeOrNull, LauncherError } from '@/utils/types';
 
 interface LauncherState {
   filter: string;
-  commandMode: CommandMode | '';
+  commandMode: CommandModeOrNull;
   token: string;
+  scopeSysId: string | null;
   selected: number;
   isLoading: boolean;
   isShown: boolean;
+  error: LauncherError | null;
 }
 
 interface LauncherActions {
-  updateCommandMode: (commandMode: CommandMode | '', filter?: string) => void;
-  reset: (isShown?: boolean) => void;
-  updateSelected: (selected: number) => void;
-  updateFilter: (filter: string) => void;
-  updateIsLoading: (isLoading: boolean) => void;
-  updateIsShown: (isShown: boolean) => void;
-  updateToken: (token: string) => void;
+  // Intent-named actions — prefer these in components.
+  open: (mode?: CommandMode | null) => void;
+  close: () => void;
+  enterMode: (mode: CommandMode, filter?: string) => void;
+  exitMode: () => void;
+  setFilter: (filter: string) => void;
+  setSelected: (selected: number) => void;
+  setLoading: (loading: boolean) => void;
+  setToken: (token: string) => void;
+  setScope: (scopeSysId: string | null) => void;
+  setError: (error: LauncherError | null) => void;
 }
 
 const initialState: LauncherState = {
   filter: '',
-  commandMode: '',
+  commandMode: null,
   token: '',
+  scopeSysId: null,
   selected: 0,
   isLoading: false,
   isShown: false,
+  error: null,
 };
 
 const useLauncherStore = create<LauncherState & LauncherActions>((set) => ({
   ...initialState,
-  updateCommandMode: (commandMode, filter = '') => {
-    set({ commandMode, filter, selected: 0 });
-  },
-  reset: (isShown) => {
-    set((state) => ({
+  open: (mode = null) =>
+    set({
+      isShown: true,
       filter: '',
+      commandMode: mode,
       selected: 0,
-      commandMode: '',
-      isShown: isShown ?? false,
-      // reset will be called by commands
-      // check isShown to avoid interfering
-      // only reset isLoading when closing the palette
-      isLoading: isShown === false ? false : state.isLoading,
-    }));
-  },
-  updateSelected: (selected) => set({ selected }),
-  updateFilter: (filter) => set({ filter, selected: 0 }),
-  updateIsLoading: (isLoading) => set({ isLoading }),
-  updateIsShown: (isShown) => set({ isShown }),
-  updateToken: (token) => set({ token }),
+      error: null,
+    }),
+  close: () =>
+    set({
+      isShown: false,
+      filter: '',
+      commandMode: null,
+      selected: 0,
+      isLoading: false,
+      error: null,
+    }),
+  enterMode: (mode, filter = '') =>
+    set({ commandMode: mode, filter, selected: 0, error: null }),
+  exitMode: () => set({ commandMode: null, filter: '', selected: 0, error: null }),
+  setFilter: (filter) => set({ filter, selected: 0 }),
+  setSelected: (selected) => set({ selected }),
+  setLoading: (isLoading) => set({ isLoading }),
+  setToken: (token) => set({ token }),
+  setScope: (scopeSysId) => set({ scopeSysId }),
+  setError: (error) => set({ error }),
 }));
 
 export default useLauncherStore;

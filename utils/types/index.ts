@@ -6,8 +6,9 @@ export type CommandMode =
   | 'go_to'
   | 'actions'
   | 'history'
-  | 'table'
-  | '';
+  | 'table';
+
+export type CommandModeOrNull = CommandMode | null;
 
 export interface CommandItem {
   key: string;
@@ -24,15 +25,14 @@ export interface CommandItem {
   icon?: React.ReactNode;
 }
 
-export interface LauncherState {
-  filter: string;
-  selected: number;
-  isShown: boolean;
-  isLoading: boolean;
-  commandMode: CommandMode;
-  token: string | null;
-  initialDataLoaded: boolean;
+export type LauncherErrorKind = 'auth' | 'network' | 'server' | 'schema';
+
+export interface LauncherError {
+  kind: LauncherErrorKind;
+  message: string;
 }
+
+export type Result<T> = { ok: true; value: T } | { ok: false; error: LauncherError };
 
 export type LauncherActionType =
   | 'TOGGLE_LAUNCHER_COMMAND'

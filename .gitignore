@@ -26,3 +26,5 @@ web-ext.config.ts
 *.sw?
 .agents
 .claude
+skills-lock.json
+.zed

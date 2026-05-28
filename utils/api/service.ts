@@ -1,3 +1,4 @@
+import { z } from "zod";
 import messageBackground from "../browser/messageBackground";
 import useLauncherStore from "@/utils/launcherStore";
 import extractMenu from "./extractMenu";
@@ -7,362 +8,264 @@ import {
   SN_LAUNCHER_SEARCH_COMPONENT_URL,
   SN_LAUNCHER_SCOPE_ENDPOINT,
   SN_LAUNCHER_TABLE_ENDPOINT,
+  SN_LAUNCHER_TABLE_PAGE_SIZE,
+  SN_LAUNCHER_TABLE_MAX_PAGES,
   SN_LAUNCHER_MENU_ENDPOINT,
+  SN_LAUNCHER_HISTORY_ENDPOINT,
   SN_LAUNCHER_SWITCH_APP_ENDPOINT,
   SN_LAUNCHER_TAB_PREFIX,
   SN_LAUNCHER_ACTIONS,
   SN_LAUNCHER_ABOUT_URL,
-  SN_LAUNCHER_SCRIPT_ENDPOINT,
+  SN_LAUNCHER_HISTORY_MAX_ITEMS,
+  SN_LAUNCHER_CACHE_TTL_MS,
 } from "../configs/constants";
+import { snFetchJSON, getBaseUrl, getHost } from "./snFetch";
+import { readFresh, writeCache, invalidate, invalidateAll } from "./cache";
+import {
+  ScopeRecordSchema,
+  TableRecordSchema,
+  HistoryResponseSchema,
+  MenuItemSchema,
+  SwitchAppResultSchema,
+} from "./schemas";
+import type { CommandItem } from "@/utils/types";
 
-/**
- * Base URL configuration
- */
-const getBaseUrl = () => {
-  const { protocol, host } = window.location;
-  return `${protocol}//${host}`;
-};
+const TableListSchema = z.object({ result: z.array(TableRecordSchema) }).passthrough();
+const ScopeListSchema = z.object({ result: z.array(ScopeRecordSchema) }).passthrough();
+const MenuListSchema = z.object({ result: z.array(MenuItemSchema) }).passthrough();
+const HistoryEnvelopeSchema = z.object({ result: HistoryResponseSchema }).passthrough();
 
-/**
- * Common headers configuration
- */
-const getAuthHeaders = (token: string, contentType = "application/json") => ({
-  "x-usertoken": token,
-  "Content-Type": contentType,
-});
-
-/**
- * Checks if a token exists and returns it.
- *
- * @returns {[boolean, string]} A tuple containing a boolean indicating if a token exists and the token string.
- */
-function checkToken(): [boolean, string] {
-  const token = useLauncherStore.getState().token;
-  return [token?.length > 0, token];
+function formatDate(timestamp: number): string {
+  const date = new Date(timestamp);
+  const now = new Date();
+  const diffInDays = Math.floor((now.getTime() - date.getTime()) / (1000 * 60 * 60 * 24));
+  if (diffInDays === 0) return "Today";
+  if (diffInDays === 1) return "Yesterday";
+  return date.toLocaleDateString("en-US", { month: "long", day: "numeric" });
 }
 
-/**
- * Fetches data from the specified URL using the x-usertoken header for authentication.
- * @param {string} url - The URL to fetch data from.
- * @returns {Promise<Array>} - A promise that resolves to an array of data.
- */
-export async function fetchData(url: string) {
-  try {
-    const [isValidToken, token] = checkToken();
-    if (!isValidToken) return [];
-
-    const endpoint = `${getBaseUrl()}/${url}`;
-    const res = await fetch(endpoint, {
-      headers: getAuthHeaders(token),
-      mode: "cors",
-      credentials: "include",
-    });
-
-    if (!res.ok) {
-      throw new Error(`SN Launcher: HTTP error! status: ${res.status}`);
-    }
-
-    const data = await res.json();
-    return data.result ?? [];
-  } catch (err) {
-    console.error("SN Launcher: Error fetching data:", err);
-    return [];
-  }
-}
-
-/**
- * Fetches result from the ServiceNow instance using the provided script.
- * @param {string} script - The script to execute on the ServiceNow instance.
- * @returns {Promise<string|null|false>} - A Promise that resolves with the response text if successful, null if there was an error, or false if the token is invalid.
- */
-export async function fetchResultViaScript(script: string) {
-  try {
-    const [isValidToken, token] = checkToken();
-    if (!isValidToken) return null;
-
-    const endpoint = `${getBaseUrl()}/${SN_LAUNCHER_SCRIPT_ENDPOINT}`;
-
-    const res = await fetch(endpoint, {
-      method: "POST",
-      headers: {
-        "Cache-Control": "no-cache",
-        "Content-Type": "application/x-www-form-urlencoded",
-      },
-      body: new URLSearchParams({
-        script: script,
-        runscript: "Run script",
-        sysparm_ck: token,
-        sys_scope: "e24e9692d7702100738dc0da9e6103dd",
-        quota_managed_transaction: "on",
-      }).toString(),
-    });
-
-    return await res.text();
-  } catch (_) {
-    return null;
-  }
-}
-
-/**
- * Fetches the user's history from the ServiceNow instance.
- * @returns {Promise<Array>} An array of history items, each containing a key, fullLabel, subLabel, and target.
- */
-export async function fetchHistory() {
-  const formatDate = (timestamp: number) => {
-    const date = new Date(timestamp);
-    const now = new Date();
-    const diffInDays = Math.floor(
-      (now.getTime() - date.getTime()) / (1000 * 60 * 60 * 24)
-    );
-
-    if (diffInDays === 0) {
-      return "Today";
-    }
-
-    if (diffInDays === 1) {
-      return "Yesterday";
-    }
-
-    return date.toLocaleDateString("en-US", { month: "long", day: "numeric" });
-  };
-
-  function mapHistoryItem(item: any) {
-    return {
-      key: item.id,
-      fullLabel: item.prettyTitle,
-      subLabel: item.url || item.description || item.title,
+export async function fetchHistory(): Promise<CommandItem[]> {
+  const res = await snFetchJSON(SN_LAUNCHER_HISTORY_ENDPOINT, HistoryEnvelopeSchema);
+  if (!res.ok) return [];
+  const list = res.value.result.list ?? [];
+  return list
+    .filter((item) => item.id != null)
+    .slice(0, SN_LAUNCHER_HISTORY_MAX_ITEMS)
+    .map((item) => ({
+      key: `history:${item.id}`,
+      fullLabel: item.prettyTitle ?? item.title ?? String(item.id),
+      subLabel: item.url || item.description || item.title || "",
       target: item.url,
-      parentLabel: formatDate(item.timestamp),
-    };
+      parentLabel: item.timestamp != null ? formatDate(item.timestamp) : undefined,
+    }));
+}
+
+type OnRevalidate = (fresh: CommandItem[]) => void;
+
+async function cachedList(
+  endpoint: string,
+  build: () => Promise<CommandItem[]>,
+  onRevalidate?: OnRevalidate
+): Promise<CommandItem[]> {
+  const host = getHost();
+  const cached = await readFresh<CommandItem[]>(host, endpoint, SN_LAUNCHER_CACHE_TTL_MS);
+
+  if (cached && cached.length) {
+    // SWR: serve cache now, refresh in background so plugin install/uninstall
+    // (or any backend change) self-corrects on the next render.
+    void (async () => {
+      try {
+        const fresh = await build();
+        if (!fresh.length) return;
+        await writeCache(host, endpoint, fresh);
+        onRevalidate?.(fresh);
+      } catch {
+        /* ignore — keep serving cache */
+      }
+    })();
+    return cached;
   }
 
-  const endpoint = "api/now/ui/history";
-  const res = await fetchData(endpoint);
-
-  return res?.list?.map(mapHistoryItem);
-}
-
-/**
- * Fetches a list of apps from the server.
- * @returns {Promise<Array<Object>>} A promise that resolves to an array of app objects.
- */
-export async function fetchScopes() {
-  function mapScopeItem(item: any) {
-    const { name, scope, sys_id} = item || {};
-    const displayLabel = name || scope || sys_id;
-    return {
-      key: sys_id,
-      label: displayLabel,
-      subLabel: `Switch to scope ${scope || displayLabel}`,
-      fullLabel: `${name} ${scope}`
-    };
+  const fresh = await build();
+  if (fresh.length) {
+    await writeCache(host, endpoint, fresh);
+  } else {
+    // Don't let a stale empty cache pin the user to an empty list.
+    await invalidate(host, endpoint);
   }
-
-  const data = await fetchData(SN_LAUNCHER_SCOPE_ENDPOINT);
-  return data?.map(mapScopeItem);
+  return fresh;
 }
 
-/**
- * Fetches all tables.
- * @returns {Promise<Array<Object>>} A promise that resolves to an array of table objects.
- */
-export async function fetchTables() {
-  const res = await fetchData(SN_LAUNCHER_TABLE_ENDPOINT);
-
-  const tables = res?.map(({ name, label }: { name: string; label: string }) => ({
-    key: crypto.randomUUID(),
-    label: label,
-    fullLabel: `${label} ${name}`,
-    target: `${name}_list.do`,
-  }));
-
-  return tables;
+export async function fetchScopes(onRevalidate?: OnRevalidate): Promise<CommandItem[]> {
+  return cachedList("scopes", async () => {
+    const res = await snFetchJSON(SN_LAUNCHER_SCOPE_ENDPOINT, ScopeListSchema);
+    if (!res.ok) return [];
+    return res.value.result
+      .filter((item) => item.sys_id)
+      .map((item) => {
+        const displayLabel = item.name || item.scope || item.sys_id!;
+        // `key` must be the raw sys_id: palette-action.ts passes it straight to
+        // switchToAppById, which forwards it to ServiceNow as the `app_id`.
+        return {
+          key: item.sys_id!,
+          label: displayLabel,
+          subLabel: `Switch to scope ${item.scope || displayLabel}`,
+          fullLabel: `${item.name ?? ""} ${item.scope ?? ""}`.trim() || displayLabel,
+        } satisfies CommandItem;
+      });
+  }, onRevalidate);
 }
 
-/**
- * Fetches the menus from the server.
- * @returns {Promise<Array>} A promise that resolves to an array of menu items.
- */
-export async function fetchMenus() {
-  const res = await fetchData(SN_LAUNCHER_MENU_ENDPOINT);
+export async function fetchTables(onRevalidate?: OnRevalidate): Promise<CommandItem[]> {
+  return cachedList("tables", async () => {
+    const out: CommandItem[] = [];
+    for (let page = 0; page < SN_LAUNCHER_TABLE_MAX_PAGES; page++) {
+      const offset = page * SN_LAUNCHER_TABLE_PAGE_SIZE;
+      const endpoint = `${SN_LAUNCHER_TABLE_ENDPOINT}&sysparm_limit=${SN_LAUNCHER_TABLE_PAGE_SIZE}&sysparm_offset=${offset}`;
+      const res = await snFetchJSON(endpoint, TableListSchema);
+      if (!res.ok) break;
 
-  const menu = res?.[0]?.subItems || [];
-  return extractMenu(menu);
+      const rows = res.value.result;
+      for (const item of rows) {
+        if (!item.name || !item.label) continue;
+        out.push({
+          key: `table:${item.name}`,
+          label: item.label,
+          fullLabel: `${item.label} ${item.name}`,
+          target: `${item.name}_list.do`,
+        });
+      }
+
+      // Last page reached when ServiceNow returned fewer than a full page.
+      if (rows.length < SN_LAUNCHER_TABLE_PAGE_SIZE) break;
+    }
+    return out;
+  }, onRevalidate);
 }
 
-export async function fetchCommands() {
+export async function fetchMenus(onRevalidate?: OnRevalidate): Promise<CommandItem[]> {
+  return cachedList("menus", async () => {
+    const res = await snFetchJSON(SN_LAUNCHER_MENU_ENDPOINT, MenuListSchema);
+    if (!res.ok) return [];
+    const subItems = (res.value.result?.[0]?.subItems ?? []) as Parameters<typeof extractMenu>[0];
+    return extractMenu(subItems);
+  }, onRevalidate);
+}
+
+export async function fetchCommands(): Promise<CommandItem[]> {
   return commands.filter((command) => command.visible !== false);
 }
 
-/**
- * Clears all data stored in local storage, session storage, and indexedDB.
- * @returns {Promise<void>} A Promise that resolves when all data has been cleared.
- */
-export async function clearCache() {
-  const clearPromises: Promise<void>[] = [];
+export async function clearCache(): Promise<void> {
+  const tasks: Promise<unknown>[] = [];
 
-  // Clear storage
-  clearPromises.push(
+  tasks.push(
     (async () => {
       try {
         localStorage.clear();
         sessionStorage.clear();
-      } catch (err) {
-        throw err;
+      } catch {
+        /* ignore */
       }
     })()
   );
 
-  // Clear caches
-  clearPromises.push(
+  tasks.push(
     (async () => {
       try {
         const cacheNames = await caches.keys();
         await Promise.all(cacheNames.map((name) => caches.delete(name)));
-      } catch (err) {
-        throw err;
+      } catch {
+        /* ignore */
       }
     })()
   );
 
-  // Clear indexedDB
-  clearPromises.push(
-    (async () => {
-      try {
-        const dbs = (await indexedDB.databases()) as IDBDatabaseInfo[];
-        await Promise.all(
-          dbs.map(async (db) => {
-            if (db.name) {
-              await new Promise<void>((resolve, reject) => {
-                const tryToDelete = indexedDB.deleteDatabase(db.name as string);
-                tryToDelete.onsuccess = () => resolve();
-                tryToDelete.onerror = (event) => {
-                  reject(event);
-                };
-                tryToDelete.onblocked = (event) => {
-                  reject(event);
-                };
-              });
-            }
-          })
-        );
-      } catch (err) {
-        throw err;
-      }
-    })()
-  );
+  // IndexedDB intentionally NOT cleared — ServiceNow caches its own UI
+  // metadata there (UI Builder, Service Portal, workspace defs). Deleting it
+  // leaves the next page load with an empty store, which ServiceNow's
+  // bootstrap can't recover from in-place (blank screen / endless spinner).
+  // Drop our own extension-storage cache so the palette picks up new data.
+  tasks.push(invalidateAll());
 
   try {
-    await Promise.all(clearPromises);
-  } catch (err) {
-    console.error("SN Launcher: Error clearing cache:", err);
+    await Promise.all(tasks);
   } finally {
     window?.top?.location?.reload();
   }
 }
 
-/**
- * Switches to the specified ServiceNow application scope by ID.
- * @param {string} appId - The ID of the application to switch to.
- * @returns {Promise<void>} - A Promise that resolves when the application has been successfully switched to.
- */
-export async function switchToAppById(appId: string) {
+export async function switchToAppById(appId: string): Promise<void> {
   try {
     if (!appId) return;
 
-    const [isValidToken, token] = checkToken();
-    if (!isValidToken) return;
+    const token = useLauncherStore.getState().token;
+    if (!token) return;
 
-    const payload = { app_id: appId };
     const endpoint = `${getBaseUrl()}/${SN_LAUNCHER_SWITCH_APP_ENDPOINT}`;
-
     const res = await fetch(endpoint, {
       method: "PUT",
-      headers: getAuthHeaders(token),
-      body: JSON.stringify(payload),
+      mode: "cors",
+      credentials: "include",
+      headers: {
+        "x-usertoken": token,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ app_id: appId }),
     });
 
-    if (!res.ok) {
-      throw new Error(`SN Launcher: HTTP error! status: ${res.status}`);
-    }
+    if (!res.ok) throw new Error(`switchToAppById: HTTP ${res.status}`);
 
-    const result = await res.json();
-    if (!result?.error) {
-      await clearCache();
+    const json = await res.json();
+    const parsed = SwitchAppResultSchema.safeParse(json);
+    if (parsed.success && !parsed.data.error) {
+      // Drop our own cache (menus/tables differ per scope) and let ServiceNow
+      // rebuild its own state via a normal reload. Wiping localStorage /
+      // IndexedDB here breaks ServiceNow's first paint until another tab
+      // repopulates the origin's IndexedDB.
+      await invalidateAll();
+      window?.top?.location?.reload();
     }
   } catch (error) {
-    console.error("SN Launcher: Error switching app:", error);
+    console.error("SN Launcher: switchToAppById failed:", error);
     window?.top?.location?.reload();
   }
 }
 
-/**
- * Searches the ServiceNow documentation for the given input and opens the results in a new tab.
- * @param {string} input - The search query to be used for searching the documentation.
- */
-export function searchDoc(input: string) {
-  const docUrl = `${SN_LAUNCHER_SEARCH_DOC_URL}${encodeURIComponent(input)}`;
-  messageBackground({ action: SN_LAUNCHER_ACTIONS.OPEN_TAB_COMMAND, url: docUrl });
+export function searchDoc(input: string): void {
+  const url = `${SN_LAUNCHER_SEARCH_DOC_URL}${encodeURIComponent(input)}`;
+  messageBackground({ action: SN_LAUNCHER_ACTIONS.OPEN_TAB_COMMAND, url });
 }
 
-/**
- * Searches for a ServiceNow component using the input query and opens the component search URL in a new tab.
- * @param {string} input - The search query to use for finding a ServiceNow component.
- */
-export function searchComponent(input: string) {
-  const componentSearchUrl = `${SN_LAUNCHER_SEARCH_COMPONENT_URL}${encodeURIComponent(input)}`;
-  messageBackground({ action: SN_LAUNCHER_ACTIONS.OPEN_TAB_COMMAND, url: componentSearchUrl });
+export function searchComponent(input: string): void {
+  const url = `${SN_LAUNCHER_SEARCH_COMPONENT_URL}${encodeURIComponent(input)}`;
+  messageBackground({ action: SN_LAUNCHER_ACTIONS.OPEN_TAB_COMMAND, url });
 }
 
-/**
- * Navigates to a specific tab in the application.
- *
- * @param {string} segmentUrl - The URL segment for the tab to navigate to.
- */
-export function gotoTab(segmentUrl: string) {
-  const gotoUrl = `${getBaseUrl()}/${segmentUrl}`;
-  messageBackground({ action: SN_LAUNCHER_ACTIONS.OPEN_TAB_COMMAND, url: gotoUrl });
+export function gotoTab(segmentUrl: string): void {
+  const url = `${getBaseUrl()}/${segmentUrl}`;
+  messageBackground({ action: SN_LAUNCHER_ACTIONS.OPEN_TAB_COMMAND, url });
 }
 
-/**
- * Navigates to a ServiceNow page based on the given segment.
- * If the segment ends with ".do", it navigates to a form page.
- * If the segment ends with ".list", it navigates to a list page.
- * @param {string} segment - The segment of the page to navigate to.
- */
-export function goto(segment: string) {
-  let matched = segment.match(/(.+)\.(do|list)$/);
+export function goto(segment: string): void {
+  const matched = segment.match(/(.+)\.(do|list)$/);
   if (matched && matched[1]) {
     const target = matched[1];
     const suffix = matched[2];
-    switch (suffix) {
-      case "do":
-        gotoTab(`${SN_LAUNCHER_TAB_PREFIX}${target}.do`);
-        break;
-      case "list":
-        gotoTab(`${SN_LAUNCHER_TAB_PREFIX}${target}_list.do`);
-        break;
-      default:
-        gotoTab(`${SN_LAUNCHER_TAB_PREFIX}${segment}`);
+    if (suffix === "list") {
+      gotoTab(`${SN_LAUNCHER_TAB_PREFIX}${target}_list.do`);
+    } else {
+      gotoTab(`${SN_LAUNCHER_TAB_PREFIX}${target}.do`);
     }
-  } else {
-    gotoTab(`${SN_LAUNCHER_TAB_PREFIX}${segment}`);
+    return;
   }
+  gotoTab(`${SN_LAUNCHER_TAB_PREFIX}${segment}`);
 }
 
-/**
- * Opens the About page in a new tab.
- * This function sends a message to the background script to open the ServiceNow Launcher's About URL.
- */
-export function about() {
+export function about(): void {
   messageBackground({ action: SN_LAUNCHER_ACTIONS.OPEN_TAB_COMMAND, url: SN_LAUNCHER_ABOUT_URL });
 }
 
-/**
- * Opens the SN Launcher Settings (options) page.
- * Routed through the background script so the browser uses `runtime.openOptionsPage`
- * (focuses an existing tab if open, respects the manifest's open-in-tab preference).
- */
-export function openOptions() {
+export function openOptions(): void {
   messageBackground({ action: SN_LAUNCHER_ACTIONS.OPEN_OPTIONS_COMMAND });
 }

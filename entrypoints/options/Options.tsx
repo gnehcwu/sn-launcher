@@ -1,17 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import {
-  Github,
-  Search,
-  CornerDownLeft,
-  TriangleAlert,
-  GitPullRequestArrow,
-  AlertCircle,
-  BookOpen,
-  Users,
-  ShoppingCart,
-  FileCode2,
-  Server,
-} from "lucide-react";
+import { Github, Search, CornerDownLeft } from "lucide-react";
 import { browser } from "wxt/browser";
 import { Kbd } from "@/components/ui/kbd";
 import { Badge } from "@/components/ui/badge";
@@ -30,17 +18,17 @@ import "@/assets/tailwind.css";
 
 function MiniPalette() {
   return (
-    <div className="bg-white dark:bg-black h-full w-full flex flex-col">
-      <div className="px-2 py-1.5 border-b border-neutral-300 dark:border-neutral-600">
-        <div className="h-[3px] w-9 rounded-full bg-neutral-300 dark:bg-neutral-600" />
+    <div className="flex h-full w-full flex-col bg-popover">
+      <div className="border-b border-border px-2 py-1.5">
+        <div className="h-[3px] w-9 rounded-full bg-border" />
       </div>
-      <div className="flex-1 px-2 py-2 flex flex-col justify-center gap-1.5">
-        <div className="h-[3px] w-[62%] rounded-full bg-neutral-400/70 dark:bg-neutral-500" />
-        <div className="h-[3px] w-[78%] rounded-full bg-neutral-400/70 dark:bg-neutral-500" />
-        <div className="h-[3px] w-[48%] rounded-full bg-neutral-400/70 dark:bg-neutral-500" />
+      <div className="flex flex-1 flex-col justify-center gap-1.5 px-2 py-2">
+        <div className="h-[3px] w-[62%] rounded-full bg-muted-foreground/45" />
+        <div className="h-[3px] w-[78%] rounded-full bg-muted-foreground/45" />
+        <div className="h-[3px] w-[48%] rounded-full bg-muted-foreground/45" />
       </div>
-      <div className="px-2 py-1.5 border-t border-neutral-300 dark:border-neutral-600">
-        <div className="h-[3px] w-3 rounded-full bg-neutral-300 dark:bg-neutral-600" />
+      <div className="border-t border-border px-2 py-1.5">
+        <div className="h-[3px] w-3 rounded-full bg-border" />
       </div>
     </div>
   );
@@ -66,19 +54,19 @@ function ThemeThumbnail({ theme, label, selected, onSelect, buttonRef }: ThemeTh
       aria-checked={selected}
       tabIndex={selected ? 0 : -1}
       onClick={onSelect}
-      className={`group rounded-2xl cursor-pointer flex flex-col items-center gap-2.5 outline-none focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-foreground/40 transition-transform duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] ${
+      className={`group flex cursor-pointer flex-col items-center gap-2.5 rounded-2xl outline-none transition-transform duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-foreground/40 ${
         selected ? "-translate-y-1" : "hover:-translate-y-0.5 active:scale-[0.98]"
       }`}
     >
       <div
-        className={`w-full aspect-[16/10] rounded-xl overflow-hidden border transition-[border-color,box-shadow] duration-300 ease-out ${
+        className={`aspect-[16/10] w-full overflow-hidden rounded-xl border transition-[border-color,box-shadow] duration-300 ease-out ${
           selected
             ? "border-primary shadow-[0_14px_30px_-16px_rgba(0,0,0,0.32)]"
             : "border-border group-hover:border-foreground/40"
         }`}
       >
         {isSystem ? (
-          <div className="grid grid-cols-2 h-full">
+          <div className="grid h-full grid-cols-2">
             <MiniPalette />
             <div className="dark h-full">
               <MiniPalette />
@@ -93,14 +81,14 @@ function ThemeThumbnail({ theme, label, selected, onSelect, buttonRef }: ThemeTh
       <div className="flex flex-col items-center gap-1">
         <span
           className={`text-xs leading-tight transition-colors duration-200 ${
-            selected ? "text-foreground font-medium" : "text-muted-foreground"
+            selected ? "font-medium text-foreground" : "text-muted-foreground"
           }`}
         >
           {label}
         </span>
         <span
           aria-hidden
-          className={`h-px bg-primary rounded-full transition-[width,opacity] duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] ${
+          className={`h-px rounded-full bg-primary transition-[width,opacity] duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] ${
             selected ? "w-5 opacity-100" : "w-0 opacity-0"
           }`}
         />
@@ -110,77 +98,78 @@ function ThemeThumbnail({ theme, label, selected, onSelect, buttonRef }: ThemeTh
 }
 
 type PreviewRow = {
-  icon: React.ReactNode;
   title: string;
   sub: string;
   parent?: string;
 };
 
 const PREVIEW_ROWS: PreviewRow[] = [
-  { icon: <TriangleAlert size={16} />, title: "Incident", sub: "incident.list", parent: "Service Desk › Incident" },
-  { icon: <GitPullRequestArrow size={16} />, title: "Change Request", sub: "change_request.list", parent: "Change › All" },
-  { icon: <AlertCircle size={16} />, title: "Problem", sub: "problem.list", parent: "Problem › Open" },
-  { icon: <BookOpen size={16} />, title: "Knowledge", sub: "kb_knowledge.list", parent: "Knowledge › Articles" },
-  { icon: <Users size={16} />, title: "Users", sub: "sys_user.list", parent: "User Administration › Users" },
-  { icon: <ShoppingCart size={16} />, title: "Service Catalog", sub: "sc_cat_item.list", parent: "Service Catalog › Catalog Definitions" },
-  { icon: <FileCode2 size={16} />, title: "Business Rules", sub: "sys_script.list", parent: "System Definition › Business Rules" },
-  { icon: <Server size={16} />, title: "CMDB", sub: "cmdb_ci.list", parent: "Configuration › All" },
+  { title: "Incident", sub: "incident.list", parent: "Service Desk › Incident" },
+  { title: "Change Request", sub: "change_request.list", parent: "Change › All" },
+  { title: "Problem", sub: "problem.list", parent: "Problem › Open" },
+  { title: "Knowledge", sub: "kb_knowledge.list", parent: "Knowledge › Articles" },
+  { title: "Users", sub: "sys_user.list", parent: "User Administration › Users" },
+  { title: "Service Catalog", sub: "sc_cat_item.list", parent: "Service Catalog › Catalog Definitions" },
+  { title: "Business Rules", sub: "sys_script.list", parent: "System Definition › Business Rules" },
+  { title: "CMDB", sub: "cmdb_ci.list", parent: "Configuration › All" },
 ];
 
 function PalettePreview() {
   return (
-    <div className="h-[516px] border border-neutral-300 dark:border-neutral-600 relative bg-white dark:bg-black rounded-2xl shadow-2xl w-full grid grid-rows-[min-content_1fr_min-content] overflow-hidden">
-      <div className="border-b border-neutral-300 dark:border-neutral-600 flex items-center px-[21px] gap-x-3">
-        <Search className="text-neutral-500 dark:text-neutral-400" size={16} />
-        <div className="my-[16px] flex-1 text-sm font-mono text-neutral-500 dark:text-neutral-400">
+    <div className="relative grid h-[516px] w-full grid-rows-[min-content_1fr_min-content] overflow-hidden rounded-2xl border border-border bg-popover text-popover-foreground shadow-[0_24px_60px_-12px_rgba(0,0,0,0.35)]">
+      <div className="flex items-center gap-x-3 border-b border-border px-[21px]">
+        <Search className="text-muted-foreground" size={16} />
+        <div className="my-[16px] flex-1 font-mono text-[15px] tracking-tight text-muted-foreground">
           Type to search...
         </div>
-        <div className="flex items-center gap-x-2 cursor-default">
-          <span className="text-xs font-mono text-neutral-500 dark:text-neutral-400 hidden sm:block whitespace-nowrap">
+        <div className="flex cursor-default items-center gap-x-2">
+          <span className="hidden whitespace-nowrap font-mono text-xs text-muted-foreground sm:block">
             More actions
           </span>
           <Badge
             variant="outline"
-            className="border-neutral-300 dark:border-neutral-600 h-5 min-w-5 rounded-full px-1.5 font-mono text-xs text-neutral-500 dark:text-neutral-400"
+            className="h-5 min-w-5 rounded-full border-border px-1.5 font-mono text-[10px] uppercase tracking-[0.08em] text-muted-foreground"
           >
             Tab
           </Badge>
         </div>
       </div>
 
-      <ul className="py-1.5 flex flex-col min-h-0">
-        {PREVIEW_ROWS.map((row, i) => (
-          <li
-            key={row.title}
-            className={`mx-1.5 px-[8px] rounded-md flex flex-1 min-h-0 items-center gap-x-3 font-mono cursor-default ${
-              i === 0 ? "bg-muted/90 dark:bg-muted/80" : ""
-            }`}
-          >
-            <div className="w-5 h-5 shrink-0 inline-flex items-center justify-center text-neutral-950 dark:text-neutral-200">
-              {row.icon}
-            </div>
-            <span className="flex-1 min-w-0">
-              <span className="block text-sm dark:text-neutral-200 text-neutral-950 line-clamp-1">
-                {row.title}
+      <ul className="flex min-h-0 flex-col py-1.5">
+        {PREVIEW_ROWS.map((row, i) => {
+          const active = i === 0;
+          return (
+            <li
+              key={row.title}
+              className={`relative mx-1.5 flex min-h-0 flex-1 cursor-default items-center gap-x-3 rounded-md px-[10px] font-mono transition-colors duration-100 ${
+                active ? "bg-accent text-accent-foreground" : ""
+              }`}
+            >
+              <span
+                aria-hidden
+                className={`absolute left-0 top-1.5 bottom-1.5 w-[2px] rounded-full bg-primary transition-opacity duration-100 ${
+                  active ? "opacity-100" : "opacity-0"
+                }`}
+              />
+              <span className="min-w-0 flex-1">
+                <span className="line-clamp-1 block text-sm text-foreground">{row.title}</span>
+                <span className="line-clamp-1 block text-xs text-muted-foreground">{row.sub}</span>
               </span>
-              <span className="block text-xs text-neutral-500 dark:text-neutral-400 line-clamp-1">
-                {row.sub}
-              </span>
-            </span>
-            {row.parent && (
-              <Badge
-                variant="outline"
-                className="border-neutral-300 dark:border-neutral-600 h-5 min-w-5 rounded-full px-1.5 font-mono text-xs whitespace-nowrap text-neutral-500 dark:text-neutral-400 hidden sm:inline-flex items-center justify-center tracking-tight"
-              >
-                {row.parent}
-              </Badge>
-            )}
-          </li>
-        ))}
+              {row.parent && (
+                <Badge
+                  variant="outline"
+                  className="hidden h-5 min-w-5 items-center justify-center whitespace-nowrap rounded-full border-border px-1.5 font-mono text-xs text-muted-foreground tracking-tight sm:inline-flex"
+                >
+                  {row.parent}
+                </Badge>
+              )}
+            </li>
+          );
+        })}
       </ul>
 
-      <div className="flex flex-row items-center justify-between p-[12px_21px] border-t border-neutral-300 dark:border-neutral-600 text-neutral-500 dark:text-neutral-400 text-xs font-mono cursor-default">
-        <span>{PREVIEW_ROWS.length} of 48</span>
+      <div className="flex cursor-default flex-row items-center justify-between border-t border-border px-[21px] py-3 font-mono text-xs text-muted-foreground">
+        <span className="tabular-nums">{PREVIEW_ROWS.length} of 48</span>
         <span className="inline-flex items-center gap-1.5">
           <Kbd>↑</Kbd>
           <Kbd>↓</Kbd>
@@ -233,9 +222,6 @@ function Options() {
     setTheme(next).catch(() => {});
   };
 
-  // Global keyboard nav: arrow keys + 1-6 cycle themes without requiring
-  // the user to Tab into the radiogroup first. Skipped while a text input
-  // or contenteditable is focused so we don't trap normal typing.
   useEffect(() => {
     const isTextTarget = (el: EventTarget | null): boolean => {
       if (!(el instanceof HTMLElement)) return false;
@@ -262,7 +248,6 @@ function Options() {
         return;
       }
 
-      // Number keys 1-6 jump directly to a theme.
       const num = Number(event.key);
       if (Number.isInteger(num) && num >= 1 && num <= total) {
         event.preventDefault();
@@ -276,22 +261,19 @@ function Options() {
     return () => window.removeEventListener("keydown", onKeyDown);
   }, [theme]);
 
-  // Focus the selected thumbnail on mount so arrow-key nav is immediately
-  // discoverable via the focus ring.
   useEffect(() => {
     const idx = THEME_OPTIONS.findIndex((o) => o.value === theme);
     thumbRefs.current[idx < 0 ? 0 : idx]?.focus({ preventScroll: true });
-    // Intentionally one-shot: only on initial mount, not every theme change.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return (
-    <div className="min-h-screen bg-background text-foreground font-mono">
-      <div className="max-w-[920px] mx-auto px-8 pt-16 pb-24">
+    <div className="min-h-screen bg-background font-mono text-foreground">
+      <div className="mx-auto max-w-[920px] px-8 pb-24 pt-16">
         <header className="mb-14 flex items-start justify-between gap-6">
           <div>
             <h1 className="font-display text-2xl tracking-tight">Pick a look.</h1>
-            <p className="mt-1.5 text-sm text-muted-foreground inline-flex items-center gap-1.5 flex-wrap">
+            <p className="mt-1.5 inline-flex flex-wrap items-center gap-1.5 text-sm text-muted-foreground">
               <span>Six themes for SN Launcher.</span>
             </p>
           </div>
@@ -301,16 +283,16 @@ function Options() {
             rel="noopener noreferrer"
             aria-label="View SN Launcher on GitHub"
             title="View on GitHub"
-            className="shrink-0 inline-flex items-center justify-center w-9 h-9 rounded-full text-muted-foreground hover:text-foreground hover:bg-muted/70 transition-colors"
+            className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-muted/70 hover:text-foreground"
           >
-            <Github className="w-[18px] h-[18px]" />
+            <Github className="h-[18px] w-[18px]" />
           </a>
         </header>
 
         <section
           role="radiogroup"
           aria-label="Theme"
-          className="mb-20 grid grid-cols-3 sm:grid-cols-6 gap-6"
+          className="mb-20 grid grid-cols-3 gap-6 sm:grid-cols-6"
         >
           {THEME_OPTIONS.map((opt, i) => (
             <ThemeThumbnail
@@ -328,7 +310,7 @@ function Options() {
 
         <section>
           <div
-            className="rounded-3xl p-8 sm:p-14 flex justify-center"
+            className="flex justify-center rounded-3xl p-8 sm:p-14"
             style={{
               backgroundColor: "oklch(0.99 0 0)",
               backgroundImage:
@@ -336,12 +318,12 @@ function Options() {
               backgroundSize: "18px 18px",
             }}
           >
-            <div ref={previewRef} className="w-full max-w-[789px]">
+            <div ref={previewRef} className="w-full max-w-[720px]">
               <PalettePreview />
             </div>
           </div>
 
-          <p className="mt-10 text-center text-xs text-muted-foreground flex items-center justify-center gap-1.5">
+          <p className="mt-10 flex items-center justify-center gap-1.5 text-center text-xs text-muted-foreground">
             <Kbd className="text-[10px]">{isMac ? "⌘" : "Ctrl"}</Kbd>
             <Kbd className="text-[10px]">⇧</Kbd>
             <Kbd className="text-[10px]">L</Kbd>

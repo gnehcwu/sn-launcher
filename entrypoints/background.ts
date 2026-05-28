@@ -72,18 +72,15 @@ export default defineBackground(() => {
       contexts: ["action"],
     });
 
-    Object.entries(SN_LAUNCHER_COMMAND_SHORTCUTS).forEach(
-      ([key, { title, isContextMenu }]) => {
-        if (isContextMenu === true) {
-          browser.contextMenus.create({
-            id: key,
-            parentId: "shortcuts",
-            title,
-            contexts: ["action"],
-          });
-        }
-      }
-    );
+    for (const [key, config] of Object.entries(SN_LAUNCHER_COMMAND_SHORTCUTS)) {
+      if (!config || !config.isContextMenu) continue;
+      browser.contextMenus.create({
+        id: key,
+        parentId: "shortcuts",
+        title: config.title,
+        contexts: ["action"],
+      });
+    }
 
     browser.contextMenus.create({
       id: SN_LAUNCHER_SETTINGS_MENU_ID,

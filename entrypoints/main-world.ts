@@ -5,32 +5,56 @@ export default defineContentScript({
 
   main() {
     const SN_LAUNCHER_SEND_GCK_EVENT = "sn-launcher-send-gck";
+    const SN_LAUNCHER_RECAPTURE_GCK_EVENT = "sn-launcher-recapture-gck";
+    const SN_LAUNCHER_SEND_SCOPE_EVENT = "sn-launcher-send-scope";
 
-    function sendGck(maxRetries = 10, interval = 100) {
+    function readGck(): string | undefined {
+      return (window as any)?.g_ck;
+    }
+
+    function readScope(): string | undefined {
+      return (window as any)?.g_user?.app?.sys_id;
+    }
+
+    function postSnapshot() {
+      const gck = readGck();
+      const scope = readScope();
+
+      if (gck) {
+        window.postMessage({ from: SN_LAUNCHER_SEND_GCK_EVENT, gck });
+      }
+      if (scope) {
+        window.postMessage({ from: SN_LAUNCHER_SEND_SCOPE_EVENT, scope });
+      }
+    }
+
+    function pollSnapshot(maxRetries = 10, interval = 100) {
       let retries = 0;
 
-      function trySendGck() {
-        const gck = (window as any)?.g_ck;
-
-        if (gck) {
-          window.postMessage({
-            from: SN_LAUNCHER_SEND_GCK_EVENT,
-            gck: gck,
-          });
+      function attempt() {
+        if (readGck()) {
+          postSnapshot();
         } else if (retries < maxRetries) {
           retries++;
-          setTimeout(trySendGck, interval);
+          setTimeout(attempt, interval);
         }
       }
 
-      trySendGck();
+      attempt();
     }
 
-    // Wait for page to load before trying to get GCK
+    // Initial capture
     if (document.readyState === "loading") {
-      document.addEventListener("DOMContentLoaded", () => sendGck());
+      document.addEventListener("DOMContentLoaded", () => pollSnapshot());
     } else {
-      sendGck();
+      pollSnapshot();
     }
+
+    // On-demand recapture (triggered by content script on 401)
+    window.addEventListener("message", (event: MessageEvent) => {
+      if (event?.data?.from === SN_LAUNCHER_RECAPTURE_GCK_EVENT) {
+        postSnapshot();
+      }
+    });
   },
 });

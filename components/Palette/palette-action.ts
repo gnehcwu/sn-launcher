@@ -1,90 +1,114 @@
 import { goto, gotoTab, switchToAppById, getInstanceRecord } from '@/utils/api';
 import { getCommandAction } from '@/utils/configs/commands';
 import { COMMAND_MODES } from '@/utils/configs/constants';
-import type { CommandItem, CommandMode } from '@/utils/types';
+import type { CommandItem, CommandModeOrNull, CommandMode } from '@/utils/types';
+
+export const SYNTH_GOTO_KEY = 'synth:goto';
+export const SYNTH_FIND_RECORD_KEY = 'synth:find_record';
+
+async function findRecord(filter: string, setLoading: (loading: boolean) => void): Promise<void> {
+  setLoading(true);
+  const result = await getInstanceRecord(filter);
+  if (result?.target) {
+    gotoTab(result.target);
+  } else {
+    goto(filter);
+  }
+}
 
 interface ActionOptions {
-  selectedMenu: CommandItem;
+  selectedMenu: CommandItem | undefined;
   filter: string;
-  commandMode: CommandMode;
-  reset: () => void;
-  updateCommandMode: (mode: CommandMode) => void;
-  updateIsLoading: (loading: boolean) => void;
+  commandMode: CommandModeOrNull;
+  close: () => void;
+  enterMode: (mode: CommandMode) => void;
+  setLoading: (loading: boolean) => void;
 }
 
 export default async function action({
   selectedMenu,
   filter,
   commandMode,
-  reset,
-  updateCommandMode,
-  updateIsLoading,
+  close,
+  enterMode,
+  setLoading,
 }: ActionOptions): Promise<void> {
   try {
     switch (commandMode) {
       case COMMAND_MODES.GO_TO: {
         goto(filter);
-        reset();
+        close();
         break;
       }
       case COMMAND_MODES.FIND_RECORD: {
         if (!filter) return;
-
-        updateIsLoading(true);
-        const result = await getInstanceRecord(filter);
-        if (result?.target) {
-          gotoTab(result.target);
-        } else {
-          goto(filter);
-        }
-        reset();
+        await findRecord(filter, setLoading);
+        close();
         break;
       }
       case COMMAND_MODES.SWITCH_SCOPE: {
         if (selectedMenu?.key) {
           switchToAppById(selectedMenu.key);
         }
-        reset();
+        close();
         break;
       }
       case COMMAND_MODES.SEARCH_DOC:
       case COMMAND_MODES.SEARCH_COMP: {
         if (!filter) return;
-
         const commandAction = getCommandAction(commandMode);
         if (commandAction) {
           await commandAction(filter);
         }
-        reset();
+        close();
         break;
       }
       case COMMAND_MODES.ACTIONS: {
-        const { action: menuAction, mode: nextMode } = selectedMenu || {};
+        const nextMode = selectedMenu?.mode;
+        const menuAction = selectedMenu?.action;
         if (nextMode) {
-          updateCommandMode(nextMode);
+          enterMode(nextMode);
         } else if (menuAction) {
-          updateIsLoading(true);
+          setLoading(true);
           await menuAction();
-          reset();
+          close();
         }
         break;
       }
-      case '':
+      case null: {
+        if (selectedMenu?.key === SYNTH_GOTO_KEY) {
+          goto(filter);
+          close();
+          break;
+        }
+        if (selectedMenu?.key === SYNTH_FIND_RECORD_KEY) {
+          if (!filter) return;
+          await findRecord(filter, setLoading);
+          close();
+          break;
+        }
+        if (selectedMenu?.target) {
+          gotoTab(selectedMenu.target);
+        }
+        close();
+        break;
+      }
       case COMMAND_MODES.TABLE:
       case COMMAND_MODES.HISTORY: {
         if (selectedMenu?.target) {
           gotoTab(selectedMenu.target);
         }
-        reset();
+        close();
         break;
       }
       default: {
-        reset();
+        close();
       }
     }
   } catch (error) {
-    reset();
+    console.error('SN Launcher: action error:', error);
+    close();
   } finally {
-    updateIsLoading(false);
+    setLoading(false);
   }
 }

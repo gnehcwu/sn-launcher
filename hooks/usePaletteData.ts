@@ -7,32 +7,39 @@ export default function usePaletteData(): [
   CommandItem[],
   CommandItem[],
 ] {
-  const updateIsLoading = useLauncherStore((state) => state.updateIsLoading);
+  const setLoading = useLauncherStore((state) => state.setLoading);
   const token = useLauncherStore((state) => state.token);
   const [menus, setMenus] = useState<CommandItem[]>([]);
   const [commands, setCommands] = useState<CommandItem[]>([]);
 
   useEffect(() => {
+    if (!token) return;
+    let cancelled = false;
     async function getLauncherData() {
       try {
-        updateIsLoading(true);
-
+        setLoading(true);
         const [fetchedMenus, fetchedCommands] = await Promise.all([
-          fetchMenus(),
+          fetchMenus((fresh) => {
+            if (cancelled) return;
+            setMenus(fresh);
+          }),
           fetchCommands(),
         ]);
-
+        if (cancelled) return;
         setMenus(fetchedMenus);
         setCommands(fetchedCommands);
       } catch (error) {
         console.error('SN Launcher: failed to fetch launcher data:', error);
       } finally {
-        updateIsLoading(false);
+        if (!cancelled) setLoading(false);
       }
     }
 
     getLauncherData();
-  }, [updateIsLoading, token]); // whenever token changes, re-fetch all menus
+    return () => {
+      cancelled = true;
+    };
+  }, [setLoading, token]);
 
   return [menus, commands];
 }

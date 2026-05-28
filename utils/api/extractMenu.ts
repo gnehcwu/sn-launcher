@@ -12,7 +12,7 @@ interface Route {
 }
 
 interface MenuItem {
-  label: string;
+  label?: string;
   route?: Route;
   subItems?: MenuItem[];
   parentLabel?: string;
@@ -34,30 +34,39 @@ export default function extractMenu(menuItems: MenuItem[] = []): CommandItem[] {
     { label, route, subItems }: MenuItem,
     parentLabel?: string
   ): CommandItem[] {
-    const fullLabel = parentLabel 
-      ? `${parentLabel}${SPECIAL_CHARS.SEPARATOR}${label}`
-      : label;
-    const formattedLabel = formatLabel(fullLabel);
+    // Labelless items can still be containers (no own row, but their subItems
+    // descend with the parent label). Skip building a row for them.
+    const hasOwnLabel = typeof label === 'string' && label.length > 0;
+    const fullLabel = hasOwnLabel
+      ? parentLabel
+        ? `${parentLabel}${SPECIAL_CHARS.SEPARATOR}${label}`
+        : label
+      : parentLabel;
+    const formattedLabel = fullLabel ? formatLabel(fullLabel) : '';
 
     const target = route?.params?.target || route?.url;
-    if (target) {
-      return [{
-        key: crypto.randomUUID(),
-        target,
-        label,
-        parentLabel,
-        fullLabel: formattedLabel,
-      }];
+    if (target && formattedLabel) {
+      return [
+        {
+          key: `menu:${target}:${formattedLabel}`,
+          target,
+          label,
+          parentLabel,
+          fullLabel: formattedLabel,
+        },
+      ];
     }
 
-    if (route?.external?.url) {
-      return [{
-        key: crypto.randomUUID(),
-        target: route.external.url,
-        label,
-        parentLabel,
-        fullLabel: formattedLabel,
-      }];
+    if (route?.external?.url && formattedLabel) {
+      return [
+        {
+          key: `menu:${route.external.url}:${formattedLabel}`,
+          target: route.external.url,
+          label,
+          parentLabel,
+          fullLabel: formattedLabel,
+        },
+      ];
     }
 
     if (subItems?.length) {

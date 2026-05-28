@@ -105,7 +105,7 @@ function PaletteBody({ menuList, onAction, onRetry }: PaletteBodyProps) {
         // via keyboard nav are always painted in their final selection state
         // before they become visible — no mid-scroll mount artifacts.
         overscanCount={5}
-        className="w-full overscroll-contain scrollbar-hide"
+        className="w-full overscroll-contain scrollbar-hide outline-none focus:outline-none focus-visible:outline-none"
         style={{ height: LIST_HEIGHT }}
         rowComponent={VirtualRow}
       />

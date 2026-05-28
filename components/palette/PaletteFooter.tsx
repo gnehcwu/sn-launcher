@@ -4,6 +4,7 @@ import { Kbd } from "@/components/ui/kbd";
 interface PaletteFooterProps {
   filteredCount: number;
   totalCount: number;
+  actionsAvailable?: boolean;
 }
 
 const KEYBOARD_SYMBOLS = {
@@ -13,7 +14,9 @@ const KEYBOARD_SYMBOLS = {
   ESC: "esc",
 } as const;
 
-function PaletteFooter({ totalCount, filteredCount }: PaletteFooterProps) {
+const isMac = typeof navigator !== "undefined" && /Mac/.test(navigator.userAgent);
+
+function PaletteFooter({ totalCount, filteredCount, actionsAvailable }: PaletteFooterProps) {
   const result = `${Math.min(filteredCount, totalCount)}/${totalCount}`;
 
   return (
@@ -41,6 +44,17 @@ function PaletteFooter({ totalCount, filteredCount }: PaletteFooterProps) {
           </Kbd>
           <span>to select</span>
         </span>
+        {actionsAvailable && (
+          <span className="inline-flex items-center gap-x-1">
+            <Kbd aria-label={isMac ? "Command" : "Control"} className="px-1 py-px text-xs">
+              {isMac ? "⌘" : "Ctrl"}
+            </Kbd>
+            <Kbd aria-label="K" className="px-1 py-px text-xs">
+              K
+            </Kbd>
+            <span>actions</span>
+          </span>
+        )}
       </div>
     </div>
   );

@@ -23,6 +23,7 @@ export interface CommandItem {
   action?: (...args: any[]) => Promise<void> | void;
   visible?: boolean;
   icon?: React.ReactNode;
+  sysId?: string;
 }
 
 export type LauncherErrorKind = 'auth' | 'network' | 'server' | 'schema';

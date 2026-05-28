@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { Github, Search, CornerDownLeft } from "lucide-react";
+import { Github, Search, CornerDownLeft, ArrowUpRight } from "lucide-react";
 import { browser } from "wxt/browser";
 import { Kbd } from "@/components/ui/kbd";
 import { Badge } from "@/components/ui/badge";
@@ -15,6 +15,29 @@ import {
   type Theme,
 } from "@/utils/theme";
 import "@/assets/tailwind.css";
+
+const REPO_URL = "https://github.com/gnehcwu/sn-launcher";
+
+// Stronger than CSS's default ease-out — gives motion proper snap without
+// looking abrupt. From Emil Kowalski's animation principles.
+const EASE_OUT = "cubic-bezier(0.23, 1, 0.32, 1)";
+
+type ViewKey = "theme" | "about";
+
+const NAV_ITEMS: { key: ViewKey; label: string }[] = [
+  { key: "theme", label: "Theme" },
+  { key: "about", label: "About" },
+];
+
+// Mirrors `manifest.commands` in wxt.config.ts. Kept in lockstep manually
+// because the manifest config isn't importable at runtime from this entrypoint.
+type ShortcutRow = { label: string; mod: (isMac: boolean) => string; key: string };
+const SHORTCUTS: ShortcutRow[] = [
+  { label: "Open palette", mod: (m) => (m ? "⌘" : "Ctrl"), key: "L" },
+  { label: "Switch scope", mod: (m) => (m ? "⌥" : "Alt"), key: "S" },
+  { label: "Search tables", mod: (m) => (m ? "⌥" : "Alt"), key: "A" },
+  { label: "Search history", mod: (m) => (m ? "⌥" : "Alt"), key: "H" },
+];
 
 function MiniPalette() {
   return (
@@ -54,14 +77,16 @@ function ThemeThumbnail({ theme, label, selected, onSelect, buttonRef }: ThemeTh
       aria-checked={selected}
       tabIndex={selected ? 0 : -1}
       onClick={onSelect}
-      className={`group flex cursor-pointer flex-col items-center gap-2.5 rounded-2xl outline-none transition-transform duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-foreground/40 ${
-        selected ? "-translate-y-1" : "hover:-translate-y-0.5 active:scale-[0.98]"
+      style={{ transitionTimingFunction: EASE_OUT }}
+      className={`group relative flex cursor-pointer flex-col items-center gap-3 rounded-2xl outline-none transition-transform duration-300 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-foreground/40 active:scale-[0.97] ${
+        selected ? "-translate-y-1.5" : "hover:-translate-y-1"
       }`}
     >
       <div
-        className={`aspect-[16/10] w-full overflow-hidden rounded-xl border transition-[border-color,box-shadow] duration-300 ease-out ${
+        style={{ transitionTimingFunction: EASE_OUT }}
+        className={`aspect-[16/10] w-full overflow-hidden rounded-xl border-2 transition-[border-color,box-shadow] duration-300 ${
           selected
-            ? "border-primary shadow-[0_14px_30px_-16px_rgba(0,0,0,0.32)]"
+            ? "border-foreground shadow-[0_22px_44px_-18px_rgba(0,0,0,0.45)]"
             : "border-border group-hover:border-foreground/40"
         }`}
       >
@@ -78,18 +103,21 @@ function ThemeThumbnail({ theme, label, selected, onSelect, buttonRef }: ThemeTh
           </div>
         )}
       </div>
-      <div className="flex flex-col items-center gap-1">
+      <div className="flex flex-col items-center gap-1.5">
         <span
-          className={`text-xs leading-tight transition-colors duration-200 ${
-            selected ? "font-medium text-foreground" : "text-muted-foreground"
+          className={`text-[13px] leading-none transition-colors duration-200 ${
+            selected ? "font-semibold tracking-tight text-foreground" : "text-muted-foreground"
           }`}
         >
           {label}
         </span>
+        {/* Transform-only animation: scale-x from center beats width transitions
+            on perf, and the curve matches the rest of the page. */}
         <span
           aria-hidden
-          className={`h-px rounded-full bg-primary transition-[width,opacity] duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] ${
-            selected ? "w-5 opacity-100" : "w-0 opacity-0"
+          style={{ transitionTimingFunction: EASE_OUT, transformOrigin: "center" }}
+          className={`h-[2px] w-6 rounded-full bg-foreground transition-[transform,opacity] duration-300 ${
+            selected ? "scale-x-100 opacity-100" : "scale-x-0 opacity-0"
           }`}
         />
       </div>
@@ -185,8 +213,224 @@ function PalettePreview() {
   );
 }
 
+interface NavButtonProps {
+  active: boolean;
+  onClick: () => void;
+  children: React.ReactNode;
+}
+
+function NavButton({ active, onClick, children }: NavButtonProps) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      aria-current={active ? "page" : undefined}
+      className={[
+        "relative w-full rounded-md px-3 py-2 text-left text-[13px]",
+        "transition-[background-color,color,transform] duration-150 ease-out",
+        "active:scale-[0.985] motion-reduce:active:scale-100",
+        "outline-none focus-visible:ring-2 focus-visible:ring-ring/40",
+        active
+          ? "bg-muted font-semibold text-foreground"
+          : "text-muted-foreground hover:bg-muted/50 hover:text-foreground",
+      ].join(" ")}
+    >
+      {/* Left accent bar — scales in from the top edge so the reveal has
+          direction (matches top-down scan order), not just a pop of opacity. */}
+      <span
+        aria-hidden
+        style={{ transitionTimingFunction: EASE_OUT, transformOrigin: "top" }}
+        className={[
+          "absolute top-1.5 bottom-1.5 -left-px w-[3px] rounded-full bg-foreground",
+          "transition-[transform,opacity] duration-200",
+          active ? "scale-y-100 opacity-100" : "scale-y-0 opacity-0",
+        ].join(" ")}
+      />
+      {children}
+    </button>
+  );
+}
+
+interface SectionHeaderProps {
+  eyebrow?: string;
+  title: string;
+  subtitle?: string;
+}
+
+// Title-first section header. Hairline rules and numbered eyebrows were
+// scaffold; whitespace alone carries the hierarchy. Staggered entrance shifts
+// timing based on which children are actually present.
+function SectionHeader({ eyebrow, title, subtitle }: SectionHeaderProps) {
+  const enter =
+    "motion-safe:animate-in motion-safe:fade-in motion-safe:slide-in-from-bottom-1 motion-safe:duration-300";
+  const hasEyebrow = !!eyebrow;
+  return (
+    <header className="mb-14">
+      {hasEyebrow && (
+        <p
+          className={`${enter} font-mono text-[10px] uppercase tracking-[0.22em] text-muted-foreground`}
+          style={{ animationTimingFunction: EASE_OUT, animationFillMode: "both" }}
+        >
+          {eyebrow}
+        </p>
+      )}
+      <h1
+        className={`${enter} ${hasEyebrow ? "mt-4" : ""} font-display text-[44px] font-medium leading-[0.95] tracking-[-0.02em] text-foreground`}
+        style={{
+          animationTimingFunction: EASE_OUT,
+          animationDelay: hasEyebrow ? "60ms" : "0ms",
+          animationFillMode: "both",
+        }}
+      >
+        {title}
+      </h1>
+      {subtitle && (
+        <p
+          className={`${enter} mt-5 text-[15px] leading-relaxed text-muted-foreground`}
+          style={{
+            animationTimingFunction: EASE_OUT,
+            animationDelay: hasEyebrow ? "120ms" : "60ms",
+            animationFillMode: "both",
+          }}
+        >
+          {subtitle}
+        </p>
+      )}
+    </header>
+  );
+}
+
+interface ThemeSectionProps {
+  theme: Theme;
+  onSelect: (next: Theme) => void;
+  previewRef: React.RefObject<HTMLDivElement | null>;
+  thumbRefs: React.MutableRefObject<(HTMLButtonElement | null)[]>;
+}
+
+function ThemeSection({ theme, onSelect, previewRef, thumbRefs }: ThemeSectionProps) {
+  return (
+    <>
+      <SectionHeader
+        title="Theme"
+        subtitle="Six themes. Applied wherever the palette appears."
+      />
+
+      <section
+        role="radiogroup"
+        aria-label="Theme"
+        className="mb-16 grid grid-cols-3 gap-6 sm:grid-cols-6"
+      >
+        {THEME_OPTIONS.map((opt, i) => (
+          <ThemeThumbnail
+            key={opt.value}
+            theme={opt.value}
+            label={opt.label}
+            selected={theme === opt.value}
+            onSelect={() => onSelect(opt.value)}
+            buttonRef={(el) => {
+              thumbRefs.current[i] = el;
+            }}
+          />
+        ))}
+      </section>
+
+      {/* Preview stands on its own — no frame, no dot grid, no caption.
+          The live demo is the demonstration; ornament around it competes. */}
+      <div className="flex justify-center">
+        <div ref={previewRef} className="w-full max-w-[820px]">
+          <PalettePreview />
+        </div>
+      </div>
+    </>
+  );
+}
+
+function AboutSection({ isMac }: { isMac: boolean }) {
+  return (
+    <>
+      <SectionHeader
+        title="About"
+        subtitle="A command palette for ServiceNow. Built as a browser extension, local-first."
+      />
+
+      <section className="space-y-10">
+        <div>
+          <h2 className="text-sm font-medium text-foreground">Shortcuts</h2>
+          <dl className="mt-3 space-y-2 text-sm">
+            {SHORTCUTS.map((s) => (
+              <div key={s.label} className="flex items-center gap-3">
+                <dt className="inline-flex items-center gap-1">
+                  <Kbd>{s.mod(isMac)}</Kbd>
+                  <Kbd>⇧</Kbd>
+                  <Kbd>{s.key}</Kbd>
+                </dt>
+                <dd className="text-muted-foreground">{s.label}</dd>
+              </div>
+            ))}
+          </dl>
+          <p className="mt-4 text-xs text-muted-foreground">
+            Customize at{" "}
+            <code className="rounded bg-muted/60 px-1 py-px font-mono text-[11px] text-foreground">
+              chrome://extensions/shortcuts
+            </code>
+            .
+          </p>
+        </div>
+
+        <div>
+          <h2 className="text-sm font-medium text-foreground">What it does</h2>
+          <ul className="mt-3 space-y-2 text-sm text-muted-foreground">
+            <li>— Search nav menus to jump straight to any page.</li>
+            <li>— Browse all tables, scopes, and recent history.</li>
+            <li>
+              — Open any record by sys_id, or any{" "}
+              <code className="rounded bg-muted/60 px-1 py-px font-mono text-[11px] text-foreground">*.do</code>
+              {" / "}
+              <code className="rounded bg-muted/60 px-1 py-px font-mono text-[11px] text-foreground">*.list</code>{" "}
+              shortcut.
+            </li>
+            <li>— Search ServiceNow docs and Next Experience (Seismic) components in place.</li>
+            <li>
+              — Press <Kbd className="mx-0.5">Tab</Kbd> for the full command list,{" "}
+              <Kbd className="mx-0.5">{isMac ? "⌘" : "Ctrl"}</Kbd>
+              <Kbd>K</Kbd> on a row for its alternates.
+            </li>
+          </ul>
+        </div>
+
+        <div>
+          <h2 className="text-sm font-medium text-foreground">Privacy</h2>
+          <p className="mt-3 text-sm text-muted-foreground">
+            Everything runs locally. The extension only talks to the ServiceNow instance you're on — no third parties, no telemetry.
+          </p>
+        </div>
+
+        <div>
+          <h2 className="text-sm font-medium text-foreground">Source</h2>
+          <p className="mt-3 text-sm text-muted-foreground">
+            <a
+              href={REPO_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="group inline-flex items-center gap-1 text-foreground underline-offset-4 hover:underline"
+            >
+              github.com/gnehcwu/sn-launcher
+              <ArrowUpRight
+                size={12}
+                aria-hidden="true"
+                className="transition-transform duration-200 ease-out group-hover:translate-x-0.5 group-hover:-translate-y-0.5 motion-reduce:transition-none"
+              />
+            </a>
+          </p>
+        </div>
+      </section>
+    </>
+  );
+}
+
 function Options() {
   const [theme, setThemeState] = useState<Theme>(DEFAULT_THEME);
+  const [view, setView] = useState<ViewKey>("theme");
   const previewRef = useRef<HTMLDivElement>(null);
   const thumbRefs = useRef<(HTMLButtonElement | null)[]>([]);
 
@@ -194,6 +438,14 @@ function Options() {
     () => typeof navigator !== "undefined" && /Mac/.test(navigator.userAgent),
     []
   );
+
+  const version = useMemo(() => {
+    try {
+      return browser.runtime.getManifest().version;
+    } catch {
+      return "";
+    }
+  }, []);
 
   useEffect(() => {
     getTheme().then(setThemeState);
@@ -223,6 +475,9 @@ function Options() {
   };
 
   useEffect(() => {
+    // Arrow-key / number-key theme navigation only applies on the Theme view.
+    if (view !== "theme") return;
+
     const isTextTarget = (el: EventTarget | null): boolean => {
       if (!(el instanceof HTMLElement)) return false;
       const tag = el.tagName;
@@ -259,77 +514,115 @@ function Options() {
 
     window.addEventListener("keydown", onKeyDown);
     return () => window.removeEventListener("keydown", onKeyDown);
-  }, [theme]);
+  }, [theme, view]);
 
+  // Focus the selected thumbnail when (re-)entering the Theme view.
   useEffect(() => {
+    if (view !== "theme") return;
     const idx = THEME_OPTIONS.findIndex((o) => o.value === theme);
     thumbRefs.current[idx < 0 ? 0 : idx]?.focus({ preventScroll: true });
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [view]);
+
+  // Reflect the active section in the browser tab title so users can
+  // distinguish multiple open tabs of the options page.
+  useEffect(() => {
+    const sectionLabel = NAV_ITEMS.find((item) => item.key === view)?.label;
+    document.title = sectionLabel ? `${sectionLabel} · SN Launcher` : "SN Launcher";
+  }, [view]);
+
+  // Console greeting for the curious — developer audience, so this is the
+  // right easter egg surface. Fires once on mount.
+  useEffect(() => {
+    const v = version ? ` v${version}` : "";
+    console.log(
+      `%cSN Launcher${v}%c\nHi, developer. Bug or idea? → ${REPO_URL}`,
+      "font: 600 13px ui-monospace, SFMono-Regular, Menlo, monospace; color: #111; background: #f5f5f4; padding: 4px 10px; border-radius: 4px;",
+      "font: 11px ui-monospace, SFMono-Regular, Menlo, monospace; color: #6b7280; line-height: 1.7; padding-left: 2px;"
+    );
+  }, [version]);
 
   return (
-    <div className="min-h-screen bg-background font-mono text-foreground">
-      <div className="mx-auto max-w-[920px] px-8 pb-24 pt-16">
-        <header className="mb-14 flex items-start justify-between gap-6">
-          <div>
-            <h1 className="font-display text-2xl tracking-tight">Pick a look.</h1>
-            <p className="mt-1.5 inline-flex flex-wrap items-center gap-1.5 text-sm text-muted-foreground">
-              <span>Six themes for SN Launcher.</span>
+    <div className="min-h-screen bg-background font-mono text-foreground antialiased">
+      <div className="mx-auto flex min-h-screen max-w-[1200px]">
+        <aside
+          aria-label="Settings navigation"
+          className="sticky top-0 flex h-screen w-60 shrink-0 flex-col border-r border-border px-6 py-10"
+        >
+          {/* Compact inline lockup: icon + wordmark on a shared baseline.
+              No ring, no drop shadow — the icon sits naturally, the way
+              brand marks do in well-considered apps (Linear, Vercel). */}
+          <div className="group/brand mb-14 flex items-center gap-2.5">
+            <img
+              src="/icon/96.png"
+              alt=""
+              aria-hidden="true"
+              // Tiny tilt + press feedback on hover — a quiet wink on the
+              // only logo moment on the page. Custom ease-out for snap.
+              style={{ transitionTimingFunction: EASE_OUT }}
+              className="h-7 w-7 shrink-0 rounded-[7px] transition-transform duration-300 group-hover/brand:-rotate-[6deg] group-hover/brand:scale-[1.08] group-active/brand:scale-[0.96] motion-reduce:transform-none motion-reduce:transition-none"
+            />
+            {/* `<p>` (not `<h1>`) so the visible section title in <main>
+                remains the single page-level heading. */}
+            <p className="font-display text-[15px] font-semibold leading-none tracking-[-0.02em] text-foreground">
+              SN Launcher
             </p>
           </div>
-          <a
-            href="https://github.com/gnehcwu/sn-launcher"
-            target="_blank"
-            rel="noopener noreferrer"
-            aria-label="View SN Launcher on GitHub"
-            title="View on GitHub"
-            className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-muted/70 hover:text-foreground"
-          >
-            <Github className="h-[18px] w-[18px]" />
-          </a>
-        </header>
 
-        <section
-          role="radiogroup"
-          aria-label="Theme"
-          className="mb-20 grid grid-cols-3 gap-6 sm:grid-cols-6"
-        >
-          {THEME_OPTIONS.map((opt, i) => (
-            <ThemeThumbnail
-              key={opt.value}
-              theme={opt.value}
-              label={opt.label}
-              selected={theme === opt.value}
-              onSelect={() => handleSelect(opt.value)}
-              buttonRef={(el) => {
-                thumbRefs.current[i] = el;
-              }}
-            />
-          ))}
-        </section>
+          <nav aria-label="Sections" className="flex flex-col gap-1">
+            {NAV_ITEMS.map((item) => (
+              <NavButton
+                key={item.key}
+                active={view === item.key}
+                onClick={() => setView(item.key)}
+              >
+                {item.label}
+              </NavButton>
+            ))}
+          </nav>
 
-        <section>
-          <div
-            className="flex justify-center rounded-3xl p-8 sm:p-14"
-            style={{
-              backgroundColor: "oklch(0.99 0 0)",
-              backgroundImage:
-                "radial-gradient(circle at 1px 1px, oklch(0.5 0 0 / 0.18) 1px, transparent 0)",
-              backgroundSize: "18px 18px",
-            }}
-          >
-            <div ref={previewRef} className="w-full max-w-[720px]">
-              <PalettePreview />
-            </div>
+          <div className="mt-auto flex flex-col gap-2 pt-4 text-xs text-muted-foreground">
+            <a
+              href={REPO_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="group inline-flex w-fit items-center gap-1.5 rounded outline-none transition-colors duration-150 ease-out hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring/40"
+            >
+              <Github size={12} aria-hidden="true" />
+              <span>GitHub</span>
+              <ArrowUpRight
+                size={10}
+                aria-hidden="true"
+                className="transition-transform duration-200 ease-out group-hover:translate-x-0.5 group-hover:-translate-y-0.5 motion-reduce:transition-none"
+              />
+            </a>
+            {version && <span className="tabular-nums">v{version}</span>}
           </div>
+        </aside>
 
-          <p className="mt-10 flex items-center justify-center gap-1.5 text-center text-xs text-muted-foreground">
-            <Kbd className="text-[10px]">{isMac ? "⌘" : "Ctrl"}</Kbd>
-            <Kbd className="text-[10px]">⇧</Kbd>
-            <Kbd className="text-[10px]">L</Kbd>
-            <span>on any ServiceNow instance.</span>
-          </p>
-        </section>
+        <main aria-label="Settings content" className="min-w-0 flex-1 px-12 pb-24 pt-12">
+          {/* `key={view}` remounts on tab change so the entrance animation
+              replays. Wrapper handles the cross-fade only; vertical motion
+              belongs to SectionHeader's staggered children. Duration is
+              tuned to overlap the children's stagger tails (~120-420ms) so
+              the whole reveal reads as one motion event, not two layered ones. */}
+          <div
+            key={view}
+            style={{ animationTimingFunction: EASE_OUT }}
+            className="motion-safe:animate-in motion-safe:fade-in motion-safe:duration-300"
+          >
+            {view === "theme" ? (
+              <ThemeSection
+                theme={theme}
+                onSelect={handleSelect}
+                previewRef={previewRef}
+                thumbRefs={thumbRefs}
+              />
+            ) : (
+              <AboutSection isMac={isMac} />
+            )}
+          </div>
+        </main>
       </div>
     </div>
   );

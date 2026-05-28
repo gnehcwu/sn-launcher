@@ -24,6 +24,7 @@ export const ScopeRecordSchema = z
 
 export const TableRecordSchema = z
   .object({
+    sys_id: z.string().optional(),
     name: z.string().optional(),
     label: z.string().optional(),
   })

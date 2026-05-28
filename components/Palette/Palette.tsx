@@ -1,6 +1,5 @@
-import React, { useCallback, useEffect, useMemo } from "react";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { browser } from "wxt/browser";
-import { Route, TextSearch } from "lucide-react";
 import type { CommandItem, CommandModeOrNull, LauncherActionValue } from "@/utils/types";
 import useLauncherStore from "@/utils/launcherStore";
 import usePaletteData from "@/hooks/usePaletteData";
@@ -9,18 +8,20 @@ import useTable from "@/hooks/useTable";
 import useScope from "@/hooks/useScope";
 import scoreItems from "@/utils/scoring/scoreItems";
 import { getCommandLabelAndPlaceholder } from "@/utils/configs/commands";
-import { isValidShortcut, isValidSysId } from "@/utils/validation";
 import {
   COMMAND_MODES,
   SN_LAUNCHER_ACTIONS,
   SN_LAUNCHER_COMMAND_SHORTCUTS,
 } from "@/utils/configs/constants";
 import { showCurrentRecordXml } from "@/utils/api/extractRecord";
-import action, { SYNTH_GOTO_KEY, SYNTH_FIND_RECORD_KEY } from "./palette-action";
+import action from "./palette-action";
+import { getSyntheticItems } from "./synthetic-items";
 import PaletteShell from "./PaletteShell";
 import PaletteHeader from "./PaletteHeader";
 import PaletteBody from "./PaletteBody";
 import PaletteFooter from "./PaletteFooter";
+import ActionPanel from "./ActionPanel";
+import { getSubActions, type SubAction } from "./sub-actions";
 import "@/assets/tailwind.css";
 
 const DIRECT_ACTION_HANDLERS: Partial<Record<LauncherActionValue, () => void>> = {
@@ -51,33 +52,6 @@ function pickSourceList(
     default:
       return [];
   }
-}
-
-// Pinned-top items derived from input pattern, so the user gets a goto/find-record
-// affordance without the palette layout flipping into compact mode mid-typing.
-function getSyntheticItems(filter: string, commandMode: CommandModeOrNull): CommandItem[] {
-  if (commandMode != null) return [];
-  const trimmed = filter.trim();
-  if (!trimmed) return [];
-  if (isValidSysId(trimmed)) {
-    return [{
-      key: SYNTH_FIND_RECORD_KEY,
-      fullLabel: `Find record ${trimmed}`,
-      label: "Find record",
-      subLabel: trimmed,
-      icon: React.createElement(TextSearch),
-    }];
-  }
-  if (isValidShortcut(trimmed)) {
-    return [{
-      key: SYNTH_GOTO_KEY,
-      fullLabel: `Go to ${trimmed}`,
-      label: "Go to",
-      subLabel: trimmed,
-      icon: React.createElement(Route),
-    }];
-  }
-  return [];
 }
 
 function announce(mode: CommandModeOrNull, count: number): string {
@@ -136,9 +110,163 @@ function Palette() {
     });
   }, [currentMenuList, selected, filter, commandMode, close, enterMode, setLoading]);
 
+  // Action panel (⌘K) — secondary actions for the currently selected item.
+  const [actionPanelOpen, setActionPanelOpen] = useState(false);
+  const [actionPanelSelected, setActionPanelSelected] = useState(0);
+  // Which action row is currently displaying its `feedback` ("Copied" etc).
+  // Null when nothing is in flight.
+  const [actionFeedbackKey, setActionFeedbackKey] = useState<string | null>(null);
+  // Which action row is in its programmatic "pressed" beat — the brief
+  // acknowledgment that fires on both Enter and click. Needed because the
+  // CSS :active pseudo only fires for mouse/Space, leaving keyboard Enter
+  // with no visual press signal.
+  const [actionPressedKey, setActionPressedKey] = useState<string | null>(null);
+  // Tracks the close-after-feedback timer so a second click / Escape / context
+  // change can cancel a still-pending close.
+  const feedbackTimerRef = useRef<number | null>(null);
+  const pressTimerRef = useRef<number | null>(null);
+
+  const clearFeedbackTimer = useCallback(() => {
+    if (feedbackTimerRef.current != null) {
+      window.clearTimeout(feedbackTimerRef.current);
+      feedbackTimerRef.current = null;
+    }
+  }, []);
+
+  const clearPressTimer = useCallback(() => {
+    if (pressTimerRef.current != null) {
+      window.clearTimeout(pressTimerRef.current);
+      pressTimerRef.current = null;
+    }
+  }, []);
+
+  const selectedItem = currentMenuList[selected];
+  const subActions = useMemo(
+    () => getSubActions(selectedItem, commandMode, { close }),
+    [selectedItem, commandMode, close]
+  );
+
+  // Close the panel and reset its cursor whenever the underlying context shifts
+  // (filter change, mode change, mouse-hover selection change). The panel only
+  // makes sense against a stable snapshot of the selected item.
+  useEffect(() => {
+    setActionPanelOpen(false);
+    setActionPanelSelected(0);
+    setActionFeedbackKey(null);
+    setActionPressedKey(null);
+    clearFeedbackTimer();
+    clearPressTimer();
+  }, [selected, filter, commandMode, clearFeedbackTimer, clearPressTimer]);
+
+  // Belt-and-braces: cancel any pending timer on unmount so stale callbacks
+  // can't fire against a disposed component.
+  useEffect(
+    () => () => {
+      clearFeedbackTimer();
+      clearPressTimer();
+    },
+    [clearFeedbackTimer, clearPressTimer]
+  );
+
+  const runSubAction = useCallback(
+    (sub: SubAction) => {
+      // A new click interrupts any pending feedback close — last write wins.
+      clearFeedbackTimer();
+      clearPressTimer();
+
+      // Press flash: brief scale + bg dim on the row, acknowledging the
+      // activation. CSS :active doesn't fire for keyboard Enter, so the
+      // programmatic state is what gives keyboard users a press signal.
+      setActionPressedKey(sub.key);
+
+      if (sub.feedback) {
+        // Copy actions fire immediately — clipboard write shouldn't wait
+        // on the press beat. The feedback container takes over as the
+        // dominant visual; 100ms press flash just bridges the 0-100ms gap
+        // before the check container is clearly emerging.
+        void sub.run();
+        setActionFeedbackKey(sub.key);
+        pressTimerRef.current = window.setTimeout(() => {
+          pressTimerRef.current = null;
+          setActionPressedKey(null);
+        }, 100);
+        // 820ms total — two clean beats plus a hold:
+        //   0-220ms   container scales + fades in
+        //   240-620ms stroke draws (natural pen direction: tail → arm)
+        //   620-820ms 200ms stable hold for the eye to register the drawn check
+        feedbackTimerRef.current = window.setTimeout(() => {
+          feedbackTimerRef.current = null;
+          setActionFeedbackKey(null);
+          setActionPanelOpen(false);
+          // Mirror the implicit close that non-feedback actions perform inside
+          // their own run() callbacks.
+          close();
+        }, 820);
+      } else {
+        // Open actions: hold the press for 150ms (Emil's instant-feedback
+        // band) before firing. Without this, the panel unmounts in the same
+        // frame and the press class never paints — keyboard Enter would
+        // feel like a no-op.
+        pressTimerRef.current = window.setTimeout(() => {
+          pressTimerRef.current = null;
+          setActionPressedKey(null);
+          void sub.run();
+          setActionPanelOpen(false);
+        }, 150);
+      }
+    },
+    [clearFeedbackTimer, clearPressTimer, close]
+  );
+
   const handleKeydown = useCallback(
     (event: React.KeyboardEvent) => {
       event.stopPropagation();
+
+      // ⌘K / Ctrl+K: toggle action panel for the selected item (if any actions).
+      if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === "k") {
+        event.preventDefault();
+        if (actionPanelOpen) {
+          setActionPanelOpen(false);
+        } else if (subActions.length > 0) {
+          setActionPanelOpen(true);
+        }
+        return;
+      }
+
+      // While the action panel is open, route nav keys to it instead of the main list.
+      if (actionPanelOpen) {
+        const subTotal = subActions.length;
+        switch (event.key) {
+          case "ArrowUp":
+          case "ArrowDown":
+          case "Tab": {
+            // Tab/Shift+Tab cycle through sub-actions instead of moving
+            // focus out of the panel — focus is locked here while open.
+            event.preventDefault();
+            if (!subTotal) return;
+            const dir =
+              event.key === "ArrowDown" || (event.key === "Tab" && !event.shiftKey)
+                ? 1
+                : -1;
+            setActionPanelSelected(((actionPanelSelected + dir) % subTotal + subTotal) % subTotal);
+            return;
+          }
+          case "Enter": {
+            event.preventDefault();
+            const sub = subActions[actionPanelSelected];
+            if (sub) runSubAction(sub);
+            return;
+          }
+          case "Escape": {
+            event.preventDefault();
+            setActionPanelOpen(false);
+            return;
+          }
+        }
+        // Swallow other keys so the filter input doesn't change underneath.
+        return;
+      }
+
       const total = currentMenuList?.length ?? 0;
       switch (event.key) {
         case "ArrowUp":
@@ -170,7 +298,21 @@ function Palette() {
           break;
       }
     },
-    [currentMenuList, selected, filter, commandMode, setSelected, close, executeAction, exitMode, enterMode]
+    [
+      currentMenuList,
+      selected,
+      filter,
+      commandMode,
+      setSelected,
+      close,
+      executeAction,
+      exitMode,
+      enterMode,
+      actionPanelOpen,
+      actionPanelSelected,
+      subActions,
+      runSubAction,
+    ]
   );
 
   // Single message listener for all extension shortcuts. Replaces the
@@ -226,6 +368,7 @@ function Palette() {
         listboxId="snl-listbox"
         activeOptionId={activeOptionId}
         bodyLoaderVisible={bodyLoaderVisible}
+        actionPanelOpen={actionPanelOpen}
       />
       <PaletteBody
         menuList={currentMenuList}
@@ -234,7 +377,20 @@ function Palette() {
       <PaletteFooter
         filteredCount={currentMenuList.length}
         totalCount={sourceList.length}
+        actionsAvailable={subActions.length > 0}
       />
+      {actionPanelOpen && subActions.length > 0 && selectedItem && (
+        <ActionPanel
+          itemLabel={selectedItem.label || selectedItem.fullLabel}
+          actions={subActions}
+          selected={actionPanelSelected}
+          feedbackKey={actionFeedbackKey}
+          pressedKey={actionPressedKey}
+          onSelect={setActionPanelSelected}
+          onRun={runSubAction}
+          onDismiss={() => setActionPanelOpen(false)}
+        />
+      )}
     </PaletteShell>
   );
 }

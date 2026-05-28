@@ -133,6 +133,7 @@ export async function fetchTables(onRevalidate?: OnRevalidate): Promise<CommandI
           label: item.label,
           fullLabel: `${item.label} ${item.name}`,
           target: `${item.name}_list.do`,
+          sysId: item.sys_id,
         });
       }
 
@@ -245,6 +246,13 @@ export function searchComponent(input: string): void {
 export function gotoTab(segmentUrl: string): void {
   const url = `${getBaseUrl()}/${segmentUrl}`;
   messageBackground({ action: SN_LAUNCHER_ACTIONS.OPEN_TAB_COMMAND, url });
+}
+
+export function copyLink(segmentUrl: string): void {
+  const url = `${getBaseUrl()}/${segmentUrl}`;
+  navigator.clipboard.writeText(url).catch((err) => {
+    console.error("SN Launcher: copy to clipboard failed:", err);
+  });
 }
 
 export function goto(segment: string): void {

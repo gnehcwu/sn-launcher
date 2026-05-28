@@ -18,7 +18,7 @@ export const SN_LAUNCHER_SCOPE_ENDPOINT =
 // added by service.ts#fetchTables, which loops until ServiceNow returns a
 // short page.
 export const SN_LAUNCHER_TABLE_ENDPOINT =
-  'api/now/table/sys_db_object?sysparm_fields=label%2Cname&sysparm_display_value=true';
+  'api/now/table/sys_db_object?sysparm_fields=sys_id%2Clabel%2Cname&sysparm_display_value=true';
 // 5000 fits the vast majority of instances in a single round-trip; pagination
 // only kicks in beyond that. Stays well under ServiceNow's 10k default ceiling.
 export const SN_LAUNCHER_TABLE_PAGE_SIZE = 5000;

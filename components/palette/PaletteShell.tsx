@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import FocusLock from "react-focus-lock";
 import { RemoveScroll } from "react-remove-scroll";
+import PaletteCard from "./PaletteCard";
 
 interface PaletteShellProps {
   isShown: boolean;
@@ -55,12 +56,11 @@ function PaletteShell({
           ].join(" ")}
           onClick={onBackdrop}
         >
-          <div
+          <PaletteCard
             data-state={state}
             onKeyDown={onKeyDown}
             className={[
-              "relative grid w-[min(720px,100vw)] grid-rows-[min-content_1fr_min-content]",
-              "overflow-hidden rounded-2xl border border-border bg-popover text-popover-foreground",
+              "w-[min(720px,100vw)]",
               "shadow-[0_24px_60px_-12px_rgba(0,0,0,0.35)]",
               "motion-safe:transition-[opacity,transform] motion-safe:duration-150 motion-safe:ease-out",
               "data-[state=open]:opacity-100 data-[state=open]:scale-100",
@@ -69,7 +69,7 @@ function PaletteShell({
             ].join(" ")}
           >
             {children}
-          </div>
+          </PaletteCard>
           <div aria-live="polite" className="sr-only">
             {ariaAnnouncement}
           </div>

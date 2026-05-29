@@ -6,6 +6,7 @@ interface LauncherState {
   commandMode: CommandModeOrNull;
   token: string;
   scopeSysId: string | null;
+  userSysId: string | null;
   selected: number;
   isLoading: boolean;
   isShown: boolean;
@@ -23,6 +24,7 @@ interface LauncherActions {
   setLoading: (loading: boolean) => void;
   setToken: (token: string) => void;
   setScope: (scopeSysId: string | null) => void;
+  setUserSysId: (userSysId: string | null) => void;
   setError: (error: LauncherError | null) => void;
 }
 
@@ -31,6 +33,7 @@ const initialState: LauncherState = {
   commandMode: null,
   token: '',
   scopeSysId: null,
+  userSysId: null,
   selected: 0,
   isLoading: false,
   isShown: false,
@@ -64,6 +67,7 @@ const useLauncherStore = create<LauncherState & LauncherActions>((set) => ({
   setLoading: (isLoading) => set({ isLoading }),
   setToken: (token) => set({ token }),
   setScope: (scopeSysId) => set({ scopeSysId }),
+  setUserSysId: (userSysId) => set({ userSysId }),
   setError: (error) => set({ error }),
 }));
 

@@ -1,10 +1,18 @@
 import React from 'react';
-import { clearCache, searchDoc, searchComponent, goto, about, openOptions } from '../api/service';
+import {
+  clearCache,
+  searchDoc,
+  searchComponent,
+  goto,
+  openOptions,
+  stopImpersonating,
+} from '../api/service';
 import { showCurrentRecordXml, copyCurrentRecordSysId } from '../api/extractRecord';
 import type { CommandMode, CommandModeOrNull, CommandItem } from '@/utils/types';
 import { COMMAND_MODES } from './constants';
 import {
   ArrowRightLeft,
+  Layers,
   Table2,
   TextSearch,
   History,
@@ -12,9 +20,10 @@ import {
   Files,
   Component,
   GalleryVerticalEnd,
-  BadgeInfo,
   FileCode,
   Copy,
+  UserRoundCog,
+  UserRoundX,
   Settings,
 } from 'lucide-react';
 
@@ -44,12 +53,49 @@ const commands: CommandItem[] = [
     icon: React.createElement(TextSearch),
   },
   {
+    key: 'cmd:impersonate',
+    fullLabel: 'Impersonate user',
+    mode: COMMAND_MODES.IMPERSONATE,
+    subLabel: 'Impersonate another user',
+    placeholderText: 'Type a name or username...',
+    icon: React.createElement(UserRoundCog),
+  },
+  {
     key: 'cmd:history',
     fullLabel: 'History',
     mode: COMMAND_MODES.HISTORY,
     subLabel: 'Search history',
     placeholderText: 'Type to search...',
     icon: React.createElement(History),
+  },
+  {
+    key: 'cmd:switch_update_set',
+    fullLabel: 'Switch update set',
+    mode: COMMAND_MODES.SWITCH_UPDATE_SET,
+    subLabel: 'Set the current in-progress update set',
+    placeholderText: 'Type to search...',
+    icon: React.createElement(Layers),
+  },
+  {
+    key: 'cmd:show_record_xml',
+    action: showCurrentRecordXml,
+    fullLabel: 'Show record XML',
+    subLabel: "Open the current record's XML in a new tab",
+    icon: React.createElement(FileCode),
+  },
+  {
+    key: 'cmd:copy_record_sys_id',
+    action: copyCurrentRecordSysId,
+    fullLabel: 'Copy record sys_id',
+    subLabel: "Copy the current record's sys_id to the clipboard",
+    icon: React.createElement(Copy),
+  },
+  {
+    key: 'cmd:clear_cache',
+    action: clearCache,
+    fullLabel: 'Clear cache',
+    subLabel: 'Clear client cache and refresh',
+    icon: React.createElement(GalleryVerticalEnd),
   },
   {
     key: 'cmd:go_to',
@@ -79,49 +125,23 @@ const commands: CommandItem[] = [
     icon: React.createElement(Component),
   },
   {
-    key: 'cmd:actions',
-    mode: COMMAND_MODES.ACTIONS,
-    fullLabel: 'Actions',
-    subLabel: 'Show all actions',
-    visible: false,
-    placeholderText: 'Type to search...',
-  },
-  {
-    key: 'cmd:show_record_xml',
-    action: showCurrentRecordXml,
-    fullLabel: 'Show record XML',
-    subLabel: "Open the current record's XML in a new tab",
-    icon: React.createElement(FileCode),
-  },
-  {
-    key: 'cmd:copy_record_sys_id',
-    action: copyCurrentRecordSysId,
-    fullLabel: 'Copy record sys_id',
-    subLabel: "Copy the current record's sys_id to the clipboard",
-    icon: React.createElement(Copy),
-  },
-  {
-    key: 'cmd:clear_cache',
-    action: clearCache,
-    fullLabel: 'Clear cache',
-    subLabel: 'Clear client cache and refresh',
-    icon: React.createElement(GalleryVerticalEnd),
-  },
-  {
     key: 'cmd:settings',
     action: openOptions,
     fullLabel: 'Settings',
     subLabel: 'Open SN Launcher settings',
     icon: React.createElement(Settings),
   },
-  {
-    key: 'cmd:about',
-    action: about,
-    fullLabel: 'About',
-    subLabel: 'More about this tool',
-    icon: React.createElement(BadgeInfo),
-  },
 ];
+
+// Kept out of the static `commands` array because it's only relevant while an
+// extension-initiated impersonation is active — fetchCommands appends it then.
+export const stopImpersonateCommand: CommandItem = {
+  key: 'cmd:stop_impersonate',
+  action: stopImpersonating,
+  fullLabel: 'Stop impersonating',
+  subLabel: 'Return to your own user',
+  icon: React.createElement(UserRoundX),
+};
 
 function findCommandByMode(mode: CommandMode): CommandItem | undefined {
   return commands.find((item) => item.mode === mode);

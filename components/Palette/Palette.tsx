@@ -6,16 +6,22 @@ import usePaletteData from "@/hooks/usePaletteData";
 import useHistory from "@/hooks/useHistory";
 import useTable from "@/hooks/useTable";
 import useScope from "@/hooks/useScope";
+import useUser from "@/hooks/useUser";
+import useUpdateSet from "@/hooks/useUpdateSet";
+import useImpersonateSearch from "@/hooks/useImpersonateSearch";
 import scoreItems from "@/utils/scoring/scoreItems";
 import { getCommandLabelAndPlaceholder } from "@/utils/configs/commands";
+import { isValidSysId } from "@/utils/validation";
 import {
   COMMAND_MODES,
+  MIN_MATCH_LENGTH,
+  IMPERSONATE_LOCAL_MATCH_THRESHOLD,
   SN_LAUNCHER_ACTIONS,
   SN_LAUNCHER_COMMAND_SHORTCUTS,
 } from "@/utils/configs/constants";
 import { showCurrentRecordXml } from "@/utils/api/extractRecord";
 import action from "./palette-action";
-import { getSyntheticItems } from "./synthetic-items";
+import { getSyntheticItems, getImpersonateSysIdItem } from "./synthetic-items";
 import PaletteShell from "./PaletteShell";
 import PaletteHeader from "./PaletteHeader";
 import PaletteBody from "./PaletteBody";
@@ -36,6 +42,8 @@ function pickSourceList(
     scopes: CommandItem[];
     tables: CommandItem[];
     histories: CommandItem[];
+    users: CommandItem[];
+    updateSets: CommandItem[];
   }
 ): CommandItem[] {
   switch (mode) {
@@ -43,10 +51,14 @@ function pickSourceList(
       return data.commands;
     case COMMAND_MODES.SWITCH_SCOPE:
       return data.scopes;
+    case COMMAND_MODES.SWITCH_UPDATE_SET:
+      return data.updateSets;
     case COMMAND_MODES.TABLE:
       return data.tables;
     case COMMAND_MODES.HISTORY:
       return data.histories;
+    case COMMAND_MODES.IMPERSONATE:
+      return data.users;
     case null:
       return data.menus;
     default:
@@ -81,23 +93,62 @@ function Palette() {
   const [tables] = useTable();
   const [histories] = useHistory();
   const [scopes] = useScope();
+  const [users] = useUser();
+  const [updateSets] = useUpdateSet();
 
   const sourceList = useMemo(
-    () => pickSourceList(commandMode, { menus, commands, scopes, tables, histories }),
-    [commandMode, menus, commands, scopes, tables, histories]
+    () =>
+      pickSourceList(commandMode, {
+        menus,
+        commands,
+        scopes,
+        tables,
+        histories,
+        users,
+        updateSets,
+      }),
+    [commandMode, menus, commands, scopes, tables, histories, users, updateSets]
   );
 
   // Derived synchronously from sourceList/filter/mode so the list never lags
   // a mode switch by a frame — that lag was the source of the header-spinner
   // flash when entering Tables/Scopes (stale list made bodyLoaderVisible
   // briefly false, unsuppressing the spinner before the body skeleton kicked in).
-  const currentMenuList = useMemo(() => {
+  // Local matches over the in-memory source list (cheap; runs every render).
+  // Impersonate applies a quality floor so loose subsequence junk doesn't mask the
+  // need for a server lookup; every other mode keeps the permissive fuzzy match.
+  const localScored = useMemo(() => {
     try {
-      return [...getSyntheticItems(filter, commandMode), ...scoreItems(sourceList, filter)];
+      const minScore =
+        commandMode === COMMAND_MODES.IMPERSONATE ? IMPERSONATE_LOCAL_MATCH_THRESHOLD : 0;
+      return scoreItems(sourceList, filter, minScore);
     } catch {
       return [];
     }
   }, [sourceList, filter, commandMode]);
+
+  // Impersonate fallback: hit the server only when no loaded user matches (after
+  // the quality floor above), the query is long enough, and it isn't already a
+  // sys_id (which impersonates directly, no lookup needed).
+  const trimmedFilter = filter.trim();
+  const needsUserSearch =
+    commandMode === COMMAND_MODES.IMPERSONATE &&
+    trimmedFilter.length >= MIN_MATCH_LENGTH &&
+    localScored.length === 0 &&
+    !isValidSysId(trimmedFilter);
+  const userSearchResults = useImpersonateSearch(filter, needsUserSearch);
+
+  const currentMenuList = useMemo(() => {
+    if (commandMode === COMMAND_MODES.IMPERSONATE) {
+      // Short query (full list) or a real local match → show the loaded list.
+      if (trimmedFilter.length < MIN_MATCH_LENGTH || localScored.length > 0) return localScored;
+      // Otherwise: a typed sys_id impersonates directly; any other text is
+      // resolved to real users via the server lookup.
+      if (isValidSysId(trimmedFilter)) return [getImpersonateSysIdItem(trimmedFilter)];
+      return userSearchResults;
+    }
+    return [...getSyntheticItems(filter, commandMode), ...localScored];
+  }, [commandMode, filter, trimmedFilter, localScored, userSearchResults]);
 
   const executeAction = useCallback(() => {
     void action({

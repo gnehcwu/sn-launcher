@@ -147,6 +147,7 @@ function ActionPanel({
                   ref={active ? activeButtonRef : undefined}
                   type="button"
                   role="menuitem"
+                  data-active={active ? "true" : "false"}
                   // tabIndex -1 keeps tab order owned by the palette input;
                   // we focus the active row imperatively for FocusLock release.
                   tabIndex={-1}

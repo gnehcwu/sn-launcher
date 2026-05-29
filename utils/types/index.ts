@@ -6,7 +6,9 @@ export type CommandMode =
   | 'go_to'
   | 'actions'
   | 'history'
-  | 'table';
+  | 'table'
+  | 'impersonate'
+  | 'switch_update_set';
 
 export type CommandModeOrNull = CommandMode | null;
 

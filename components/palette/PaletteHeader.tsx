@@ -1,12 +1,10 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
-import { Search } from "lucide-react";
 import useLauncherStore from "@/utils/launcherStore";
 import { getCommandLabelAndPlaceholder } from "@/utils/configs/commands";
 import { DEBOUNCE_DELAY } from "@/utils/configs/constants";
-import { Spinner } from "@/components/ui/spinner";
-import { Badge } from "@/components/ui/badge";
 import debounce from "@/utils/debounce";
 import { hasSyntheticMatch } from "./synthetic-items";
+import PaletteHeaderView from "./PaletteHeaderView";
 
 interface PaletteHeaderProps {
   listboxId: string;
@@ -89,59 +87,18 @@ function PaletteHeader({
 
   const [label] = getCommandLabelAndPlaceholder(commandMode);
 
-  const renderHint = () => {
-    if (isLoading && !bodyLoaderVisible) {
-      return <Spinner className="text-muted-foreground" />;
-    }
-    if (!commandMode) {
-      return (
-        <div className="flex items-center gap-x-2 text-muted-foreground">
-          <span className="hidden whitespace-nowrap font-mono text-xs sm:block">More actions</span>
-          <Badge
-            variant="outline"
-            aria-hidden="true"
-            className="h-5 min-w-5 rounded-full border-border px-1.5 font-mono text-[10px] uppercase tracking-[0.08em] text-muted-foreground"
-          >
-            Tab
-          </Badge>
-        </div>
-      );
-    }
-    return null;
-  };
-
   return (
-    <div className="flex items-center gap-x-3 border-b border-border px-[21px]">
-      {commandMode ? (
-        <Badge
-          variant="outline"
-          className="h-5 min-w-5 rounded-full border-border px-1.5 font-mono text-[10px] uppercase tracking-[0.08em] text-muted-foreground motion-safe:animate-in motion-safe:fade-in motion-safe:duration-150"
-        >
-          {label}
-        </Badge>
-      ) : (
-        <Search className="text-muted-foreground" size={16} aria-hidden="true" />
-      )}
-      <input
-        id="snl-filter"
-        ref={inputRef}
-        role="combobox"
-        aria-label="Search"
-        aria-controls={listboxId}
-        aria-expanded={true}
-        aria-autocomplete="list"
-        aria-activedescendant={activeOptionId}
-        className="m-[16px_0px] flex-1 border-none bg-transparent font-mono text-[15px] tracking-tight text-foreground outline-none placeholder:text-muted-foreground/70 focus:outline-none active:outline-none"
-        placeholder="Type to search..."
-        value={inputValue}
-        onChange={handleChange}
-        autoComplete="off"
-        autoCorrect="off"
-        autoCapitalize="off"
-        spellCheck="false"
-      />
-      {renderHint()}
-    </div>
+    <PaletteHeaderView
+      mode={commandMode}
+      label={label}
+      isLoading={isLoading}
+      bodyLoaderVisible={bodyLoaderVisible}
+      inputValue={inputValue}
+      onInputChange={handleChange}
+      inputRef={inputRef}
+      listboxId={listboxId}
+      activeOptionId={activeOptionId}
+    />
   );
 }
 

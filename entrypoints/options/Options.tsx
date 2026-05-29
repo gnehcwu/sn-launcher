@@ -1,8 +1,12 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { Github, Search, CornerDownLeft, ArrowUpRight } from "lucide-react";
+import { Github, ArrowUpRight } from "lucide-react";
 import { browser } from "wxt/browser";
 import { Kbd } from "@/components/ui/kbd";
-import { Badge } from "@/components/ui/badge";
+import PaletteCard from "@/components/palette/PaletteCard";
+import PaletteHeaderView from "@/components/palette/PaletteHeaderView";
+import MenuRow from "@/components/palette/MenuRow";
+import PaletteFooter from "@/components/palette/PaletteFooter";
+import type { CommandItem } from "@/utils/types";
 import {
   applyTheme,
   DEFAULT_THEME,
@@ -125,91 +129,42 @@ function ThemeThumbnail({ theme, label, selected, onSelect, buttonRef }: ThemeTh
   );
 }
 
-type PreviewRow = {
-  title: string;
-  sub: string;
-  parent?: string;
-};
-
-const PREVIEW_ROWS: PreviewRow[] = [
-  { title: "Incident", sub: "incident.list", parent: "Service Desk › Incident" },
-  { title: "Change Request", sub: "change_request.list", parent: "Change › All" },
-  { title: "Problem", sub: "problem.list", parent: "Problem › Open" },
-  { title: "Knowledge", sub: "kb_knowledge.list", parent: "Knowledge › Articles" },
-  { title: "Users", sub: "sys_user.list", parent: "User Administration › Users" },
-  { title: "Service Catalog", sub: "sc_cat_item.list", parent: "Service Catalog › Catalog Definitions" },
-  { title: "Business Rules", sub: "sys_script.list", parent: "System Definition › Business Rules" },
-  { title: "CMDB", sub: "cmdb_ci.list", parent: "Configuration › All" },
+// Sample rows shaped as real CommandItems so they feed straight into MenuRow.
+const PREVIEW_ROWS: CommandItem[] = [
+  { key: "incident", fullLabel: "Incident", subLabel: "incident.list", parentLabel: "Service Desk › Incident" },
+  { key: "change_request", fullLabel: "Change Request", subLabel: "change_request.list", parentLabel: "Change › All" },
+  { key: "problem", fullLabel: "Problem", subLabel: "problem.list", parentLabel: "Problem › Open" },
+  { key: "kb_knowledge", fullLabel: "Knowledge", subLabel: "kb_knowledge.list", parentLabel: "Knowledge › Articles" },
+  { key: "sys_user", fullLabel: "Users", subLabel: "sys_user.list", parentLabel: "User Administration › Users" },
+  { key: "sc_cat_item", fullLabel: "Service Catalog", subLabel: "sc_cat_item.list", parentLabel: "Service Catalog › Catalog Definitions" },
+  { key: "sys_script", fullLabel: "Business Rules", subLabel: "sys_script.list", parentLabel: "System Definition › Business Rules" },
+  { key: "cmdb_ci", fullLabel: "CMDB", subLabel: "cmdb_ci.list", parentLabel: "Configuration › All" },
 ];
 
+const noop = () => {};
+
+// A non-interactive snapshot of the live palette, assembled from the exact same
+// components it renders (PaletteCard / PaletteHeaderView / MenuRow /
+// PaletteFooter) so any visual change to the palette shows here automatically —
+// nothing to duplicate or keep in sync.
 function PalettePreview() {
   return (
-    <div className="relative grid h-[516px] w-full grid-rows-[min-content_1fr_min-content] overflow-hidden rounded-2xl border border-border bg-popover text-popover-foreground shadow-[0_24px_60px_-12px_rgba(0,0,0,0.35)]">
-      <div className="flex items-center gap-x-3 border-b border-border px-[21px]">
-        <Search className="text-muted-foreground" size={16} />
-        <div className="my-[16px] flex-1 font-mono text-[15px] tracking-tight text-muted-foreground">
-          Type to search...
-        </div>
-        <div className="flex cursor-default items-center gap-x-2">
-          <span className="hidden whitespace-nowrap font-mono text-xs text-muted-foreground sm:block">
-            More actions
-          </span>
-          <Badge
-            variant="outline"
-            className="h-5 min-w-5 rounded-full border-border px-1.5 font-mono text-[10px] uppercase tracking-[0.08em] text-muted-foreground"
-          >
-            Tab
-          </Badge>
-        </div>
+    <PaletteCard className="h-[516px] w-full shadow-[0_24px_60px_-12px_rgba(0,0,0,0.35)]">
+      <PaletteHeaderView mode={null} inputValue="" readOnly />
+      <div role="listbox" aria-label="Commands" className="min-h-0 overflow-hidden px-3 py-2">
+        {PREVIEW_ROWS.map((item, i) => (
+          <MenuRow
+            key={item.key}
+            index={i}
+            item={item}
+            active={i === 0}
+            onSelect={noop}
+            onAction={noop}
+          />
+        ))}
       </div>
-
-      <ul className="flex min-h-0 flex-col py-1.5">
-        {PREVIEW_ROWS.map((row, i) => {
-          const active = i === 0;
-          return (
-            <li
-              key={row.title}
-              className={`relative mx-1.5 flex min-h-0 flex-1 cursor-default items-center gap-x-3 rounded-md px-[10px] font-mono transition-colors duration-100 ${
-                active ? "bg-accent text-accent-foreground" : ""
-              }`}
-            >
-              <span
-                aria-hidden
-                className={`absolute left-0 top-1.5 bottom-1.5 w-[2px] rounded-full bg-primary transition-opacity duration-100 ${
-                  active ? "opacity-100" : "opacity-0"
-                }`}
-              />
-              <span className="min-w-0 flex-1">
-                <span className="line-clamp-1 block text-sm text-foreground">{row.title}</span>
-                <span className="line-clamp-1 block text-xs text-muted-foreground">{row.sub}</span>
-              </span>
-              {row.parent && (
-                <Badge
-                  variant="outline"
-                  className="hidden h-5 min-w-5 items-center justify-center whitespace-nowrap rounded-full border-border px-1.5 font-mono text-xs text-muted-foreground tracking-tight sm:inline-flex"
-                >
-                  {row.parent}
-                </Badge>
-              )}
-            </li>
-          );
-        })}
-      </ul>
-
-      <div className="flex cursor-default flex-row items-center justify-between border-t border-border px-[21px] py-3 font-mono text-xs text-muted-foreground">
-        <span className="tabular-nums">{PREVIEW_ROWS.length} of 48</span>
-        <span className="inline-flex items-center gap-1.5">
-          <Kbd>↑</Kbd>
-          <Kbd>↓</Kbd>
-          <span>to navigate</span>
-          <span className="mx-1.5 opacity-50">·</span>
-          <Kbd>
-            <CornerDownLeft size={12} />
-          </Kbd>
-          <span>to select</span>
-        </span>
-      </div>
-    </div>
+      <PaletteFooter filteredCount={PREVIEW_ROWS.length} totalCount={48} actionsAvailable />
+    </PaletteCard>
   );
 }
 

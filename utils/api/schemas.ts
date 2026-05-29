@@ -30,6 +30,50 @@ export const TableRecordSchema = z
   })
   .passthrough();
 
+export const UserRecordSchema = z
+  .object({
+    sys_id: z.string().optional(),
+    name: z.string().optional(),
+    user_name: z.string().optional(),
+    email: z.string().optional(),
+  })
+  .passthrough();
+
+/**
+ * A ServiceNow reference field. Depending on the instance / `sysparm_display_value`
+ * mode it comes back either as a plain display string or as a
+ * `{ value, display_value }` object — so accept both. Use `referenceDisplay()` to
+ * pull a label out of it regardless of shape.
+ */
+export const ReferenceValueSchema = z.union([
+  z.string(),
+  z
+    .object({
+      value: z.string().optional(),
+      display_value: z.string().optional(),
+    })
+    .passthrough(),
+]);
+
+export type ReferenceValue = z.infer<typeof ReferenceValueSchema>;
+
+/** Extract a human-readable label from a reference field of either shape. */
+export function referenceDisplay(ref: ReferenceValue | undefined): string {
+  if (!ref) return '';
+  if (typeof ref === 'string') return ref;
+  return ref.display_value || ref.value || '';
+}
+
+export const UpdateSetRecordSchema = z
+  .object({
+    sys_id: z.string().optional(),
+    name: z.string().optional(),
+    // Reference to sys_scope. Shape varies by instance (string vs object) — kept
+    // lenient via ReferenceValueSchema; read with referenceDisplay().
+    application: ReferenceValueSchema.optional(),
+  })
+  .passthrough();
+
 export const HistoryItemSchema = z
   .object({
     id: z.union([z.string(), z.number()]).optional(),
@@ -78,5 +122,7 @@ export const SwitchAppResultSchema = z
 
 export type ScopeRecord = z.infer<typeof ScopeRecordSchema>;
 export type TableRecord = z.infer<typeof TableRecordSchema>;
+export type UserRecord = z.infer<typeof UserRecordSchema>;
+export type UpdateSetRecord = z.infer<typeof UpdateSetRecordSchema>;
 export type HistoryItem = z.infer<typeof HistoryItemSchema>;
 export type MenuItem = z.infer<typeof MenuItemSchema>;

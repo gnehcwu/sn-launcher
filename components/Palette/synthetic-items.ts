@@ -1,8 +1,8 @@
 import React from "react";
-import { Route, TextSearch } from "lucide-react";
+import { Route, TextSearch, UserRoundCog } from "lucide-react";
 import type { CommandItem, CommandModeOrNull } from "@/utils/types";
 import { isValidShortcut, isValidSysId } from "@/utils/validation";
-import { SYNTH_GOTO_KEY, SYNTH_FIND_RECORD_KEY } from "./palette-action";
+import { SYNTH_GOTO_KEY, SYNTH_FIND_RECORD_KEY, SYNTH_IMPERSONATE_KEY } from "./palette-action";
 
 // Whether `filter` matches a pattern that produces a pinned synthetic row.
 // Single source of truth for both getSyntheticItems (what to render) and
@@ -40,4 +40,19 @@ export function getSyntheticItems(
     }];
   }
   return [];
+}
+
+// Impersonate-by-sys_id escape hatch. Only offered when the typed text is a
+// valid sys_id — the one case where the raw input is an unambiguous identifier,
+// so impersonating it directly is correct (no server lookup needed). Name text
+// goes through searchUsers instead. Enter routes through palette-action's
+// SYNTH_IMPERSONATE_KEY branch.
+export function getImpersonateSysIdItem(sysId: string): CommandItem {
+  return {
+    key: SYNTH_IMPERSONATE_KEY,
+    fullLabel: `Impersonate ${sysId}`,
+    label: "Impersonate",
+    subLabel: `Impersonate user by sys_id ${sysId}`,
+    icon: React.createElement(UserRoundCog),
+  };
 }

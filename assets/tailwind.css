@@ -286,6 +286,16 @@
   opacity: 0 !important;
 }
 
+/* MenuRow tints its badge border on selection (group-data-[selected]:
+   border-accent-foreground/30) to stay legible against the `bg-accent` fill.
+   Contrast themes have no such fill (selection is the ring above), so that tint
+   has nothing to compensate for and just makes the badge border shift tone —
+   keep it at the default border color here. */
+.light-contrast [data-slot="item"][data-selected="true"] [data-slot="badge"],
+.dark-contrast [data-slot="item"][data-selected="true"] [data-slot="badge"] {
+  border-color: var(--border) !important;
+}
+
 @layer base {
   * {
     @apply border-border outline-ring/50;

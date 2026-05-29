@@ -1,7 +1,23 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import useLauncherStore from "@/utils/launcherStore";
 import { getCommandLabelAndPlaceholder } from "@/utils/configs/commands";
-import { DEBOUNCE_DELAY } from "@/utils/configs/constants";
+import {
+  DEBOUNCE_DELAY,
+  LOADER_DEFER_TIME,
+  COMMAND_MODES,
+  SN_LAUNCHER_CACHE_KEYS,
+} from "@/utils/configs/constants";
+import type { CommandModeOrNull } from "@/utils/types";
+
+// Map the current mode to the cache key whose background refresh should drive
+// the header spinner. Modes with no cached list (impersonate, update sets,
+// history, synthetic search modes) return null → no revalidation spinner.
+function cacheKeyForMode(mode: CommandModeOrNull): string | null {
+  if (mode === null) return SN_LAUNCHER_CACHE_KEYS.MENUS;
+  if (mode === COMMAND_MODES.TABLE) return SN_LAUNCHER_CACHE_KEYS.TABLES;
+  if (mode === COMMAND_MODES.SWITCH_SCOPE) return SN_LAUNCHER_CACHE_KEYS.SCOPES;
+  return null;
+}
 import debounce from "@/utils/debounce";
 import { hasSyntheticMatch } from "./synthetic-items";
 import PaletteHeaderView from "./PaletteHeaderView";
@@ -28,8 +44,29 @@ function PaletteHeader({
   const commandMode = useLauncherStore((state) => state.commandMode);
   const setFilter = useLauncherStore((state) => state.setFilter);
 
+  // Only reflect a background refresh of the list backing the CURRENT mode — a
+  // warm of tables/scopes while the user is on the menu shouldn't trip the spinner.
+  const activeCacheKey = cacheKeyForMode(commandMode);
+  const isRevalidating = useLauncherStore(
+    (state) => activeCacheKey != null && (state.revalidating[activeCacheKey] ?? 0) > 0
+  );
+
   const inputRef = useRef<HTMLInputElement>(null);
   const [inputValue, setInputValue] = useState(filter);
+
+  // Delay-to-show the refresh spinner: a background revalidation that finishes
+  // quickly (cache served, fast network) shouldn't flash an indicator. Only
+  // surface it once the refresh has run long enough to be worth signalling —
+  // which is exactly the slow case (e.g. a large tables fetch) the user notices.
+  const [showRevalidating, setShowRevalidating] = useState(false);
+  useEffect(() => {
+    if (!isRevalidating) {
+      setShowRevalidating(false);
+      return;
+    }
+    const timer = setTimeout(() => setShowRevalidating(true), LOADER_DEFER_TIME);
+    return () => clearTimeout(timer);
+  }, [isRevalidating]);
 
   const debouncedSetFilter = useMemo(
     () => debounce((value: string) => setFilter(value), DEBOUNCE_DELAY),
@@ -92,6 +129,7 @@ function PaletteHeader({
       mode={commandMode}
       label={label}
       isLoading={isLoading}
+      isRevalidating={showRevalidating}
       bodyLoaderVisible={bodyLoaderVisible}
       inputValue={inputValue}
       onInputChange={handleChange}

@@ -6,6 +6,9 @@ import PaletteCard from "@/components/palette/PaletteCard";
 import PaletteHeaderView from "@/components/palette/PaletteHeaderView";
 import MenuRow from "@/components/palette/MenuRow";
 import PaletteFooter from "@/components/palette/PaletteFooter";
+import { getSubActions } from "@/components/palette/sub-actions";
+import commands from "@/utils/configs/commands";
+import { COMMAND_MODES } from "@/utils/configs/constants";
 import type { CommandItem } from "@/utils/types";
 import {
   applyTheme,
@@ -26,10 +29,11 @@ const REPO_URL = "https://github.com/gnehcwu/sn-launcher";
 // looking abrupt. From Emil Kowalski's animation principles.
 const EASE_OUT = "cubic-bezier(0.23, 1, 0.32, 1)";
 
-type ViewKey = "theme" | "about";
+type ViewKey = "theme" | "reference" | "about";
 
 const NAV_ITEMS: { key: ViewKey; label: string }[] = [
   { key: "theme", label: "Theme" },
+  { key: "reference", label: "Reference" },
   { key: "about", label: "About" },
 ];
 
@@ -42,6 +46,62 @@ const SHORTCUTS: ShortcutRow[] = [
   { label: "Search tables", mod: (m) => (m ? "⌥" : "Alt"), key: "A" },
   { label: "Search history", mod: (m) => (m ? "⌥" : "Alt"), key: "H" },
 ];
+
+const ISSUES_URL = `${REPO_URL}/issues`;
+const RELEASES_URL = `${REPO_URL}/releases`;
+
+// Mirrors `manifest.permissions` in wxt.config.ts — kept in lockstep manually
+// since the manifest isn't importable at runtime here.
+const PERMISSIONS: { name: string; why: string }[] = [
+  { name: "storage", why: "Saves your theme and caches menu / table / scope lists locally for instant results." },
+  { name: "tabs", why: "Opens records, lists, and .do / .list pages in new tabs and toggles the palette on the active tab." },
+  { name: "activeTab", why: "Acts on the ServiceNow tab you're currently viewing." },
+  { name: "scripting", why: "Injects the palette UI and reads your instance session token so API calls authenticate as you." },
+  { name: "contextMenus", why: "Adds the right-click menu entries that open the palette in a specific mode." },
+];
+
+const CREDITS: { name: string; role: string; url: string }[] = [
+  { name: "WXT", role: "Extension framework", url: "https://wxt.dev" },
+  { name: "React", role: "UI library", url: "https://react.dev" },
+  { name: "Tailwind CSS", role: "Styling", url: "https://tailwindcss.com" },
+  { name: "Zustand", role: "State management", url: "https://github.com/pmndrs/zustand" },
+  { name: "shadcn/ui", role: "UI primitives", url: "https://ui.shadcn.com" },
+  { name: "Lucide", role: "Icons", url: "https://lucide.dev" },
+  { name: "Zod", role: "Schema validation", url: "https://zod.dev" },
+];
+
+// Content blocks cascade in just after the SectionHeader's own staggered reveal,
+// so header + body read as one motion event. motion-safe only — reduced-motion
+// users get the content with opacity, no movement. Mirrors SectionHeader's curve.
+const REVEAL =
+  "motion-safe:animate-in motion-safe:fade-in motion-safe:slide-in-from-bottom-1 motion-safe:duration-300";
+const revealStyle = (index: number): React.CSSProperties => ({
+  animationTimingFunction: EASE_OUT,
+  animationDelay: `${140 + index * 60}ms`,
+  animationFillMode: "both",
+});
+
+// A label → description list whose first column auto-sizes to its widest term
+// and stays aligned across rows (no magic widths). Shared by Keyboard, Shortcuts,
+// Permissions, and Built-with so they read as one consistent system.
+function DefinitionGrid({
+  rows,
+}: {
+  rows: { key: string; term: React.ReactNode; desc: React.ReactNode }[];
+}) {
+  return (
+    <dl className="mt-3 grid grid-cols-[max-content_1fr] items-start gap-x-5 gap-y-2.5 text-sm">
+      {rows.flatMap((r) => [
+        <dt key={`${r.key}-t`} className="flex items-center gap-1 leading-5">
+          {r.term}
+        </dt>,
+        <dd key={`${r.key}-d`} className="leading-5 text-muted-foreground">
+          {r.desc}
+        </dd>,
+      ])}
+    </dl>
+  );
+}
 
 function MiniPalette() {
   return (
@@ -300,39 +360,166 @@ function ThemeSection({ theme, onSelect, previewRef, thumbRefs }: ThemeSectionPr
   );
 }
 
-function AboutSection({ isMac }: { isMac: boolean }) {
+// Representative items so getSubActions emits every conditional alternate for a
+// mode (it gates on target / sysId). The run() callbacks are never invoked here —
+// we only read each action's label + icon for the reference list.
+const NOOP_CTX = { close: () => {} };
+const SUBACTION_GROUPS: { title: string; actions: ReturnType<typeof getSubActions> }[] = [
+  {
+    title: "Nav menus & history",
+    actions: getSubActions({ key: "menu:rep", fullLabel: "", target: "incident_list.do" }, null, NOOP_CTX),
+  },
+  {
+    title: "Tables",
+    actions: getSubActions(
+      { key: "table:incident", fullLabel: "", target: "incident_list.do", sysId: "—" },
+      COMMAND_MODES.TABLE,
+      NOOP_CTX
+    ),
+  },
+  {
+    title: "Switch scope",
+    actions: getSubActions({ key: "scope:rep", fullLabel: "" }, COMMAND_MODES.SWITCH_SCOPE, NOOP_CTX),
+  },
+  {
+    title: "History",
+    actions: getSubActions({ key: "history:rep", fullLabel: "", target: "incident.do" }, COMMAND_MODES.HISTORY, NOOP_CTX),
+  },
+].filter((g) => g.actions.length > 0);
+
+function ReferenceSection({ isMac }: { isMac: boolean }) {
+  const mod = isMac ? "⌘" : "Ctrl";
+  // The palette hides `visible: false` entries (e.g. the internal Actions mode).
+  const visibleCommands = commands.filter((c) => c.visible !== false);
+
+  // Mirrors the bindings in Palette.tsx#handleKeydown. No runtime source for
+  // keybindings, so this list is maintained alongside that handler.
+  const keys: { combo: React.ReactNode; label: string }[] = [
+    {
+      combo: (
+        <>
+          <Kbd>↑</Kbd>
+          <Kbd>↓</Kbd>
+        </>
+      ),
+      label: "Move between results",
+    },
+    { combo: <Kbd>⏎</Kbd>, label: "Run the selected command" },
+    { combo: <Kbd>Tab</Kbd>, label: "Open the full command list, or exit the current mode" },
+    {
+      combo: (
+        <>
+          <Kbd>{mod}</Kbd>
+          <Kbd>K</Kbd>
+        </>
+      ),
+      label: "Show alternate actions for the highlighted row",
+    },
+    { combo: <Kbd>⌫</Kbd>, label: "Exit the current mode (when the filter is empty)" },
+    { combo: <Kbd>esc</Kbd>, label: "Close the actions panel, or the palette" },
+  ];
+
+  return (
+    <>
+      <SectionHeader
+        title="Reference"
+        subtitle="Everything the palette can do, at a glance."
+      />
+
+      <section className="space-y-10">
+        <div className={REVEAL} style={revealStyle(0)}>
+          <h2 className="text-sm font-medium text-foreground">Commands</h2>
+          <ul className="mt-3 grid gap-x-8 gap-y-3 text-sm sm:grid-cols-2">
+            {visibleCommands.map((c) => (
+              <li key={c.key} className="flex items-start gap-3">
+                <span className="mt-0.5 flex size-5 shrink-0 items-center justify-center text-muted-foreground [&>svg]:h-4 [&>svg]:w-4">
+                  {c.icon}
+                </span>
+                <div className="min-w-0">
+                  <p className="text-foreground">{c.fullLabel}</p>
+                  {c.subLabel && <p className="text-xs text-muted-foreground">{c.subLabel}</p>}
+                </div>
+              </li>
+            ))}
+          </ul>
+        </div>
+
+        <div className={REVEAL} style={revealStyle(1)}>
+          <h2 className="text-sm font-medium text-foreground">Keyboard</h2>
+          <DefinitionGrid rows={keys.map((k) => ({ key: k.label, term: k.combo, desc: k.label }))} />
+        </div>
+
+        <div className={REVEAL} style={revealStyle(2)}>
+          <h2 className="text-sm font-medium text-foreground">Row actions</h2>
+          <p className="mt-1 text-xs text-muted-foreground">
+            Press <Kbd className="mx-0.5">{mod}</Kbd>
+            <Kbd>K</Kbd> on a highlighted row for its alternates.
+          </p>
+          <div className="mt-4 space-y-4">
+            {SUBACTION_GROUPS.map((g) => (
+              <div key={g.title}>
+                <p className="text-xs font-medium text-foreground">{g.title}</p>
+                <ul className="mt-1.5 flex flex-wrap gap-x-5 gap-y-1.5 text-sm text-muted-foreground">
+                  {g.actions.map((a) => (
+                    <li key={a.key} className="inline-flex items-center gap-1.5">
+                      <span className="flex size-4 shrink-0 items-center justify-center [&>svg]:h-3.5 [&>svg]:w-3.5">
+                        {a.icon}
+                      </span>
+                      {a.label}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+    </>
+  );
+}
+
+function ExternalLink({ href, children }: { href: string; children: React.ReactNode }) {
+  return (
+    <a
+      href={href}
+      target="_blank"
+      rel="noopener noreferrer"
+      className="group inline-flex items-center gap-1 text-foreground underline-offset-4 hover:underline"
+    >
+      {children}
+      <ArrowUpRight
+        size={12}
+        aria-hidden="true"
+        className="transition-transform duration-200 ease-out group-hover:translate-x-0.5 group-hover:-translate-y-0.5 motion-reduce:transition-none"
+      />
+    </a>
+  );
+}
+
+function AboutSection({ isMac, version }: { isMac: boolean; version: string }) {
+  const mod = isMac ? "⌘" : "Ctrl";
   return (
     <>
       <SectionHeader
         title="About"
-        subtitle="A command palette for ServiceNow. Built as a browser extension, local-first."
+        subtitle="A command palette for ServiceNow, local-first."
       />
 
       <section className="space-y-10">
-        <div>
-          <h2 className="text-sm font-medium text-foreground">Shortcuts</h2>
-          <dl className="mt-3 space-y-2 text-sm">
-            {SHORTCUTS.map((s) => (
-              <div key={s.label} className="flex items-center gap-3">
-                <dt className="inline-flex items-center gap-1">
-                  <Kbd>{s.mod(isMac)}</Kbd>
-                  <Kbd>⇧</Kbd>
-                  <Kbd>{s.key}</Kbd>
-                </dt>
-                <dd className="text-muted-foreground">{s.label}</dd>
-              </div>
-            ))}
-          </dl>
-          <p className="mt-4 text-xs text-muted-foreground">
-            Customize at{" "}
-            <code className="rounded bg-muted/60 px-1 py-px font-mono text-[11px] text-foreground">
-              chrome://extensions/shortcuts
-            </code>
-            .
-          </p>
+        <div className={REVEAL} style={revealStyle(0)}>
+          <h2 className="text-sm font-medium text-foreground">Getting started</h2>
+          <ol className="mt-3 space-y-2 text-sm text-muted-foreground">
+            <li>1 — Open any ServiceNow instance page.</li>
+            <li>
+              2 — Press <Kbd>{mod}</Kbd>
+              <Kbd className="mx-0.5">⇧</Kbd>
+              <Kbd>L</Kbd> to launch the palette.
+            </li>
+            <li>3 — Start typing to jump to a page, record, or table — or run a command.</li>
+          </ol>
         </div>
 
-        <div>
+        <div className={REVEAL} style={revealStyle(1)}>
           <h2 className="text-sm font-medium text-foreground">What it does</h2>
           <ul className="mt-3 space-y-2 text-sm text-muted-foreground">
             <li>— Search nav menus to jump straight to any page.</li>
@@ -344,38 +531,66 @@ function AboutSection({ isMac }: { isMac: boolean }) {
               <code className="rounded bg-muted/60 px-1 py-px font-mono text-[11px] text-foreground">*.list</code>{" "}
               shortcut.
             </li>
+            <li>— Switch update set, impersonate a user, and act on the current record.</li>
             <li>— Search ServiceNow docs and Next Experience (Seismic) components in place.</li>
             <li>
               — Press <Kbd className="mx-0.5">Tab</Kbd> for the full command list,{" "}
-              <Kbd className="mx-0.5">{isMac ? "⌘" : "Ctrl"}</Kbd>
+              <Kbd className="mx-0.5">{mod}</Kbd>
               <Kbd>K</Kbd> on a row for its alternates.
             </li>
           </ul>
         </div>
 
-        <div>
-          <h2 className="text-sm font-medium text-foreground">Privacy</h2>
-          <p className="mt-3 text-sm text-muted-foreground">
-            Everything runs locally. The extension only talks to the ServiceNow instance you're on — no third parties, no telemetry.
+        <div className={REVEAL} style={revealStyle(2)}>
+          <h2 className="text-sm font-medium text-foreground">Shortcuts</h2>
+          <DefinitionGrid
+            rows={SHORTCUTS.map((s) => ({
+              key: s.label,
+              term: (
+                <>
+                  <Kbd>{s.mod(isMac)}</Kbd>
+                  <Kbd>⇧</Kbd>
+                  <Kbd>{s.key}</Kbd>
+                </>
+              ),
+              desc: s.label,
+            }))}
+          />
+          <p className="mt-4 text-xs text-muted-foreground">
+            Customize at{" "}
+            <code className="rounded bg-muted/60 px-1 py-px font-mono text-[11px] text-foreground">
+              chrome://extensions/shortcuts
+            </code>{" "}
+            or{" "}
+            <code className="rounded bg-muted/60 px-1 py-px font-mono text-[11px] text-foreground">
+              about:addons
+            </code>{" "}
+            or your browser's keyboard shortcut settings.
           </p>
         </div>
 
-        <div>
+        <div className={REVEAL} style={revealStyle(4)}>
+          <h2 className="text-sm font-medium text-foreground">Privacy</h2>
+          <ul className="mt-3 space-y-2 text-sm text-muted-foreground">
+            <li>— All operations are performed locally in your browser.</li>
+            <li>— No data is collected or shared with any third party.</li>
+            <li>— Manifest V3 is used to improve the privacy, security, and performance of the extension.</li>
+          </ul>
+        </div>
+
+        <div className={REVEAL} style={revealStyle(6)}>
+          <h2 className="text-sm font-medium text-foreground">Feedback</h2>
+          <p className="mt-3 text-sm text-muted-foreground">
+            Found a bug or have an idea? <ExternalLink href={ISSUES_URL}>Open an issue</ExternalLink> on
+            GitHub. Check <ExternalLink href={RELEASES_URL}>recent releases</ExternalLink> for what's new
+            {version ? ` (you're on v${version})` : ""}.
+          </p>
+        </div>
+
+        <div className={REVEAL} style={revealStyle(7)}>
           <h2 className="text-sm font-medium text-foreground">Source</h2>
           <p className="mt-3 text-sm text-muted-foreground">
-            <a
-              href={REPO_URL}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="group inline-flex items-center gap-1 text-foreground underline-offset-4 hover:underline"
-            >
-              github.com/gnehcwu/sn-launcher
-              <ArrowUpRight
-                size={12}
-                aria-hidden="true"
-                className="transition-transform duration-200 ease-out group-hover:translate-x-0.5 group-hover:-translate-y-0.5 motion-reduce:transition-none"
-              />
-            </a>
+            <ExternalLink href={REPO_URL}>github.com/gnehcwu/sn-launcher</ExternalLink>
           </p>
         </div>
       </section>
@@ -573,8 +788,10 @@ function Options() {
                 previewRef={previewRef}
                 thumbRefs={thumbRefs}
               />
+            ) : view === "reference" ? (
+              <ReferenceSection isMac={isMac} />
             ) : (
-              <AboutSection isMac={isMac} />
+              <AboutSection isMac={isMac} version={version} />
             )}
           </div>
         </main>

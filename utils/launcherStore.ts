@@ -9,6 +9,13 @@ interface LauncherState {
   userSysId: string | null;
   selected: number;
   isLoading: boolean;
+  // In-flight background revalidations (SWR refreshes that serve cached data
+  // immediately), keyed by cache key (`menus` / `tables` / `scopes`). Per-key
+  // counts (not a single number) so the header can show the "refreshing"
+  // spinner only for the list backing the current mode, not for a background
+  // warm of a list the user isn't viewing. Distinct from `isLoading`, which is
+  // the blocking first-load skeleton.
+  revalidating: Record<string, number>;
   isShown: boolean;
   error: LauncherError | null;
 }
@@ -22,6 +29,8 @@ interface LauncherActions {
   setFilter: (filter: string) => void;
   setSelected: (selected: number) => void;
   setLoading: (loading: boolean) => void;
+  beginRevalidate: (key: string) => void;
+  endRevalidate: (key: string) => void;
   setToken: (token: string) => void;
   setScope: (scopeSysId: string | null) => void;
   setUserSysId: (userSysId: string | null) => void;
@@ -36,6 +45,7 @@ const initialState: LauncherState = {
   userSysId: null,
   selected: 0,
   isLoading: false,
+  revalidating: {},
   isShown: false,
   error: null,
 };
@@ -65,6 +75,18 @@ const useLauncherStore = create<LauncherState & LauncherActions>((set) => ({
   setFilter: (filter) => set({ filter, selected: 0 }),
   setSelected: (selected) => set({ selected }),
   setLoading: (isLoading) => set({ isLoading }),
+  beginRevalidate: (key) =>
+    set((state) => ({
+      revalidating: { ...state.revalidating, [key]: (state.revalidating[key] ?? 0) + 1 },
+    })),
+  endRevalidate: (key) =>
+    set((state) => {
+      const next = (state.revalidating[key] ?? 0) - 1;
+      const revalidating = { ...state.revalidating };
+      if (next > 0) revalidating[key] = next;
+      else delete revalidating[key];
+      return { revalidating };
+    }),
   setToken: (token) => set({ token }),
   setScope: (scopeSysId) => set({ scopeSysId }),
   setUserSysId: (userSysId) => set({ userSysId }),

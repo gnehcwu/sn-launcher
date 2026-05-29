@@ -1,8 +1,15 @@
 import React from "react";
-import { Route, TextSearch, UserRoundCog } from "lucide-react";
+import { Component, Files, Route, TextSearch, UserRoundCog } from "lucide-react";
 import type { CommandItem, CommandModeOrNull } from "@/utils/types";
+import { COMMAND_MODES } from "@/utils/configs/constants";
 import { isValidShortcut, isValidSysId } from "@/utils/validation";
-import { SYNTH_GOTO_KEY, SYNTH_FIND_RECORD_KEY, SYNTH_IMPERSONATE_KEY } from "./palette-action";
+import {
+  SYNTH_GOTO_KEY,
+  SYNTH_FIND_RECORD_KEY,
+  SYNTH_IMPERSONATE_KEY,
+  SYNTH_SEARCH_DOC_KEY,
+  SYNTH_SEARCH_COMP_KEY,
+} from "./palette-action";
 
 // Whether `filter` matches a pattern that produces a pinned synthetic row.
 // Single source of truth for both getSyntheticItems (what to render) and
@@ -19,8 +26,57 @@ export function getSyntheticItems(
   filter: string,
   commandMode: CommandModeOrNull
 ): CommandItem[] {
-  if (commandMode != null || !hasSyntheticMatch(filter)) return [];
   const trimmed = filter.trim();
+
+  // Search modes have no source list — always surface a single row so the user
+  // sees what Enter will do, even before typing. The subtitle describes the
+  // target (and echoes the query once present). Enter/click route through the
+  // SEARCH_DOC / SEARCH_COMP case in palette-action (which keys off the mode).
+  if (commandMode === COMMAND_MODES.SEARCH_DOC || commandMode === COMMAND_MODES.SEARCH_COMP) {
+    const isDoc = commandMode === COMMAND_MODES.SEARCH_DOC;
+    return [
+      {
+        key: isDoc ? SYNTH_SEARCH_DOC_KEY : SYNTH_SEARCH_COMP_KEY,
+        label: isDoc ? "Search documentation" : "Search components",
+        subLabel: trimmed
+          ? isDoc
+            ? `Find “${trimmed}” in the ServiceNow developer docs`
+            : `Find “${trimmed}” in Next Experience components`
+          : isDoc
+            ? "Search the ServiceNow developer docs"
+            : "Search Next Experience (Seismic) components",
+        fullLabel: isDoc ? `Search documentation ${trimmed}` : `Search components ${trimmed}`,
+        icon: React.createElement(isDoc ? Files : Component),
+      },
+    ];
+  }
+
+  // Find record / Go to modes likewise have no source list — always show their
+  // affordance row. Enter/click route through the matching case in palette-action.
+  if (commandMode === COMMAND_MODES.FIND_RECORD) {
+    return [
+      {
+        key: SYNTH_FIND_RECORD_KEY,
+        label: "Find record",
+        subLabel: trimmed ? `Open the record “${trimmed}”` : "Open a record by its sys_id",
+        fullLabel: `Find record ${trimmed}`,
+        icon: React.createElement(TextSearch),
+      },
+    ];
+  }
+  if (commandMode === COMMAND_MODES.GO_TO) {
+    return [
+      {
+        key: SYNTH_GOTO_KEY,
+        label: "Go to",
+        subLabel: trimmed ? `Open “${trimmed}”` : "Jump to any .do or .list page",
+        fullLabel: `Go to ${trimmed}`,
+        icon: React.createElement(Route),
+      },
+    ];
+  }
+
+  if (commandMode != null || !hasSyntheticMatch(filter)) return [];
   if (isValidSysId(trimmed)) {
     return [{
       key: SYNTH_FIND_RECORD_KEY,

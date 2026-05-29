@@ -13,7 +13,8 @@ interface PaletteBodyProps {
 }
 
 const ROW_HEIGHT = 50;
-const LIST_HEIGHT = 400;
+// 7 rows × 50px. Reduced from 400 (8 rows) to make the palette a touch shorter.
+const LIST_HEIGHT = 350;
 
 interface RowComponentExtraProps {
   menuList: CommandItem[];

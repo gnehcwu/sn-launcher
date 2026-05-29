@@ -4,7 +4,10 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Item, ItemContent, ItemTitle, ItemDescription } from "@/components/ui/item";
 import type { LauncherError } from "@/utils/types";
 
-const BODY_HEIGHT_CLASS = "h-[416px]";
+// Must equal PaletteBody's loaded body height so the empty / error / loading
+// states don't shift on transition: LIST_HEIGHT (350 = 7 × 50px rows) + the
+// list wrapper's py-2 (16px) = 366px.
+const BODY_HEIGHT_CLASS = "h-[366px]";
 
 export function EmptyState() {
   return (
@@ -62,7 +65,7 @@ const SKELETON_WIDTHS = Array.from({ length: SKELETON_COUNT }, (_, i) => ({
 
 export function LoadingState() {
   return (
-    <div className={`${BODY_HEIGHT_CLASS} flex flex-col gap-1 px-3 py-2`} aria-busy="true" aria-live="polite">
+    <div className={`${BODY_HEIGHT_CLASS} flex flex-col px-3 py-2`} aria-busy="true" aria-live="polite">
       {SKELETON_WIDTHS.map(({ title, subtitle, delay }, idx) => (
         <Item
           key={idx}

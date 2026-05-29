@@ -59,8 +59,16 @@ function PaletteShell({
           <PaletteCard
             data-state={state}
             onKeyDown={onKeyDown}
+            // Suppress the browser's native right-click menu anywhere in the
+            // palette — it's a command surface, not page content.
+            onContextMenu={(e) => e.preventDefault()}
             className={[
               "w-[min(720px,100vw)]",
+              // The palette chrome (header label/badges, list rows, footer) is
+              // navigated, not read — suppress text selection across the card.
+              // The search input re-enables it (select-text) so the typed query
+              // stays editable.
+              "select-none",
               "shadow-[0_24px_60px_-12px_rgba(0,0,0,0.35)]",
               "motion-safe:transition-[opacity,transform] motion-safe:duration-150 motion-safe:ease-out",
               "data-[state=open]:opacity-100 data-[state=open]:scale-100",

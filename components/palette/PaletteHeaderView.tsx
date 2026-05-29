@@ -11,6 +11,10 @@ interface PaletteHeaderViewProps {
   /** Display label for the mode badge (only shown when `mode` is set). */
   label?: string;
   isLoading?: boolean;
+  // True while a background SWR refresh is in flight (cached list already on
+  // screen). Drives the same subtle header spinner as `isLoading`, but never the
+  // body skeleton — the cached content stays visible while it refreshes.
+  isRevalidating?: boolean;
   // True when the body is already showing its skeleton loader. Suppresses the
   // header spinner so the same loading state isn't double-indicated.
   bodyLoaderVisible?: boolean;
@@ -36,6 +40,7 @@ function PaletteHeaderView({
   mode,
   label = "",
   isLoading = false,
+  isRevalidating = false,
   bodyLoaderVisible = false,
   placeholder = "Type to search...",
   inputValue,
@@ -46,7 +51,7 @@ function PaletteHeaderView({
   activeOptionId,
 }: PaletteHeaderViewProps) {
   const renderHint = () => {
-    if (isLoading && !bodyLoaderVisible) {
+    if ((isLoading || isRevalidating) && !bodyLoaderVisible) {
       return <Spinner className="text-muted-foreground" />;
     }
     if (!mode) {
@@ -87,7 +92,7 @@ function PaletteHeaderView({
         aria-expanded={true}
         aria-autocomplete="list"
         aria-activedescendant={activeOptionId}
-        className="m-[16px_0px] flex-1 border-none bg-transparent font-mono text-[15px] tracking-tight text-foreground outline-none placeholder:text-muted-foreground/70 focus:outline-none active:outline-none"
+        className="m-[16px_0px] flex-1 select-text border-none bg-transparent font-mono text-[15px] tracking-tight text-foreground outline-none placeholder:text-muted-foreground/70 focus:outline-none active:outline-none"
         placeholder={placeholder}
         value={inputValue}
         onChange={onInputChange}

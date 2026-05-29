@@ -1,5 +1,5 @@
 import React from "react";
-import { ArrowUpRight, ArrowRightLeft, FileCode, History, Link, Table2 } from "lucide-react";
+import { ArrowUpRight, ArrowRightLeft, FileCode, FilePlus, History, Link, Table2 } from "lucide-react";
 import { copyLink, gotoTab, switchToAppById } from "@/utils/api";
 import { COMMAND_MODES } from "@/utils/configs/constants";
 import type { CommandItem, CommandModeOrNull } from "@/utils/types";
@@ -44,6 +44,9 @@ export function getSubActions(
   switch (mode) {
     case COMMAND_MODES.TABLE: {
       const actions: SubAction[] = [];
+      // Table items carry `key: "table:<name>"`; the bare table name drives the
+      // new-record form URL (`<name>.do?sys_id=-1`).
+      const tableName = item.key.replace(/^table:/, "");
       if (item.target) {
         actions.push({
           key: "table:open-list",
@@ -51,6 +54,17 @@ export function getSubActions(
           icon: <Table2 size={16} />,
           run: () => {
             gotoTab(item.target!);
+            ctx.close();
+          },
+        });
+      }
+      if (tableName) {
+        actions.push({
+          key: "table:new-record",
+          label: "New record",
+          icon: <FilePlus size={16} />,
+          run: () => {
+            gotoTab(`${tableName}.do?sys_id=-1`);
             ctx.close();
           },
         });

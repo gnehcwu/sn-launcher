@@ -125,8 +125,14 @@ function ActionPanel({
         // animation grows from where the user's eye is.
         style={{ transformOrigin: "bottom right", animationTimingFunction: EASE_OUT }}
         className={[
-          "absolute bottom-[44px] right-[10px] z-10 w-[260px]",
-          "overflow-hidden rounded-xl border border-border/70 bg-popover text-popover-foreground",
+          // Nestled into the bottom-right corner (Raycast-style), floating over
+          // the footer. The 8px inset + rounded-2xl (16px) sit concentric inside
+          // the palette card's rounded-3xl (24px) corner: 24 − 8 = 16.
+          "absolute bottom-2 right-2 z-10 w-[260px]",
+          // Rows are buttons, not selectable content — suppress text selection
+          // so dragging across the panel doesn't highlight the labels.
+          "select-none",
+          "overflow-hidden rounded-2xl border border-border/70 bg-popover text-popover-foreground",
           "shadow-[0_22px_48px_-14px_rgba(0,0,0,0.45),0_4px_12px_-6px_rgba(0,0,0,0.25)]",
           "motion-safe:animate-in motion-safe:fade-in motion-safe:zoom-in-95 motion-safe:duration-150",
         ].join(" ")}
@@ -160,7 +166,8 @@ function ActionPanel({
                   className={[
                     // h-9 fixes the row height so every child centers against
                     // the same axis, regardless of its own intrinsic height.
-                    "flex h-9 w-full cursor-default items-center rounded-md px-3",
+                    // rounded-lg (8px) = panel radius 16 − p-2 padding 8 (concentric).
+                    "flex h-9 w-full cursor-default items-center rounded-lg px-3",
                     "text-left font-mono text-sm",
                     "outline-none focus:outline-none focus-visible:outline-none",
                     "transition-[transform,background-color,color] duration-150 ease-out",

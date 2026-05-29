@@ -39,10 +39,48 @@ export async function readFresh<T>(
   endpoint: string,
   ttlMs: number
 ): Promise<T | null> {
+  const hit = await readFreshWithAge<T>(host, endpoint, ttlMs);
+  return hit ? hit.value : null;
+}
+
+export interface CacheHit<T> {
+  value: T;
+  /** Wall-clock time the entry was written (ms epoch). */
+  writtenAt: number;
+  /** How long ago the entry was written (ms). */
+  ageMs: number;
+}
+
+/**
+ * Like {@link readFresh} but also reports the entry's age, so callers can apply
+ * a stale-while-revalidate window (serve fresh-enough cache without refetching).
+ */
+export async function readFreshWithAge<T>(
+  host: string,
+  endpoint: string,
+  ttlMs: number
+): Promise<CacheHit<T> | null> {
   const hit = await read<T>(key(host, endpoint));
   if (!hit) return null;
-  if (Date.now() - hit.t >= ttlMs) return null;
-  return hit.v;
+  const ageMs = Date.now() - hit.t;
+  if (ageMs >= ttlMs) return null;
+  return { value: hit.v, writtenAt: hit.t, ageMs };
+}
+
+// Timestamp of the last "the user might have changed something elsewhere"
+// signal (tab focus / visibility regain). Cache entries written before this
+// are revalidated on their next read even if still inside the stale window —
+// so returning from a plugin install refreshes the palette on the next open.
+let lastRevalidationTrigger = 0;
+
+/** Mark that an external change may have happened (call on tab focus). */
+export function markRevalidationTrigger(): void {
+  lastRevalidationTrigger = Date.now();
+}
+
+/** Epoch ms of the most recent revalidation trigger (0 if none yet). */
+export function getRevalidationTrigger(): number {
+  return lastRevalidationTrigger;
 }
 
 export async function writeCache<T>(host: string, endpoint: string, value: T): Promise<void> {

@@ -25,12 +25,9 @@ Press the keyboard shortcut to open the extension on any ServiceNow instance pag
 ## Complete features
 
 - Quickly search and navigate between ServiceNow instance menus
-- Productive action mode:
-  - Find record by sysId
-  - Search SN tables, history, developer documentation, and seismic components
-  - Switch between application scopes
-- Shortcut commands to instantly activate different action modes
-- Dark mode
+- Perform productive actions such as finding records, tables, history, components, switching application scopes, user impersonation, and more
+- Context-aware quick actions based on the selected item
+- Theming
 
 ## 🔒 Privacy
 - All operations are performed locally in your browser.

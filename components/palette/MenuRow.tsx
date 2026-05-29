@@ -62,24 +62,24 @@ function MenuRowImpl({ index, item, active, onSelect, onAction, style }: MenuRow
       data-selected={active ? "true" : "false"}
       onMouseMove={() => onSelect(index)}
       onClick={onAction}
-      onContextMenu={(e) => e.preventDefault()}
       style={style}
       size="sm"
       className={[
-        // Layout
-        "relative cursor-default items-center gap-0 gap-x-3 p-[4px_10px] font-mono",
-        // No bg/color transition: selection changes at keyrepeat rate (50ms),
-        // and animating bg across multiple rows simultaneously catches the
-        // mount transitions of rows entering the viewport, producing flicker.
-        // The state read ("which row am I on?") must be instantaneous.
+        // Layout. `group` lets descendants (eg. the parent-label badge) react
+        // to this row's selected state.
+        "group relative cursor-default items-center gap-0 gap-x-3 p-[4px_10px] font-mono",
+        // Selection must be INSTANT. The base Item primitive carries
+        // `transition-colors duration-100`, which fades `bg-accent` in/out as
+        // selection moves — at keyrepeat rate that reads as flicker, and it
+        // catches the mount transitions of rows entering the viewport. Override
+        // it to none so "which row am I on?" snaps with no animation.
+        "transition-none",
         "hover:bg-muted/50",
         "data-[selected=true]:bg-accent data-[selected=true]:text-accent-foreground",
         // Left accent bar: snaps instantly with the selection. Tracks the
         // cursor without lag, no transition to overlap across adjacent rows.
         "before:absolute before:left-0 before:top-1.5 before:bottom-1.5 before:w-[2px] before:rounded-full before:bg-primary",
         "before:opacity-0 data-[selected=true]:before:opacity-100",
-        // Click feedback — rows are buttons; buttons must feel pressable.
-        "transition-transform duration-100 active:scale-[0.99] motion-reduce:active:scale-100",
       ].join(" ")}
     >
       {icon && (
@@ -97,7 +97,13 @@ function MenuRowImpl({ index, item, active, onSelect, onAction, style }: MenuRow
         <ItemContent className="flex items-center justify-end">
           <Badge
             variant="outline"
-            className="hidden h-5 min-w-5 items-center justify-center overflow-hidden whitespace-nowrap rounded-full border-border px-1.5 font-mono text-xs text-muted-foreground tracking-tight sm:inline-flex"
+            // On a selected row the background is `--accent`; the default
+            // `--border` can sit too close to it (eg. warm-light, ~2% lightness
+            // apart) and wash out. Derive the selected-state border from
+            // `accent-foreground` — the text color guaranteed to contrast with
+            // the accent fill — at low opacity so it stays a subtle outline in
+            // every theme.
+            className="hidden h-5 min-w-5 items-center justify-center overflow-hidden whitespace-nowrap rounded-full border-border group-data-[selected=true]:border-accent-foreground/30 px-1.5 font-mono text-xs text-muted-foreground tracking-tight sm:inline-flex"
             title={parentLabel}
           >
             {truncateMiddle(parentLabel, TRUNCATE_MAX)}

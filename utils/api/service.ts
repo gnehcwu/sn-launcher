@@ -8,6 +8,8 @@ import {
   SN_LAUNCHER_SEARCH_DOC_URL,
   SN_LAUNCHER_SEARCH_COMPONENT_URL,
   SN_LAUNCHER_SCOPE_ENDPOINT,
+  SN_LAUNCHER_SCOPE_PAGE_SIZE,
+  SN_LAUNCHER_SCOPE_MAX_PAGES,
   SN_LAUNCHER_USER_ENDPOINT,
   SN_LAUNCHER_USER_PAGE_SIZE,
   SN_LAUNCHER_USER_MAX_PAGES,
@@ -26,9 +28,16 @@ import {
   SN_LAUNCHER_ABOUT_URL,
   SN_LAUNCHER_HISTORY_MAX_ITEMS,
   SN_LAUNCHER_CACHE_TTL_MS,
+  SN_LAUNCHER_CACHE_KEYS,
 } from "../configs/constants";
 import { snFetchJSON, getBaseUrl, getHost } from "./snFetch";
-import { readFresh, writeCache, invalidate, invalidateAll } from "./cache";
+import {
+  readFreshWithAge,
+  writeCache,
+  invalidate,
+  invalidateAll,
+  getRevalidationTrigger,
+} from "./cache";
 import {
   ScopeRecordSchema,
   TableRecordSchema,
@@ -78,31 +87,64 @@ export async function fetchHistory(): Promise<CommandItem[]> {
 
 type OnRevalidate = (fresh: CommandItem[]) => void;
 
+// Dedup concurrent builds for the same cache key, so a proactive warm and a
+// mode-entry fetch (or two rapid opens) share one network round-trip instead of
+// racing two and double-writing the cache.
+const inFlightBuilds = new Map<string, Promise<CommandItem[]>>();
+function runBuild(
+  cacheKey: string,
+  build: () => Promise<CommandItem[]>
+): Promise<CommandItem[]> {
+  const existing = inFlightBuilds.get(cacheKey);
+  if (existing) return existing;
+  const p = build().finally(() => inFlightBuilds.delete(cacheKey));
+  inFlightBuilds.set(cacheKey, p);
+  return p;
+}
+
 async function cachedList(
   endpoint: string,
   build: () => Promise<CommandItem[]>,
   onRevalidate?: OnRevalidate
 ): Promise<CommandItem[]> {
   const host = getHost();
-  const cached = await readFresh<CommandItem[]>(host, endpoint, SN_LAUNCHER_CACHE_TTL_MS);
+  const cacheKey = `${host}:${endpoint}`;
+  const cached = await readFreshWithAge<CommandItem[]>(host, endpoint, SN_LAUNCHER_CACHE_TTL_MS);
 
-  if (cached && cached.length) {
-    // SWR: serve cache now, refresh in background so plugin install/uninstall
-    // (or any backend change) self-corrects on the next render.
-    void (async () => {
-      try {
-        const fresh = await build();
-        if (!fresh.length) return;
-        await writeCache(host, endpoint, fresh);
-        onRevalidate?.(fresh);
-      } catch {
-        /* ignore — keep serving cache */
-      }
-    })();
-    return cached;
+  if (cached && cached.value.length) {
+    // SWR with a single revalidation signal. We always serve cache immediately;
+    // the only question is whether to also refetch in the background. There is
+    // NO age-based stale window — schema data (tables/scopes/menus) doesn't
+    // change on a short timer, so re-entering a mode mid-session must not
+    // refetch. We revalidate only when a focus/visibility event since the entry
+    // was written suggests the user may have changed something elsewhere (e.g.
+    // installed a plugin in another tab). The TTL (readFreshWithAge above) is
+    // the other, harder refresh: past it, `cached` is null and we cold-fetch.
+    const staleByFocus = cached.writtenAt < getRevalidationTrigger();
+    if (staleByFocus) {
+      void (async () => {
+        // Surface the in-flight refresh via the store, keyed by this endpoint,
+        // so the header can show a subtle "refreshing" spinner only for the list
+        // backing the current mode — the cached list stays visible and
+        // interactive the whole time (no blocking skeleton).
+        const { beginRevalidate, endRevalidate } = useLauncherStore.getState();
+        beginRevalidate(endpoint);
+        try {
+          const fresh = await runBuild(cacheKey, build);
+          if (!fresh.length) return;
+          await writeCache(host, endpoint, fresh);
+          onRevalidate?.(fresh);
+        } catch {
+          /* ignore — keep serving cache */
+        } finally {
+          endRevalidate(endpoint);
+        }
+      })();
+    }
+    return cached.value;
   }
 
-  const fresh = await build();
+  const fresh = await runBuild(cacheKey, build);
   if (fresh.length) {
     await writeCache(host, endpoint, fresh);
   } else {
@@ -113,22 +155,34 @@ async function cachedList(
 }
 
 export async function fetchScopes(onRevalidate?: OnRevalidate): Promise<CommandItem[]> {
-  return cachedList("scopes", async () => {
-    const res = await snFetchJSON(SN_LAUNCHER_SCOPE_ENDPOINT, ScopeListSchema);
-    if (!res.ok) return [];
-    return res.value.result
-      .filter((item) => item.sys_id)
-      .map((item) => {
-        const displayLabel = item.name || item.scope || item.sys_id!;
+  return cachedList(SN_LAUNCHER_CACHE_KEYS.SCOPES, async () => {
+    // Paginated like fetchTables/fetchUsers so the full set is fuzzy-filtered
+    // client-side, with no fixed cap. Loops until ServiceNow returns a short page.
+    const out: CommandItem[] = [];
+    for (let page = 0; page < SN_LAUNCHER_SCOPE_MAX_PAGES; page++) {
+      const offset = page * SN_LAUNCHER_SCOPE_PAGE_SIZE;
+      const endpoint = `${SN_LAUNCHER_SCOPE_ENDPOINT}&sysparm_limit=${SN_LAUNCHER_SCOPE_PAGE_SIZE}&sysparm_offset=${offset}`;
+      const res = await snFetchJSON(endpoint, ScopeListSchema);
+      if (!res.ok) break;
+
+      const rows = res.value.result;
+      for (const item of rows) {
+        if (!item.sys_id) continue;
+        const displayLabel = item.name || item.scope || item.sys_id;
         // `key` must be the raw sys_id: palette-action.ts passes it straight to
         // switchToAppById, which forwards it to ServiceNow as the `app_id`.
-        return {
-          key: item.sys_id!,
+        out.push({
+          key: item.sys_id,
           label: displayLabel,
           subLabel: `Switch to scope ${item.scope || displayLabel}`,
           fullLabel: `${item.name ?? ""} ${item.scope ?? ""}`.trim() || displayLabel,
-        } satisfies CommandItem;
-      });
+        });
+      }
+
+      // Last page reached when ServiceNow returned fewer than a full page.
+      if (rows.length < SN_LAUNCHER_SCOPE_PAGE_SIZE) break;
+    }
+    return out;
   }, onRevalidate);
 }
 
@@ -224,7 +278,7 @@ export async function searchUsers(query: string): Promise<CommandItem[]> {
 }
 
 export async function fetchTables(onRevalidate?: OnRevalidate): Promise<CommandItem[]> {
-  return cachedList("tables", async () => {
+  return cachedList(SN_LAUNCHER_CACHE_KEYS.TABLES, async () => {
     const out: CommandItem[] = [];
     for (let page = 0; page < SN_LAUNCHER_TABLE_MAX_PAGES; page++) {
       const offset = page * SN_LAUNCHER_TABLE_PAGE_SIZE;
@@ -252,7 +306,7 @@ export async function fetchTables(onRevalidate?: OnRevalidate): Promise<CommandI
 }
 
 export async function fetchMenus(onRevalidate?: OnRevalidate): Promise<CommandItem[]> {
-  return cachedList("menus", async () => {
+  return cachedList(SN_LAUNCHER_CACHE_KEYS.MENUS, async () => {
     const res = await snFetchJSON(SN_LAUNCHER_MENU_ENDPOINT, MenuListSchema);
     if (!res.ok) return [];
     const subItems = (res.value.result?.[0]?.subItems ?? []) as Parameters<typeof extractMenu>[0];

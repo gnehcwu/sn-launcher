@@ -15,7 +15,7 @@ const PaletteCard = React.forwardRef<HTMLDivElement, React.ComponentProps<"div">
       ref={ref}
       className={cn(
         "relative grid grid-rows-[min-content_1fr_min-content]",
-        "overflow-hidden rounded-2xl border border-border bg-popover text-popover-foreground",
+        "overflow-hidden rounded-3xl border border-border bg-popover text-popover-foreground",
         className
       )}
       {...rest}

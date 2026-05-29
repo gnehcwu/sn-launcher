@@ -6,6 +6,8 @@ import type { CommandItem, CommandModeOrNull, CommandMode } from '@/utils/types'
 export const SYNTH_GOTO_KEY = 'synth:goto';
 export const SYNTH_FIND_RECORD_KEY = 'synth:find_record';
 export const SYNTH_IMPERSONATE_KEY = 'synth:impersonate';
+export const SYNTH_SEARCH_DOC_KEY = 'synth:search_doc';
+export const SYNTH_SEARCH_COMP_KEY = 'synth:search_comp';
 
 async function findRecord(filter: string, setLoading: (loading: boolean) => void): Promise<void> {
   setLoading(true);

@@ -15,10 +15,17 @@ export const SPECIAL_CHARS = {
 export const HOST_ELEMENT_ATTR_ID = 'sn-launcher-root';
 export const SN_LAUNCHER_SEND_GCK_EVENT = `sn-launcher-send-gck`;
 export const SN_LAUNCHER_RECAPTURE_GCK_EVENT = `sn-launcher-recapture-gck`;
-export const SN_LAUNCHER_SEARCH_DOC_URL = `https://www.servicenow.com/docs/search?q=`;
+export const SN_LAUNCHER_SEARCH_DOC_URL = `https://www.servicenow.com/docs/search?query=`;
 export const SN_LAUNCHER_SEARCH_COMPONENT_URL = `https://developer.servicenow.com/dev.do#!/reference/next-experience/components?&order_by=score&limit=120&offset=0&categories[]=uib_component&query=`;
+// Base path for the scope switcher. `sysparm_limit` + `sysparm_offset` are added
+// by service.ts#fetchScopes, which paginates like fetchTables/fetchUsers so the
+// full set is fuzzy-filtered client-side (no fixed cap). Cached for 60 min.
 export const SN_LAUNCHER_SCOPE_ENDPOINT =
-  'api/now/table/sys_scope?sysparm_query=ORDERBYDESCsys_updated_on&sysparm_display_value=true&sysparm_fields=sys_id%2Cscope%2Cname&sysparm_limit=500';
+  'api/now/table/sys_scope?sysparm_query=ORDERBYDESCsys_updated_on&sysparm_display_value=true&sysparm_fields=sys_id%2Cscope%2Cname';
+// 5000 × 2 = 10k scopes covers every instance in at most two round-trips; in
+// practice sys_scope holds far fewer, so it's a single page.
+export const SN_LAUNCHER_SCOPE_PAGE_SIZE = 5000;
+export const SN_LAUNCHER_SCOPE_MAX_PAGES = 2;
 // Base path for the in-progress update set list. service.ts#fetchUpdateSets adds
 // the `sysparm_query` (state=in progress, scoped to the current app when known).
 // NOT cached — devs create/switch sets constantly, so the list must stay live.
@@ -66,7 +73,21 @@ export const SN_LAUNCHER_GLOBAL_SCOPE_SYS_ID = 'e24e9692d7702100738dc0da9e6103dd
 export const SN_LAUNCHER_SEND_SCOPE_EVENT = 'sn-launcher-send-scope';
 export const SN_LAUNCHER_SEND_USER_EVENT = 'sn-launcher-send-user';
 export const SN_LAUNCHER_HISTORY_MAX_ITEMS = 100;
-export const SN_LAUNCHER_CACHE_TTL_MS = 60 * 60 * 1000; // 1 hour
+// Hard expiry and the sole age-based refresh: past this we block and refetch.
+// There is no shorter "stale" window — within the TTL, cached data is only
+// revalidated when a tab-focus event signals something may have changed
+// elsewhere (see cachedList in service.ts). So a focused single-tab user, who
+// never fires a focus event, refreshes at most once per TTL.
+export const SN_LAUNCHER_CACHE_TTL_MS = 15 * 60 * 1000; // 15 minutes
+// Cache keys passed to cachedList — also used to map a command mode to the list
+// it backs, so the header's "refreshing" spinner can be scoped to the mode the
+// user is actually viewing (see PaletteHeader#cacheKeyForMode). Keep in sync
+// with the cachedList(...) call sites in service.ts.
+export const SN_LAUNCHER_CACHE_KEYS = {
+  MENUS: 'menus',
+  TABLES: 'tables',
+  SCOPES: 'scopes',
+} as const;
 export const SN_LAUNCHER_ABOUT_URL = 'https://github.com/gnehcwu/sn-launcher';
 export const SN_LAUNCHER_ACTIONS: Record<LauncherActionType, LauncherActionValue> = {
   TOGGLE_LAUNCHER_COMMAND: 'snl-toggle-launcher-command',

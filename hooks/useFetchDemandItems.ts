@@ -26,33 +26,46 @@ export default function useFetchDemandItems({
   useEffect(() => {
     if (commandMode !== targetMode) return;
 
-    if (reuse && itemsRef.current.length > 0) {
-      setItems(itemsRef.current);
-      return;
-    }
-
     let cancelled = false;
-    async function getItems() {
-      try {
-        setLoading(true);
-        const fetchedItems = await fetchFn((fresh) => {
-          if (cancelled) return;
-          setItems(fresh);
-          itemsRef.current = fresh;
-        });
-        if (cancelled) return;
-        setItems(fetchedItems);
-        itemsRef.current = fetchedItems;
-      } finally {
-        if (!cancelled) setLoading(false);
-      }
+    // Whether we already have an in-memory copy to show immediately.
+    const hasCached = reuse && itemsRef.current.length > 0;
+
+    const applyFresh = (fresh: CommandItem[]) => {
+      if (cancelled) return;
+      setItems(fresh);
+      itemsRef.current = fresh;
+    };
+
+    // Snappy open: paint the cached list instantly. First time through (or when
+    // reuse is off) there's nothing to show yet, so surface the loading state.
+    if (hasCached) {
+      setItems(itemsRef.current);
+    } else {
+      setLoading(true);
     }
 
-    getItems();
+    // Always revalidate in the background (SWR), even when serving a cached
+    // copy — so server-side changes (e.g. a newly installed plugin's tables)
+    // appear on the next open with no manual reload or cache clear. When a
+    // cached list is already on screen we keep the loader off (no skeleton
+    // flash) and never replace it with an empty result, so a transient/failed
+    // fetch can't wipe good data.
+    (async () => {
+      try {
+        const fetched = await fetchFn(applyFresh);
+        if (!cancelled && (fetched.length || !hasCached)) {
+          applyFresh(fetched);
+        }
+      } catch {
+        /* keep showing whatever we already have */
+      } finally {
+        if (!cancelled && !hasCached) setLoading(false);
+      }
+    })();
 
     return () => {
       cancelled = true;
-      setLoading(false);
+      if (!hasCached) setLoading(false);
     };
   }, [commandMode, setLoading, fetchFn, targetMode, reuse]);
 

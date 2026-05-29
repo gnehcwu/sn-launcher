@@ -144,3 +144,16 @@ export function showCurrentRecordXml(): void {
   const xmlUrl = buildXmlUrl(window.location.origin, ctx);
   messageBackground({ action: SN_LAUNCHER_ACTIONS.OPEN_TAB_COMMAND, url: xmlUrl });
 }
+
+/**
+ * Detects the current record and copies its sys_id to the clipboard.
+ * No-ops silently if no record is detected on the page.
+ */
+export function copyCurrentRecordSysId(): void {
+  const ctx = getCurrentRecord();
+  if (!ctx) return;
+
+  navigator.clipboard.writeText(ctx.sysId).catch((err) => {
+    console.error("SN Launcher: copy to clipboard failed:", err);
+  });
+}

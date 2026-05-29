@@ -1,6 +1,6 @@
 import React from 'react';
 import { clearCache, searchDoc, searchComponent, goto, about, openOptions } from '../api/service';
-import { showCurrentRecordXml } from '../api/extractRecord';
+import { showCurrentRecordXml, copyCurrentRecordSysId } from '../api/extractRecord';
 import type { CommandMode, CommandModeOrNull, CommandItem } from '@/utils/types';
 import { COMMAND_MODES } from './constants';
 import {
@@ -14,6 +14,7 @@ import {
   GalleryVerticalEnd,
   BadgeInfo,
   FileCode,
+  Copy,
   Settings,
 } from 'lucide-react';
 
@@ -91,6 +92,13 @@ const commands: CommandItem[] = [
     fullLabel: 'Show record XML',
     subLabel: "Open the current record's XML in a new tab",
     icon: React.createElement(FileCode),
+  },
+  {
+    key: 'cmd:copy_record_sys_id',
+    action: copyCurrentRecordSysId,
+    fullLabel: 'Copy record sys_id',
+    subLabel: "Copy the current record's sys_id to the clipboard",
+    icon: React.createElement(Copy),
   },
   {
     key: 'cmd:clear_cache',
